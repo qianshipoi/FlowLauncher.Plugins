@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/AliyunOss.UnitTest/AliyunOss.UnitTest.csproj" />
+  </Folder>
+  <Project Path="FlowLauncher.Plugin.AliyunOss/FlowLauncher.Plugin.AliyunOss.csproj" />
+</Solution>
