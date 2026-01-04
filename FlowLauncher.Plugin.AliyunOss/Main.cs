@@ -13,7 +13,6 @@ namespace FlowLauncher.Plugin.AliyunOss;
 
 public class Main : IAsyncPlugin, IReloadable, ISettingProvider
 {
-
     private PluginInitContext _context = default!;
     private OssService _service = default!;
     private Settings _settings = default!;
@@ -41,29 +40,39 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
     {
         try
         {
+            if (query.ActionKeyword == "oss")
+            {
+                return
+                [
+                    ResultBuilder.Create("ossd").Action(() => _context.API.ChangeQuery("ossd ", true), false).Build(),
+                    ResultBuilder.Create("ossu").Action(() => _context.API.ChangeQuery("ossu ", true), false).Build()
+                ];
+            }
+
             if (string.IsNullOrWhiteSpace(query.Search) || query.SearchTerms.Length == 1)
             {
                 var buckets = await _service.GetBucketsAsync(query.Search ?? string.Empty, token);
 
-                return [.. buckets
-                    .Select(x => new Result
-                    {
-                        Title = x,
-                        Action = ctx => {
-                            _context.API.ChangeQuery(query.ActionKeyword + " " + x, true);
-                            return false;
-                        }
-                    })];
+                return [.. 
+                    buckets
+                    .Select(x => 
+                        ResultBuilder
+                            .Create(x)
+                            .Action(() => _context.API.ChangeQuery(query.ActionKeyword + " " + x + " ", true))
+                            .Build())
+                    ];
             }
 
             if (query.ActionKeyword == "ossd")
             {
                 return await _downloadQuery.ExecuteAsync(query, token);
             }
-            else
+            else if (query.ActionKeyword == "oosu")
             {
                 return await _uploadQuery.ExecuteAsync(query, token);
             }
+
+            return [];
         }
         catch (OperationCanceledException)
         {
@@ -71,16 +80,9 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
         }
         catch (SettingsNotConfiguredException)
         {
-            return [
-                 new Result
-                {
-                    Title = "请先配置阿里云 OSS 插件设置",
-                    SubTitle = "按 Enter 打开设置面板",
-                    Action = ctx => {
-                        _context.API.OpenSettingDialog();
-                        return false;
-                    }
-                }
+            return 
+            [
+                ResultBuilder.Create("请先配置阿里云 OSS 插件设置").Subtitle("按 Enter 打开设置面板").Action(_context.API.OpenSettingDialog).Build()
             ];
         }
         catch (OperationException)
@@ -89,7 +91,7 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
         }
         catch (Exception ex)
         {
-            _context.API.LogException(nameof(Main), "全局异常", ex);
+            _context.API.LogException(nameof(Main), "Glbal Exception", ex);
             _context.API.ShowMsgError("Aliyun OSS Plugin Error", ex.Message);
             return [];
         }

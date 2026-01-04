@@ -113,6 +113,8 @@ public class OssService(IPublicAPI publicAPI, Settings settings)
         return results;
     }
 
+
+
     public void ClearCache()
     {
         _buckets.Clear();
@@ -136,5 +138,20 @@ public class OssService(IPublicAPI publicAPI, Settings settings)
         };
         request.Headers.Add("x-oss-meta-source", "flow-launcher-plugin-aliyun-oss");
         var result = await client.PutObjectAsync(request, cancellationToken: cancellationToken);
+    }
+
+    public async Task CopyObjectAsync(string bucket1, string key, string bucket2, string backupKey, CancellationToken cancellationToken)
+    {
+        using var client = GetClient();
+
+        var request = new OSS.Models.CopyObjectRequest
+        {
+            SourceBucket = bucket1,
+            SourceKey = key,
+            Bucket = bucket2,
+            Key = backupKey
+        };
+
+        await client.CopyObjectAsync(request, cancellationToken: cancellationToken);
     }
 }

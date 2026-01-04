@@ -1,0 +1,12 @@
+﻿{
+    "ID": "F99DD6AB51A8452791324ABBD9845CE5",
+    "ActionKeyword": "kp", 
+    "Name": "Kill port", 
+    "Description": "阿里云对象存储下载器", 
+    "Author": "qianshi",
+    "Version": "1.0.0",
+    "Language": "csharp", 
+    "Website": "https://www.kuriyama.top",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.PortKiller.dll"
+}

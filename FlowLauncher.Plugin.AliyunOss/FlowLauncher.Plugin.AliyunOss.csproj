@@ -18,6 +18,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="favicon.ico">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="plugin.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

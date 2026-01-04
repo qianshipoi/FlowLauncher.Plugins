@@ -1,0 +1,12 @@
+﻿{
+    "ID": "F99DD6AB51A8452791324ABBD9845CE4",
+    "ActionKeyword": "trans",
+    "Name": "AI Translator",
+    "Description": "AI翻译器",
+    "Author": "qianshi",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "https://www.kuriyama.top",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.Translator.dll"
+}
