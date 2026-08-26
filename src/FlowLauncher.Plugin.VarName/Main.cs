@@ -8,11 +8,13 @@ public class Main : IAsyncPlugin, ISettingProvider
 {
     private const string Separator = "|";
     private const string RefreshPrefix = "@@refresh@@";
+    private const string GeneratePrefix = "@@generate@@";
 
     private PluginInitContext _context = default!;
     private Settings _settings = new();
     private VarNameService _service = default!;
     private VarNameCache _cache = default!;
+    private string _lastSearch = "";
 
     public Task InitAsync(PluginInitContext context)
     {
@@ -41,7 +43,21 @@ public class Main : IAsyncPlugin, ISettingProvider
             return NamingVariants(raw);
         }
 
-        // 步骤 1：输入中文，生成候选词
+        // 用户确认生成：调用 AI
+        if (search.StartsWith(GeneratePrefix))
+        {
+            var keyword = search[GeneratePrefix.Length..].Trim();
+            return await GenerateAndCacheAsync(query.ActionKeyword, keyword, token);
+        }
+
+        // 用户确认刷新：清除缓存后调用 AI
+        if (search.StartsWith(RefreshPrefix))
+        {
+            var keyword = search[RefreshPrefix.Length..].Trim();
+            _cache.Remove(keyword);
+            return await GenerateAndCacheAsync(query.ActionKeyword, keyword, token);
+        }
+
         if (string.IsNullOrWhiteSpace(search))
         {
             return
@@ -70,15 +86,29 @@ public class Main : IAsyncPlugin, ISettingProvider
             ];
         }
 
-        // 先查缓存
+        // 查缓存
         var cached = _cache.Get(search);
         if (cached is not null)
         {
             return BuildResults(query.ActionKeyword, search, cached, fromCache: true);
         }
 
-        // 缓存未命中，调用 AI
-        return await GenerateAndCacheAsync(query.ActionKeyword, search, token);
+        // 缓存未命中 → 提示用户按 Enter 生成（不调用 AI）
+        _lastSearch = search;
+        return
+        [
+            new Result
+            {
+                Title = $"按 Enter 生成 \"{search}\" 的变量名",
+                SubTitle = "将调用 AI 生成命名建议",
+                IcoPath = "favicon.ico",
+                Action = _ =>
+                {
+                    _context.API.ChangeQuery($"{query.ActionKeyword} {GeneratePrefix}{search}", true);
+                    return false;
+                }
+            }
+        ];
     }
 
     private async Task<List<Result>> GenerateAndCacheAsync(string actionKeyword, string search, CancellationToken token)
