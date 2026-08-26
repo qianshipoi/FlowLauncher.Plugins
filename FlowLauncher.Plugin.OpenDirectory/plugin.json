@@ -1,0 +1,12 @@
+{
+    "ID": "F99DD6AB51A8452791324ABBD9845CE6",
+    "ActionKeyword": "dir",
+    "Name": "Open Directory",
+    "Description": "解析文件/文件夹路径并打开所在目录",
+    "Author": "qianshi",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "https://www.kuriyama.top",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.OpenDirectory.dll"
+}

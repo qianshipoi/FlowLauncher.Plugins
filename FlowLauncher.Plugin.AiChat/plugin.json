@@ -1,0 +1,12 @@
+﻿{
+    "ID": "F99DD6AB51A8452791324ABBD9845CE9",
+    "ActionKeyword": "ai", 
+    "Name": "AiChat", 
+    "Description": "Open AI Chat web pages", 
+    "Author": "QianShi",
+    "Version": "1.0.0",
+    "Language": "csharp", 
+    "Website": "https://github.com/qianshipoi/FlowLauncher.Plugins",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.AiChat.dll"
+}
