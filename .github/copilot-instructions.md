@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-这是一个 Flow Launcher 插件集合，使用 C# / .NET 9 / WPF 构建，包含 4 个独立插件和 1 个演示应用。
+这是一个 Flow Launcher 插件集合，使用 C# / .NET 9 / WPF 构建，包含 7 个独立插件和 1 个演示应用。
 
 ## 技术栈
 
@@ -18,14 +18,19 @@
 
 ```
 FlowLauncher.Plugins/
-├── FlowLauncher.Plugins.slnx        # 解决方案文件
-├── DemoApp/                          # AiChat 独立演示应用 (WinExe)
-├── FlowLauncher.Plugin.AiChat/       # AI 聊天插件
-├── FlowLauncher.Plugin.AliyunOss/    # 阿里云 OSS 插件
-├── FlowLauncher.Plugin.PortKiller/   # 端口占用查询/终止插件
-├── FlowLauncher.Plugin.Translator/   # AI 翻译插件
+├── FlowLauncher.Plugins.slnx          # 解决方案文件
+├── DemoApp/                            # AiChat 独立演示应用 (WinExe)
+├── FlowLauncher.Plugin.AiChat/         # AI 聊天插件
+├── FlowLauncher.Plugin.AliyunOss/      # 阿里云 OSS 插件
+├── FlowLauncher.Plugin.OpenDirectory/  # 打开目录插件
+├── FlowLauncher.Plugin.PasswordManager/# 密码管理器插件
+├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件
+├── FlowLauncher.Plugin.Translator/     # AI 翻译插件
+├── FlowLauncher.Plugin.VarName/        # 变量命名插件
 └── tests/
-    └── AliyunOss.UnitTest/           # 阿里云 OSS 单元测试
+    ├── AliyunOss.UnitTest/             # 阿里云 OSS 单元测试
+    ├── PasswordManager.UnitTest/       # 密码管理器单元测试
+    └── VarName.UnitTest/               # 变量命名单元测试
 ```
 
 ## 插件架构模式
@@ -128,6 +133,28 @@ public class Main : IAsyncPlugin, ISettingProvider
 - 支持右键菜单删除历史
 - 依赖: OpenAI
 
+### PasswordManager（触发关键字: `pwd`）
+
+- 本地加密存储和管理账号密码
+- SQLCipher（AES-256）整库加密 + DPAPI 字段级加密，双重保护
+- 模糊搜索（标题、用户名、标签）
+- 支持 `pwd add 标题 | 用户名 | 密码` 快速添加和交互式添加
+- 右键菜单：复制用户名、删除条目
+- 复制后自动清除剪贴板（可配置）
+- 依赖: Microsoft.Data.Sqlite, SQLitePCLRaw.bundle_e_sqlcipher
+
+### VarName（触发关键字: `var`）
+
+- 变量命名助手，将中文翻译为英文变量名
+- 基于 OpenAI API 生成多种命名风格（camelCase、PascalCase、snake_case 等）
+- SQLite 缓存历史翻译结果
+- 依赖: OpenAI, Microsoft.Data.Sqlite
+
+### OpenDirectory（触发关键字: `od`）
+
+- 快速打开常用目录（桌面、文档、下载等）
+- 轻量级插件，无外部依赖
+
 ## 编码规范
 
 - **命名空间**: `FlowLauncher.Plugin.{Name}`
@@ -150,6 +177,8 @@ dotnet build FlowLauncher.Plugin.AiChat/FlowLauncher.Plugin.AiChat.csproj
 
 # 运行测试
 dotnet test tests/AliyunOss.UnitTest/AliyunOss.UnitTest.csproj
+dotnet test tests/PasswordManager.UnitTest/PasswordManager.UnitTest.csproj
+dotnet test tests/VarName.UnitTest/VarName.UnitTest.csproj
 ```
 
 ## 添加新插件的步骤

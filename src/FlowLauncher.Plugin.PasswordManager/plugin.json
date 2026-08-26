@@ -1,0 +1,11 @@
+{
+    "ID": "B9F4A3E7D2C84F6A9E1B5D7C3F0A2E4",
+    "ActionKeyword": "pwd",
+    "Name": "Password Manager",
+    "Description": "本地加密存储和管理账号密码",
+    "Author": "FlowLauncher Plugins",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.PasswordManager.dll"
+}

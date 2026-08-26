@@ -1,6 +1,10 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FlowLauncher.Plugin.PasswordManager/FlowLauncher.Plugin.PasswordManager.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AliyunOss.UnitTest/AliyunOss.UnitTest.csproj" />
+    <Project Path="tests/PasswordManager.UnitTest/PasswordManager.UnitTest.csproj" />
     <Project Path="tests/VarName.UnitTest/VarName.UnitTest.csproj" />
   </Folder>
   <Project Path="src/DemoApp/DemoApp.csproj" />
