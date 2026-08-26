@@ -1,1 +1,1 @@
-dotnet publish "$PSScriptRoot/../FlowLauncher.Plugin.AiChat/FlowLauncher.Plugin.AiChat.csproj" -p:PublishProfile=FolderProfile
+dotnet publish "$PSScriptRoot/../src/FlowLauncher.Plugin.AiChat/FlowLauncher.Plugin.AiChat.csproj" -p:PublishProfile=FolderProfile

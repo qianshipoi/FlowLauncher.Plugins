@@ -1,1 +1,1 @@
-dotnet publish "$PSScriptRoot/../FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" -p:PublishProfile=FolderProfile
+dotnet publish "$PSScriptRoot/../src/FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" -p:PublishProfile=FolderProfile
