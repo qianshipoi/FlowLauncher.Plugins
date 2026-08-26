@@ -59,6 +59,7 @@ $textMap = @{
     "FlowLauncher.Plugin.PortKiller"   = [char]0x2716   # ✖
     "FlowLauncher.Plugin.Translator"   = [char]0x00A4   # ¤
     "FlowLauncher.Plugin.OpenDirectory"= [char]0x25B6   # ▶
+    "FlowLauncher.Plugin.VarName"      = "Vn"
 }
 
 $colorMap = @{
@@ -67,6 +68,7 @@ $colorMap = @{
     "FlowLauncher.Plugin.PortKiller"   = "#E74C3C"
     "FlowLauncher.Plugin.Translator"   = "#2ECC71"
     "FlowLauncher.Plugin.OpenDirectory"= "#3498DB"
+    "FlowLauncher.Plugin.VarName"      = "#F39C12"
 }
 
 Write-Host "正在为各插件生成图标..." -ForegroundColor Cyan
