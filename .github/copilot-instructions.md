@@ -143,14 +143,14 @@ public class Main : IAsyncPlugin, ISettingProvider
 - 复制后自动清除剪贴板（可配置）
 - 依赖: Microsoft.Data.Sqlite, SQLitePCLRaw.bundle_e_sqlcipher
 
-### VarName（触发关键字: `var`）
+### VarName（触发关键字: `vn`）
 
 - 变量命名助手，将中文翻译为英文变量名
 - 基于 OpenAI API 生成多种命名风格（camelCase、PascalCase、snake_case 等）
 - SQLite 缓存历史翻译结果
 - 依赖: OpenAI, Microsoft.Data.Sqlite
 
-### OpenDirectory（触发关键字: `od`）
+### OpenDirectory（触发关键字: `dir`）
 
 - 快速打开常用目录（桌面、文档、下载等）
 - 轻量级插件，无外部依赖
@@ -198,3 +198,4 @@ dotnet test tests/VarName.UnitTest/VarName.UnitTest.csproj
 - `AppendTargetFrameworkToOutputPath` 设为 `false`，输出路径不含 TFM 子目录
 - 使用 `Result` 对象时，`IcoPath` 通常设为 `"favicon.ico"`
 - `Result.Action` 回调返回 `true` 关闭 Flow Launcher，`false` 保持打开
+- **更新插件前必须先读取该插件目录下的 `Readme.md`**，了解插件的功能、架构、数据模型和安全设计，避免破坏现有逻辑
