@@ -1,6 +1,15 @@
 using Flow.Launcher.Plugin;
 
+using FlowLauncher.Plugin.PasswordManager.Models;
+using FlowLauncher.Plugin.PasswordManager.Services;
+using FlowLauncher.Plugin.PasswordManager.ViewModels;
+using FlowLauncher.Plugin.PasswordManager.Views;
+
 using SQLitePCL;
+
+using System.IO;
+using System.Reflection;
+using System.Windows;
 
 namespace FlowLauncher.Plugin.PasswordManager;
 
@@ -18,6 +27,26 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
     static Main()
     {
         Batteries_V2.Init();
+        RegisterLocalAssemblyResolve();
+    }
+
+    /// <summary>
+    /// 从插件目录解析依赖程序集。
+    /// Flow Launcher 的 Assembly.Load（Load 上下文）不搜索插件目录，
+    /// 导致 XAML 加载 iNKORE.* 时抛 FileNotFoundException。
+    /// </summary>
+    private static void RegisterLocalAssemblyResolve()
+    {
+        AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
+        {
+            var name = new AssemblyName(args.Name);
+            if (!name.Name!.StartsWith("iNKORE.", StringComparison.OrdinalIgnoreCase))
+                return null;
+
+            var pluginDir = Path.GetDirectoryName(typeof(Main).Assembly.Location);
+            var dllPath = Path.Combine(pluginDir!, name.Name + ".dll");
+            return File.Exists(dllPath) ? Assembly.LoadFrom(dllPath) : null;
+        };
     }
 
     public Task InitAsync(PluginInitContext context)
@@ -33,7 +62,8 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
 
     public System.Windows.Controls.Control CreateSettingPanel()
     {
-        return new SettingsView(_settings, _importExport);
+        var viewModel = new SettingsViewModel(_settings, _importExport);
+        return new SettingsView(viewModel);
     }
 
     public List<Result> LoadContextMenus(Result selectedResult)
@@ -84,12 +114,31 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
     {
         var search = query.Search?.Trim() ?? string.Empty;
 
+        // 打开管理窗口
+        if (search.StartsWith("gui", StringComparison.OrdinalIgnoreCase))
+        {
+            return Task.FromResult(new List<Result>
+            {
+                new Result
+                {
+                    Title = "打开数据管理窗口",
+                    SubTitle = "查看、添加、编辑、删除密码条目",
+                    IcoPath = "favicon.ico",
+                    Action = _ =>
+                    {
+                        OpenManagerWindow();
+                        return true;
+                    }
+                }
+            });
+        }
+
         if (search.StartsWith("add", StringComparison.OrdinalIgnoreCase))
         {
             return Task.FromResult(HandleAddFlow(search));
         }
 
-        // 非 add 查询时退出表单模式
+        // 非 add/gui 查询时退出表单模式
         if (_form.IsActive)
             _form.Reset();
 
@@ -97,6 +146,15 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
             return Task.FromResult(ShowRecent());
 
         return Task.FromResult(SearchPasswords(search));
+    }
+
+    private void OpenManagerWindow()
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            var window = new ManagerWindow(_store, _importExport);
+            window.Show();
+        });
     }
 
     private List<Result> HandleAddFlow(string input)

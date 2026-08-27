@@ -1,3 +1,5 @@
+using FlowLauncher.Plugin.PasswordManager.Services;
+
 using Xunit;
 
 namespace FlowLauncher.Plugin.PasswordManager.Tests;

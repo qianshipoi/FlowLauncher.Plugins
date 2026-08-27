@@ -1,4 +1,4 @@
-namespace FlowLauncher.Plugin.PasswordManager;
+namespace FlowLauncher.Plugin.PasswordManager.Models;
 
 public class Settings
 {

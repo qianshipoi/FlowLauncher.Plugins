@@ -1,4 +1,4 @@
-namespace FlowLauncher.Plugin.PasswordManager;
+namespace FlowLauncher.Plugin.PasswordManager.Models;
 
 /// <summary>
 /// 密码条目数据模型

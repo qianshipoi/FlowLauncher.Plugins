@@ -1,3 +1,6 @@
+using FlowLauncher.Plugin.PasswordManager.Models;
+using FlowLauncher.Plugin.PasswordManager.Services;
+
 using System.IO;
 
 using SQLitePCL;

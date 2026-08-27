@@ -1,7 +1,3 @@
-using OpenAI;
-using OpenAI.Chat;
-
-using System.ClientModel;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -18,23 +14,48 @@ internal class VarNameService(Settings settings)
 
     public async Task<List<string>> GenerateAsync(string chinese, CancellationToken token)
     {
-        var client = new ChatClient(
-            settings.ModelName,
-            new ApiKeyCredential(settings.ApiKey),
-            new OpenAIClientOptions { Endpoint = NormalizeEndpoint(settings.ApiUrl) });
+        var endpoint = NormalizeEndpoint(settings.ApiUrl);
+        var url = new Uri(endpoint, $"chat/completions").ToString();
 
-        var completion = await client.CompleteChatAsync(
-            [
-                new SystemChatMessage(
+        var requestBody = new
+        {
+            model = settings.ModelName,
+            max_completion_tokens = 2000,
+            thinking = new
+            {
+                type = "disabled"  
+            },
+            messages = new object[]
+            {
+                new { role = "system", content =
                     "你是一个变量名生成器。用户输入中文，你输出3-5个对应的英文变量名候选词（只用英文单词或短语，不要命名规范转换，不要包含符号）。" +
                     "每行一个，不要编号，不要解释，不要输出其它内容。" +
-                    "例如输入\"用户管理\"，输出：\nUserManagement\nUserAdmin\nAccountManagement\nUserControl"),
-                new UserChatMessage(chinese)
-            ],
-            new ChatCompletionOptions { MaxOutputTokenCount = 2000 },
-            cancellationToken: token);
+                    "例如输入\"用户管理\"，输出：\nUserManagement\nUserAdmin\nAccountManagement\nUserControl" },
+                new { role = "user", content = chinese }
+            }
+        };
 
-        return ParseResponse(completion.Value.Content[0].Text);
+        using var http = new HttpClient();
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiKey);
+
+        var jsonContent = new StringContent(
+            JsonSerializer.Serialize(requestBody),
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        var response = await http.PostAsync(url, jsonContent, token);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadAsStringAsync(token);
+        using var doc = JsonDocument.Parse(json);
+
+        var text = doc.RootElement
+            .GetProperty("choices")[0]
+            .GetProperty("message")
+            .GetProperty("content")
+            .GetString() ?? "";
+
+        return ParseResponse(text);
     }
 
     internal static List<string> ParseResponse(string text)

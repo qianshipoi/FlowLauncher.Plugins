@@ -1,8 +1,10 @@
 using ClosedXML.Excel;
 
+using FlowLauncher.Plugin.PasswordManager.Models;
+
 using System.IO;
 
-namespace FlowLauncher.Plugin.PasswordManager;
+namespace FlowLauncher.Plugin.PasswordManager.Services;
 
 /// <summary>
 /// 密码数据导入导出服务

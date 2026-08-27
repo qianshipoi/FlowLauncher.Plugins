@@ -1,8 +1,10 @@
+using FlowLauncher.Plugin.PasswordManager.Models;
+
 using Microsoft.Data.Sqlite;
 
 using System.IO;
 
-namespace FlowLauncher.Plugin.PasswordManager;
+namespace FlowLauncher.Plugin.PasswordManager.Services;
 
 /// <summary>
 /// SQLCipher 加密的 SQLite 密码存储。

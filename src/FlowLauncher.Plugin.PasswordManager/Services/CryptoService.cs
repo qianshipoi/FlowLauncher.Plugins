@@ -2,7 +2,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace FlowLauncher.Plugin.PasswordManager;
+namespace FlowLauncher.Plugin.PasswordManager.Services;
 
 /// <summary>
 /// SQLCipher 数据库密钥管理。

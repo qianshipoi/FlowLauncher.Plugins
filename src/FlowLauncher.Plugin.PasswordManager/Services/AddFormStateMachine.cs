@@ -1,4 +1,4 @@
-namespace FlowLauncher.Plugin.PasswordManager;
+namespace FlowLauncher.Plugin.PasswordManager.Services;
 
 /// <summary>
 /// 添加密码的表单状态机。
