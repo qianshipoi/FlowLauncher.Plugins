@@ -4,6 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 
 using DevToolkit.VarName;
 
+using DevToolkit.Toolbox.Services;
+
 using System.Collections.ObjectModel;
 
 namespace DevToolkit.ViewModels;
@@ -17,7 +19,7 @@ public partial class VarNamePageViewModel : ObservableObject
 
     public ObservableCollection<string> Suggestions { get; } = [];
 
-    public ObservableCollection<(string Label, string Value)> Variants { get; } = [];
+    public ObservableCollection<ToolRow> Variants { get; } = [];
 
     [ObservableProperty]
     private string _input = string.Empty;
@@ -50,7 +52,7 @@ public partial class VarNamePageViewModel : ObservableObject
 
         if (!_settings.IsValid())
         {
-            StatusMessage = "请先在设置中填写 API（设置页 → 变量名）";
+            StatusMessage = "请先在设置页填写 AI 配置并保存";
             return;
         }
 
@@ -126,16 +128,16 @@ public partial class VarNamePageViewModel : ObservableObject
             ? variants
             : [.. variants.OrderByDescending(v => v.Label.Equals(lastConvention, StringComparison.OrdinalIgnoreCase))])
         {
-            Variants.Add(variant);
+            Variants.Add(new ToolRow(variant.Label, variant.Value));
         }
 
-        StatusMessage = $"\"{suggestion}\" 的命名规范变体，点击复制";
+        StatusMessage = $"\"{suggestion}\" 的命名规范变体，点击行尾复制";
     }
 
-    public void CopyVariant((string Label, string Value) variant)
+    public void CopyVariant(ToolRow variant)
     {
         System.Windows.Clipboard.SetText(variant.Value);
-        _cache.SetLastNamingConvention(variant.Label);
-        StatusMessage = $"已复制 {variant.Label}：{variant.Value}";
+        _cache.SetLastNamingConvention(variant.Description);
+        StatusMessage = $"已复制 {variant.Description}：{variant.Value}";
     }
 }
