@@ -1,12 +1,16 @@
 using DevToolkit.Core.Wpf;
 
+using DevToolkit.PortKiller;
+
 using DevToolkit.Toolbox.ViewModels;
 
-using DevToolkit.PortKiller;
+using DevToolkit.VarName;
 
 using DevToolkit.ViewModels;
 
 using DevToolkit.Views;
+
+using DevToolkit.Views.Tools;
 
 using System.IO;
 
@@ -14,26 +18,44 @@ using System.Windows;
 
 using System.Windows.Controls;
 
+using NavigationViewItem = iNKORE.UI.WPF.Modern.Controls.NavigationViewItem;
+using ToolboxSettingsViewModel = DevToolkit.Toolbox.ViewModels.SettingsViewModel;
+using VarNameSettingsViewModel = DevToolkit.VarName.SettingsViewModel;
+
 namespace DevToolkit;
 
 public partial class MainWindow : Window
 {
-    private readonly ToolboxPage _toolboxPage;
+    private static readonly (string Command, string DisplayName)[] ToolCatalog =
+    [
+        ("guid", "GUID 生成"),
+        ("json", "JSON 编辑器"),
+        ("fhash", "文件哈希"),
+        ("dt", "时间与时间戳"),
+        ("enc", "编码转换"),
+        ("pw", "密码生成"),
+        ("base", "进制转换"),
+        ("ts", "时间戳转日期"),
+        ("jwt", "JWT 解码"),
+        ("cron", "Cron 解析"),
+    ];
+
+    private readonly Dictionary<string, UserControl> _toolViews = [];
     private readonly SettingsPage _settingsPage;
     private readonly PortKillerPage _portKillerPage;
     private readonly VarNamePage _varNamePage;
+    private readonly ToolboxSettingsViewModel _toolboxSettingsVm;
 
     private JsonEditorWindow? _jsonEditorWindow;
+    private string _currentTag = "tool:guid";
 
     public MainWindow()
     {
         InitializeComponent();
 
-        var toolboxViewModel = new ToolboxViewModel(AppServices.ToolboxSettings);
-        toolboxViewModel.JsonEditorRequested += OpenJsonEditor;
-        _toolboxPage = new ToolboxPage(toolboxViewModel);
-        _settingsPage = new SettingsPage(new SettingsViewModel(
-            AppServices.ToolboxSettings, AppServices.SaveToolboxSettings));
+        _toolboxSettingsVm = new ToolboxSettingsViewModel(AppServices.ToolboxSettings, OnToolboxSettingsChanged);
+        _settingsPage = new SettingsPage(_toolboxSettingsVm, new VarNameSettingsViewModel(
+            AppServices.VarNameSettings, AppServices.SaveVarNameSettings));
         _portKillerPage = new PortKillerPage(new PortKillerViewModel(
             new PortHistoryManager(AppServices.DataRoot)));
         _varNamePage = new VarNamePage(new VarNamePageViewModel(
@@ -41,33 +63,88 @@ public partial class MainWindow : Window
 
         NavView.ItemInvoked += (_, args) =>
         {
-            if (args.InvokedItemContainer?.Tag is string tag)
+            if (args.InvokedItemContainer?.Tag is string tag && tag != _currentTag)
                 Navigate(tag);
         };
-        Navigate("toolbox");
+
+        BuildNav();
+        Navigate(_currentTag);
     }
+
+    private void OnToolboxSettingsChanged()
+    {
+        AppServices.SaveToolboxSettings();
+        BuildNav();
+    }
+
+    /// <summary>按设置重建导航：启用的工具与端口占用/变量名/设置同级排列。</summary>
+    private void BuildNav()
+    {
+        NavView.MenuItems.Clear();
+
+        foreach (var (command, displayName) in ToolCatalog)
+        {
+            if (!AppServices.ToolboxSettings.IsEnabled(command))
+                continue;
+            NavView.MenuItems.Add(new NavigationViewItem { Content = displayName, Tag = "tool:" + command });
+        }
+
+        NavView.MenuItems.Add(new NavigationViewItem { Content = "端口占用", Tag = "portkiller" });
+        NavView.MenuItems.Add(new NavigationViewItem { Content = "变量名", Tag = "varname" });
+        NavView.MenuItems.Add(new NavigationViewItem { Content = "设置", Tag = "settings" });
+
+        // 当前选中项被禁用时，回退到第一个可用的工具
+        if (FindByTag(_currentTag) is null && _currentTag.StartsWith("tool:"))
+        {
+            var first = ToolCatalog.FirstOrDefault(t => AppServices.ToolboxSettings.IsEnabled(t.Command));
+            _currentTag = first.Command is not null ? "tool:" + first.Command : "portkiller";
+        }
+
+        if (FindByTag(_currentTag) is { } selected)
+            selected.IsSelected = true;
+
+        Navigate(_currentTag);
+    }
+
+    private NavigationViewItem? FindByTag(string tag) =>
+        NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(i => i.Tag as string == tag);
 
     private void Navigate(string tag)
     {
-        switch (tag)
+        _currentTag = tag;
+        ContentHost.Content = tag switch
         {
-            case "settings":
-                ContentHost.Content = _settingsPage;
-                break;
-
-            case "portkiller":
-                ContentHost.Content = _portKillerPage;
-                break;
-
-            case "varname":
-                ContentHost.Content = _varNamePage;
-                break;
-
-            default:
-                ContentHost.Content = _toolboxPage;
-                break;
-        }
+            "settings" => _settingsPage,
+            "portkiller" => _portKillerPage,
+            "varname" => _varNamePage,
+            _ => GetToolView(tag["tool:".Length..]),
+        };
     }
+
+    private UserControl GetToolView(string command)
+    {
+        if (!_toolViews.TryGetValue(command, out var view))
+        {
+            view = CreateToolView(command);
+            _toolViews[command] = view;
+        }
+        return view;
+    }
+
+    private UserControl CreateToolView(string command) => command switch
+    {
+        "guid" => new GuidView(),
+        "json" => new JsonView(OpenJsonEditor),
+        "fhash" => new HashView(),
+        "dt" => new DtView(),
+        "enc" => new EncView(),
+        "pw" => new PwView(),
+        "base" => new BaseView(),
+        "ts" => new TsView(),
+        "jwt" => new JwtView(OpenJsonEditor),
+        "cron" => new CronView(),
+        _ => throw new ArgumentOutOfRangeException(nameof(command), command, null),
+    };
 
     private void OpenJsonEditor(string json)
     {
