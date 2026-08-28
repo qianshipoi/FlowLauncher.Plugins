@@ -9,7 +9,7 @@
 **核心原则**：功能逻辑放在 `src/Core/DevToolkit.<功能>` 类库（无 Flow.Launcher 依赖，除密码管理等 Windows 专属能力外为 net9.0），Flow Launcher 插件是薄适配壳（查询分发 + FL API：剪贴板/通知/进度框），独立 App `src/DevToolkit/`（iNKORE.UI.WPF.Modern NavigationView 壳）直接复用同一批 Core 服务与 ViewModel。
 
 - 修改功能逻辑时改 Core 工程，插件与 App 同时受益；**不要**把逻辑写回插件 Main.cs
-- 跨宿主的 ViewModel 通过回调解耦持久化（`Action onChanged` 照 AiChat 范本）与事件（`ReQueryRequested`）；需要 UI 的视图放 `src/Core/DevToolkit.Core.Wpf`（宿主无关 WPF 窗口：AiChat 三窗口、JsonEditorWindow、密码管理 ManagerWindow/对话框），宿主需在 App.xaml 合并 iNKORE `ThemeResources` + `XamlControlsResources`
+- 跨宿主的 ViewModel 通过回调解耦持久化（`Action onChanged` 回调）；需要 UI 的视图放 `src/DevToolkit.Core.Wpf`（宿主无关 WPF 窗口：JsonEditorWindow、密码管理 ManagerWindow/对话框），宿主需在 App.xaml 合并 iNKORE `ThemeResources` + `XamlControlsResources`
 - App 数据目录 `%AppData%\DevToolkit\<功能>\`，与插件目录数据相互隔离；App 用 `RollForward=LatestMajor` 以运行在更高版本 .NET 桌面运行时上
 - wwwroot（jsoneditor）单源在 DevToolkit.Core.Wpf，插件与 App 用 Content Link 复制
 
@@ -31,21 +31,16 @@ FlowLauncher.Plugins/
 ├── Core/                              # 与宿主无关的功能核心库
 │   ├── DevToolkit.Toolbox/            # 工具合集服务 + 设置/VM
 │   ├── DevToolkit.PasswordManager/    # 密码管理（SQLCipher+DPAPI）模型/服务/VM
-│   ├── DevToolkit.Translator/         # 翻译服务/历史/设置/VM
 │   ├── DevToolkit.VarName/            # 变量名服务/缓存/命名转换器/VM
 │   ├── DevToolkit.AliyunOss/          # OSS 服务/下载服务/设置/VM
 │   ├── DevToolkit.PortKiller/         # netstat 解析 + 端口历史
 │   ├── DevToolkit.OpenDirectory/      # 路径规范化/打开
-│   ├── DevToolkit.AiChat/             # AI 对话设置
 │   └── DevToolkit.Core.Wpf/           # 宿主无关 WPF 窗口 + wwwroot
 ├── DevToolkit/                        # 独立 WPF App（NavigationView 壳，全部功能页面）
-├── DemoApp/                            # AiChat 独立演示应用 (WinExe)
-├── FlowLauncher.Plugin.AiChat/         # AI 聊天插件（薄壳）
 ├── FlowLauncher.Plugin.AliyunOss/      # 阿里云 OSS 插件（薄壳）
 ├── FlowLauncher.Plugin.OpenDirectory/  # 打开目录插件（薄壳）
 ├── FlowLauncher.Plugin.PasswordManager/# 密码管理器插件（薄壳）
 ├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件（薄壳）
-├── FlowLauncher.Plugin.Translator/     # AI 翻译插件（薄壳）
 ├── FlowLauncher.Plugin.VarName/        # 变量命名插件（薄壳）
 ├── FlowLauncher.Plugin.Toolbox/        # 工具合集插件（薄壳）
 └── tests/
@@ -123,8 +118,6 @@ public class Main : IAsyncPlugin, ISettingProvider
 
 ## 各插件详情
 
-### AiChat（触发关键字: `ai`）
-
 - 打开 AI 聊天网页（如豆包），支持多标签页
 - 使用 WebView2 渲染网页
 - 支持浮动窗口模式
@@ -146,8 +139,6 @@ public class Main : IAsyncPlugin, ISettingProvider
 - 使用 CsWin32 P/Invoke 获取进程文件路径
 - JSON 文件持久化查询历史
 - 依赖: Microsoft.Windows.CsWin32
-
-### Translator（触发关键字: `trans`）
 
 - AI 翻译器，基于 OpenAI API
 - 可配置模型、API 地址和密钥
@@ -190,7 +181,7 @@ public class Main : IAsyncPlugin, ISettingProvider
 - **命名空间**: `FlowLauncher.Plugin.{Name}`
 - **异步优先**: 所有查询使用 `QueryAsync`，支持 `CancellationToken`
 - **主构造函数**: 服务类使用 C# 12 主构造函数语法
-- **记录类型**: 数据模型使用 `record`（如 `TranslationRecord`）
+- **记录类型**: 数据模型使用 `record`（如 `ToolRow`、`HashResult`）
 - **不可变集合**: 使用 `IReadOnlyList<T>` 作为返回类型
 - **线程安全**: 使用 `Lock` 对象（.NET 9）保护共享状态
 - **WPF UI 更新**: 通过 `Application.Current.Dispatcher.Invoke` 在主线程执行
@@ -203,7 +194,7 @@ public class Main : IAsyncPlugin, ISettingProvider
 dotnet build FlowLauncher.Plugins.slnx
 
 # 构建单个插件
-dotnet build FlowLauncher.Plugin.AiChat/FlowLauncher.Plugin.AiChat.csproj
+dotnet build FlowLauncher.Plugin.Toolbox/FlowLauncher.Plugin.Toolbox.csproj
 
 # 运行测试
 dotnet test tests/AliyunOss.UnitTest/AliyunOss.UnitTest.csproj
