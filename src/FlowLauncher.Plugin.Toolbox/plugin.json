@@ -1,0 +1,12 @@
+{
+    "ID": "0A6B753961B74A958B10B9FD8A7C5C0E",
+    "ActionKeyword": "tool",
+    "Name": "Toolbox",
+    "Description": "工具合集：GUID 生成、JSON 编辑器、文件哈希、时间戳",
+    "Author": "qianshi",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "https://www.kuriyama.top",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.Toolbox.dll"
+}
