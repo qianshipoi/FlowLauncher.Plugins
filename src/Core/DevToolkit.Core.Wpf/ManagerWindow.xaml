@@ -1,4 +1,4 @@
-<Window x:Class="FlowLauncher.Plugin.PasswordManager.Views.ManagerWindow"
+<Window x:Class="DevToolkit.Core.Wpf.ManagerWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Password Manager - 数据管理"

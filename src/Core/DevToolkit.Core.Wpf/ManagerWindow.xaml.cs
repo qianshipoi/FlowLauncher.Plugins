@@ -1,19 +1,19 @@
-using FlowLauncher.Plugin.PasswordManager.Services;
-using FlowLauncher.Plugin.PasswordManager.ViewModels;
+using DevToolkit.PasswordManager.Services;
+using DevToolkit.PasswordManager.ViewModels;
 
 using iNKORE.UI.WPF.Modern.Controls;
 
 using System.Windows;
 using System.Windows.Input;
 
-namespace FlowLauncher.Plugin.PasswordManager.Views;
+namespace DevToolkit.Core.Wpf;
 
 /// <summary>
 /// 密码数据管理窗口
 /// </summary>
 public partial class ManagerWindow : Window
 {
-    internal ManagerWindow(PasswordStore store, ImportExportService importExport)
+    public ManagerWindow(PasswordStore store, ImportExportService importExport)
     {
         InitializeComponent();
 

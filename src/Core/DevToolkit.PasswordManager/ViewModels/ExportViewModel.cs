@@ -1,19 +1,19 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using FlowLauncher.Plugin.PasswordManager.Services;
+using DevToolkit.PasswordManager.Services;
 
 using Microsoft.Win32;
 
 using System;
 using System.IO;
 
-namespace FlowLauncher.Plugin.PasswordManager.ViewModels;
+namespace DevToolkit.PasswordManager.ViewModels;
 
 /// <summary>
 /// 导出弹窗 ViewModel（选择格式和目标路径）
 /// </summary>
-internal partial class ExportViewModel : ObservableObject
+public partial class ExportViewModel : ObservableObject
 {
     private const int FormatDb = 0;
     private const int FormatExcel = 1;

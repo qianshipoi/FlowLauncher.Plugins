@@ -2,7 +2,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace FlowLauncher.Plugin.PasswordManager.Services;
+namespace DevToolkit.PasswordManager.Services;
 
 /// <summary>
 /// SQLCipher 数据库密钥管理。
@@ -10,7 +10,7 @@ namespace FlowLauncher.Plugin.PasswordManager.Services;
 /// 密钥本身使用 Windows DPAPI 加密后存储在 .dbkey 文件中，
 /// 只有当前 Windows 用户可以解密并访问数据库。
 /// </summary>
-internal sealed class DBKeyManager
+public sealed class DBKeyManager
 {
     private static readonly byte[] s_entropy = Encoding.UTF8.GetBytes("FlowLauncher.PasswordManager.DBKey.v1");
 
@@ -60,7 +60,7 @@ internal sealed class DBKeyManager
 /// 单字段 DPAPI 加密/解密（用于密码字段）。
 /// 只有当前 Windows 用户可以解密数据。
 /// </summary>
-internal static class PasswordCrypto
+public static class PasswordCrypto
 {
     private static readonly byte[] s_entropy = Encoding.UTF8.GetBytes("FlowLauncher.PasswordManager.Field.v1");
 

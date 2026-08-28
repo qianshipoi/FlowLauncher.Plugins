@@ -1,16 +1,16 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using FlowLauncher.Plugin.PasswordManager.Models;
-using FlowLauncher.Plugin.PasswordManager.Services;
+using DevToolkit.PasswordManager.Models;
+using DevToolkit.PasswordManager.Services;
 
 using System;
 
-namespace FlowLauncher.Plugin.PasswordManager.ViewModels;
+namespace DevToolkit.PasswordManager.ViewModels;
 
 /// <summary>
 /// 密码条目编辑 ViewModel（添加/编辑共用）
 /// </summary>
-internal partial class EditPasswordViewModel : ObservableObject
+public partial class EditPasswordViewModel : ObservableObject
 {
     private readonly PasswordStore _store;
     private readonly PasswordEntry? _existing;

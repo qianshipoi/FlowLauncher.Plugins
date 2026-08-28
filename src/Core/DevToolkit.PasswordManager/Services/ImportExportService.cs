@@ -1,15 +1,15 @@
 using ClosedXML.Excel;
 
-using FlowLauncher.Plugin.PasswordManager.Models;
+using DevToolkit.PasswordManager.Models;
 
 using System.IO;
 
-namespace FlowLauncher.Plugin.PasswordManager.Services;
+namespace DevToolkit.PasswordManager.Services;
 
 /// <summary>
 /// 密码数据导入导出服务
 /// </summary>
-internal sealed class ImportExportService
+public sealed class ImportExportService
 {
     private readonly PasswordStore _store;
     private readonly string _pluginDirectory;

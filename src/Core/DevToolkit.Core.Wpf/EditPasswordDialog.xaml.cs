@@ -1,11 +1,11 @@
-using FlowLauncher.Plugin.PasswordManager.ViewModels;
+using DevToolkit.PasswordManager.ViewModels;
 
 using iNKORE.UI.WPF.Modern.Controls;
 
 using System.Windows;
 using System.Windows.Controls;
 
-namespace FlowLauncher.Plugin.PasswordManager.Views;
+namespace DevToolkit.Core.Wpf;
 
 /// <summary>
 /// 密码条目编辑弹窗（ContentDialog，Win11 样式）

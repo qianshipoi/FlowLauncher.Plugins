@@ -1,10 +1,10 @@
-namespace FlowLauncher.Plugin.PasswordManager.Services;
+namespace DevToolkit.PasswordManager.Services;
 
 /// <summary>
 /// 添加密码的表单状态机。
 /// 管理步骤流转和表单数据，不依赖 Flow Launcher API。
 /// </summary>
-internal sealed class AddFormStateMachine
+public sealed class AddFormStateMachine
 {
     public enum Step { None, Title, Username, Password, Confirm }
 

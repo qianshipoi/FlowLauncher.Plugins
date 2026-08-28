@@ -20,6 +20,7 @@
 		<ProjectReference Include="..\Core\DevToolkit.AiChat\DevToolkit.AiChat.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.Core.Wpf\DevToolkit.Core.Wpf.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.OpenDirectory\DevToolkit.OpenDirectory.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.PasswordManager\DevToolkit.PasswordManager.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.PortKiller\DevToolkit.PortKiller.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.Toolbox\DevToolkit.Toolbox.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.Translator\DevToolkit.Translator.csproj" />

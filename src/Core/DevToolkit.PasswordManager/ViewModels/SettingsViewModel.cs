@@ -1,20 +1,20 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using FlowLauncher.Plugin.PasswordManager.Models;
-using FlowLauncher.Plugin.PasswordManager.Services;
+using DevToolkit.PasswordManager.Models;
+using DevToolkit.PasswordManager.Services;
 
 using Microsoft.Win32;
 
 using System;
 using System.IO;
 
-namespace FlowLauncher.Plugin.PasswordManager.ViewModels;
+namespace DevToolkit.PasswordManager.ViewModels;
 
 /// <summary>
 /// 设置面板 ViewModel
 /// </summary>
-internal partial class SettingsViewModel : ObservableObject
+public partial class SettingsViewModel : ObservableObject
 {
     private readonly ImportExportService _importExport;
 

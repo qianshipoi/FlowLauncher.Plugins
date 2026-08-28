@@ -1,19 +1,19 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using FlowLauncher.Plugin.PasswordManager.Models;
-using FlowLauncher.Plugin.PasswordManager.Services;
+using DevToolkit.PasswordManager.Models;
+using DevToolkit.PasswordManager.Services;
 
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace FlowLauncher.Plugin.PasswordManager.ViewModels;
+namespace DevToolkit.PasswordManager.ViewModels;
 
 /// <summary>
 /// 数据管理窗口 ViewModel
 /// </summary>
-internal partial class ManagerViewModel : ObservableObject
+public partial class ManagerViewModel : ObservableObject
 {
     private readonly PasswordStore _store;
     private readonly ImportExportService _importExport;

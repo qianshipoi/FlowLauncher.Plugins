@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using FlowLauncher.Plugin.PasswordManager.Models;
-using FlowLauncher.Plugin.PasswordManager.Services;
+using DevToolkit.PasswordManager.Models;
+using DevToolkit.PasswordManager.Services;
 
 using Microsoft.Win32;
 
@@ -10,12 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace FlowLauncher.Plugin.PasswordManager.ViewModels;
+namespace DevToolkit.PasswordManager.ViewModels;
 
 /// <summary>
 /// 导入弹窗 ViewModel（支持拖拽或点击选择文件）
 /// </summary>
-internal partial class ImportViewModel : ObservableObject
+public partial class ImportViewModel : ObservableObject
 {
     private readonly ImportExportService _importExport;
     private List<PasswordEntry>? _entries;

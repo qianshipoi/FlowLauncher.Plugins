@@ -1,11 +1,11 @@
-using FlowLauncher.Plugin.PasswordManager.ViewModels;
+using DevToolkit.PasswordManager.ViewModels;
 
 using iNKORE.UI.WPF.Modern.Controls;
 
 using System.Windows;
 using System.Windows.Input;
 
-namespace FlowLauncher.Plugin.PasswordManager.Views;
+namespace DevToolkit.Core.Wpf;
 
 /// <summary>
 /// 导入弹窗（支持拖拽或点击选择文件）

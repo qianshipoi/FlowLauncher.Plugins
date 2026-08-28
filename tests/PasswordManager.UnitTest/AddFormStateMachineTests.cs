@@ -1,4 +1,4 @@
-using FlowLauncher.Plugin.PasswordManager.Services;
+using DevToolkit.PasswordManager.Services;
 
 using Xunit;
 

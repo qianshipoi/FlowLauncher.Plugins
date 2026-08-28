@@ -15,6 +15,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="../DevToolkit.AiChat/DevToolkit.AiChat.csproj" />
+		<ProjectReference Include="../DevToolkit.PasswordManager/DevToolkit.PasswordManager.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

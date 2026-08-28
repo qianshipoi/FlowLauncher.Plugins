@@ -1,8 +1,8 @@
-using FlowLauncher.Plugin.PasswordManager.ViewModels;
+using DevToolkit.PasswordManager.ViewModels;
 
 using iNKORE.UI.WPF.Modern.Controls;
 
-namespace FlowLauncher.Plugin.PasswordManager.Views;
+namespace DevToolkit.Core.Wpf;
 
 /// <summary>
 /// 导出弹窗（选择格式和目标位置）

@@ -1,16 +1,16 @@
-using FlowLauncher.Plugin.PasswordManager.Models;
+using DevToolkit.PasswordManager.Models;
 
 using Microsoft.Data.Sqlite;
 
 using System.IO;
 
-namespace FlowLauncher.Plugin.PasswordManager.Services;
+namespace DevToolkit.PasswordManager.Services;
 
 /// <summary>
 /// SQLCipher 加密的 SQLite 密码存储。
 /// 整个数据库文件使用 SQLCipher 加密，密钥由 DBKeyManager 管理。
 /// </summary>
-internal sealed class PasswordStore : IDisposable
+public sealed class PasswordStore : IDisposable
 {
     private readonly SqliteConnection _conn;
 

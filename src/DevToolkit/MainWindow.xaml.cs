@@ -2,6 +2,8 @@ using DevToolkit.AiChat;
 
 using DevToolkit.Core.Wpf;
 
+using DevToolkit.PasswordManager.Services;
+
 using DevToolkit.Toolbox.ViewModels;
 
 using DevToolkit.PortKiller;
@@ -12,6 +14,7 @@ using DevToolkit.Views;
 
 using System.Windows;
 
+using System.IO;
 using System.Windows.Controls;
 
 namespace DevToolkit;
@@ -27,6 +30,7 @@ public partial class MainWindow : Window
 
     private JsonEditorWindow? _jsonEditorWindow;
     private AiChatWindow? _aiChatWindow;
+    private ManagerWindow? _passwordManagerWindow;
 
     public MainWindow()
     {
@@ -84,6 +88,10 @@ public partial class MainWindow : Window
                 OpenAiChat();
                 break;
 
+            case "passwordmanager":
+                OpenPasswordManager();
+                break;
+
             default:
                 ContentFrame.Content = _toolboxPage;
                 break;
@@ -116,6 +124,27 @@ public partial class MainWindow : Window
         else
         {
             _aiChatWindow.Activate();
+        }
+    }
+
+    private void OpenPasswordManager()
+    {
+        if (_passwordManagerWindow is null)
+        {
+            var dataDir = Path.Combine(AppServices.DataRoot, "PasswordManager");
+            Directory.CreateDirectory(dataDir);
+
+            var keyManager = new DBKeyManager(dataDir);
+            var store = new PasswordStore(dataDir, keyManager.GetOrCreateKey());
+            var importExport = new ImportExportService(store, dataDir);
+
+            _passwordManagerWindow = new ManagerWindow(store, importExport);
+            _passwordManagerWindow.Closed += (_, _) => _passwordManagerWindow = null;
+            _passwordManagerWindow.Show();
+        }
+        else
+        {
+            _passwordManagerWindow.Activate();
         }
     }
 }
