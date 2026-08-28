@@ -77,6 +77,24 @@ public partial class MainWindow : Window
         BuildNav();
     }
 
+    /// <summary>导航图标（Segoe MDL2 Assets）。</summary>
+    private static string GetGlyph(string tag) => tag switch
+    {
+        "tool:guid" => "\uE8E5",       // TwoPage
+        "tool:json" => "\uE70F",       // Edit
+        "tool:fhash" => "\uE7C1",      // Page
+        "tool:dt" => "\uE823",         // Recent
+        "tool:enc" => "\uE8AB",        // Switch
+        "tool:pw" => "\uE72E",         // Lock
+        "tool:base" => "\uE8EF",       // Calculator
+        "tool:ts" => "\uE787",         // Calendar
+        "tool:jwt" => "\uE8A5",        // Document
+        "tool:cron" => "\uE9D9",       // Diagnostic
+        "portkiller" => "\uE71A",      // Stop
+        "varname" => "\uE8AC",         // Rename
+        _ => "\uE713",                 // Settings
+    };
+
     /// <summary>按设置重建导航：启用的工具与端口占用/变量名/设置同级排列。</summary>
     private void BuildNav()
     {
@@ -86,12 +104,12 @@ public partial class MainWindow : Window
         {
             if (!AppServices.ToolboxSettings.IsEnabled(command))
                 continue;
-            NavView.MenuItems.Add(new NavigationViewItem { Content = displayName, Tag = "tool:" + command });
+            NavView.MenuItems.Add(MakeItem("tool:" + command, displayName));
         }
 
-        NavView.MenuItems.Add(new NavigationViewItem { Content = "端口占用", Tag = "portkiller" });
-        NavView.MenuItems.Add(new NavigationViewItem { Content = "变量名", Tag = "varname" });
-        NavView.MenuItems.Add(new NavigationViewItem { Content = "设置", Tag = "settings" });
+        NavView.MenuItems.Add(MakeItem("portkiller", "端口占用"));
+        NavView.MenuItems.Add(MakeItem("varname", "变量名"));
+        NavView.MenuItems.Add(MakeItem("settings", "设置"));
 
         // 当前选中项被禁用时，回退到第一个可用的工具
         if (FindByTag(_currentTag) is null && _currentTag.StartsWith("tool:"))
@@ -108,6 +126,13 @@ public partial class MainWindow : Window
 
     private NavigationViewItem? FindByTag(string tag) =>
         NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(i => i.Tag as string == tag);
+
+    private static NavigationViewItem MakeItem(string tag, string content) => new()
+    {
+        Content = content,
+        Tag = tag,
+        Icon = new iNKORE.UI.WPF.Modern.Controls.FontIcon { Glyph = GetGlyph(tag) },
+    };
 
     private void Navigate(string tag)
     {

@@ -5,7 +5,7 @@
         Title="DevToolkit" Height="720" Width="1080"
         WindowStartupLocation="CenterScreen">
     <ui:NavigationView x:Name="NavView"
-                       PaneDisplayMode="Left"
+                       PaneDisplayMode="LeftCompact"
                        IsBackButtonVisible="Collapsed"
                        IsSettingsVisible="False">
         <ui:NavigationView.MenuItems>
