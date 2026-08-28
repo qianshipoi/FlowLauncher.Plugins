@@ -1,9 +1,9 @@
 using Cronos;
 
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
 /// <summary>Cron 表达式解析：中文含义描述 + 未来执行时间预览。</summary>
-internal static class CronParserService
+public static class CronParserService
 {
     public const int PreviewCount = 5;
 

@@ -2,10 +2,10 @@ using System.Net;
 
 using System.Text;
 
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
 /// <summary>文本编解码转换（UTF-8）。解码类结果仅在与输入不同且可成功解码时返回。</summary>
-internal static class TextEncoderService
+public static class TextEncoderService
 {
     public static IReadOnlyList<ToolRow> GetTransforms(string input)
     {

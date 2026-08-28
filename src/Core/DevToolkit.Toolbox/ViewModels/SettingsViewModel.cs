@@ -1,11 +1,12 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using Flow.Launcher.Plugin;
+namespace DevToolkit.Toolbox.ViewModels;
 
-namespace FlowLauncher.Plugin.Toolbox.ViewModels;
-
-/// <summary>设置面板 VM：复选框变更即写回 Settings 并持久化，无需保存按钮。</summary>
-public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) : ObservableObject
+/// <summary>
+/// 设置面板 VM：复选框变更即写回 Settings 并通过 <paramref name="onChanged"/> 回调持久化。
+/// 宿主无关——Flow Launcher 插件传入 SaveSettingJsonStorage，独立 App 传入 JSON 文件保存。
+/// </summary>
+public partial class SettingsViewModel(Settings settings, Action onChanged) : ObservableObject
 {
     [ObservableProperty]
     private bool _enableGuid = settings.EnableGuid;
@@ -40,7 +41,7 @@ public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) 
     private void Save(Action<Settings> apply)
     {
         apply(settings);
-        publicApi.SaveSettingJsonStorage<Settings>();
+        onChanged();
     }
 
     partial void OnEnableGuidChanged(bool value) => Save(s => s.EnableGuid = value);

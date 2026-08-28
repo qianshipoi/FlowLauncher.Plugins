@@ -1,7 +1,7 @@
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
 /// <summary>时间戳解析：自动识别秒（≤10^12）/ 毫秒（>10^12），并给出相对时间描述。</summary>
-internal static class TimestampParser
+public static class TimestampParser
 {
     public static IReadOnlyList<ToolRow> Parse(string input, DateTimeOffset now)
     {

@@ -1,4 +1,4 @@
-namespace FlowLauncher.Plugin.Toolbox;
+namespace DevToolkit.Toolbox;
 
 public class Settings
 {

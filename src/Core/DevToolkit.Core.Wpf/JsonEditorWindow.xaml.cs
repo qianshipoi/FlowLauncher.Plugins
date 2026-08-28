@@ -1,29 +1,31 @@
 using Microsoft.Web.WebView2.Core;
 
-using System.IO;
-
 using System.Text.Json;
 
 using System.Windows;
 
-namespace FlowLauncher.Plugin.Toolbox.Views;
+namespace DevToolkit.Core.Wpf;
 
+/// <summary>
+/// JSON 编辑器窗口（WebView2 + 本地 jsoneditor），宿主无关：
+/// 调用方提供 wwwroot 静态资源目录与 WebView2 用户数据目录。
+/// </summary>
 public partial class JsonEditorWindow : Window
 {
     private const string VirtualHost = "appassets.local";
 
-    private readonly string _pluginDirectory;
     private readonly string _webRoot;
+    private readonly string _userDataFolder;
 
     private string _pendingJson;
     private bool _editorReady;
     private bool _closed;
 
-    public JsonEditorWindow(string pluginDirectory, string json)
+    public JsonEditorWindow(string webRoot, string userDataFolder, string json)
     {
         InitializeComponent();
-        _pluginDirectory = pluginDirectory;
-        _webRoot = Path.Combine(pluginDirectory, "wwwroot");
+        _webRoot = webRoot;
+        _userDataFolder = userDataFolder;
         _pendingJson = json;
         Loaded += OnLoaded;
         Closed += (_, _) =>
@@ -37,8 +39,7 @@ public partial class JsonEditorWindow : Window
     {
         try
         {
-            var environment = await CoreWebView2Environment.CreateAsync(
-                userDataFolder: Path.Combine(_pluginDirectory, "WebView2Cache"));
+            var environment = await CoreWebView2Environment.CreateAsync(userDataFolder: _userDataFolder);
             await WebView.EnsureCoreWebView2Async(environment);
         }
         catch (Exception ex)

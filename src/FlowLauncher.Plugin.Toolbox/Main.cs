@@ -1,8 +1,12 @@
+using DevToolkit.Core.Wpf;
+
+using DevToolkit.Toolbox;
+
+using DevToolkit.Toolbox.Services;
+
+using DevToolkit.Toolbox.ViewModels;
+
 using Flow.Launcher.Plugin;
-
-using FlowLauncher.Plugin.Toolbox.Services;
-
-using FlowLauncher.Plugin.Toolbox.ViewModels;
 
 using FlowLauncher.Plugin.Toolbox.Views;
 
@@ -35,7 +39,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider
 
     public System.Windows.Controls.Control CreateSettingPanel()
     {
-        var viewModel = new SettingsViewModel(_context.API, _settings);
+        var viewModel = new SettingsViewModel(_settings, () => _context.API.SaveSettingJsonStorage<Settings>());
         return new SettingsView(viewModel);
     }
 
@@ -284,7 +288,9 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider
         {
             if (_jsonEditorWindow is null)
             {
-                _jsonEditorWindow = new JsonEditorWindow(_pluginDirectory, json);
+                var webRoot = Path.Combine(_pluginDirectory, "wwwroot");
+                var userDataFolder = Path.Combine(_pluginDirectory, "WebView2Cache");
+                _jsonEditorWindow = new JsonEditorWindow(webRoot, userDataFolder, json);
                 _jsonEditorWindow.Closed += (_, _) => _jsonEditorWindow = null;
                 _jsonEditorWindow.Show();
             }

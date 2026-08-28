@@ -10,14 +10,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="Toolbox.UnitTest" />
+		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="Cronos" Version="0.13.0" />
-		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
-		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+		<ProjectReference Include="..\Core\DevToolkit.Core.Wpf\DevToolkit.Core.Wpf.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.Toolbox\DevToolkit.Toolbox.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -27,9 +25,11 @@
 		<None Update="plugin.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="wwwroot\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- wwwroot 单源在 DevToolkit.Core.Wpf，这里以 Link 复制进插件输出 -->
+		<Content Include="..\Core\DevToolkit.Core.Wpf\wwwroot\**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 </Project>

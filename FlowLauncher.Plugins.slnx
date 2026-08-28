@@ -15,5 +15,8 @@
   <Project Path="src/FlowLauncher.Plugin.PortKiller/FlowLauncher.Plugin.PortKiller.csproj" />
   <Project Path="src/FlowLauncher.Plugin.Translator/FlowLauncher.Plugin.Translator.csproj" />
   <Project Path="src/FlowLauncher.Plugin.Toolbox/FlowLauncher.Plugin.Toolbox.csproj" />
+  <Project Path="src/DevToolkit/DevToolkit.csproj" />
+  <Project Path="src/Core/DevToolkit.Core.Wpf/DevToolkit.Core.Wpf.csproj" />
+  <Project Path="src/Core/DevToolkit.Toolbox/DevToolkit.Toolbox.csproj" />
   <Project Path="src/FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" />
 </Solution>

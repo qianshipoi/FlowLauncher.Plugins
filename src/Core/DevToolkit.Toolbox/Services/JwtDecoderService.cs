@@ -5,10 +5,10 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
 /// <summary>JWT 解码：仅解析展示 Header/Payload 与时间声明，不校验签名。</summary>
-internal static class JwtDecoderService
+public static class JwtDecoderService
 {
     private static readonly JsonSerializerOptions CompactOptions = new()
     {

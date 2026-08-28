@@ -2,15 +2,15 @@ using System.IO;
 
 using System.Security.Cryptography;
 
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
-internal sealed record HashResult(string Algorithm, string HashHex);
+public sealed record HashResult(string Algorithm, string HashHex);
 
 /// <summary>
 /// 单遍流式计算文件哈希：一次读盘同时产出 MD5/SHA1/SHA256/SHA384/SHA512/CRC32，
 /// 大文件不会整体载入内存。
 /// </summary>
-internal static class HashCalculator
+public static class HashCalculator
 {
     private const int BufferSize = 1024 * 1024;
 
@@ -57,7 +57,7 @@ internal static class HashCalculator
 }
 
 /// <summary>CRC-32（IEEE 802.3 / zlib，多项式 0xEDB88320）。</summary>
-internal sealed class Crc32
+public sealed class Crc32
 {
     private static readonly uint[] s_table = BuildTable();
 

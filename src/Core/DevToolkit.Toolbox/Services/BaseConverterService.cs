@@ -2,10 +2,10 @@ using System.Globalization;
 
 using System.Text;
 
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
 /// <summary>进制转换与字符码点互查：支持 0x/0b/0o 前缀、十进制、裸十六进制回退、单字符与 U+码点。</summary>
-internal static class BaseConverterService
+public static class BaseConverterService
 {
     public static IReadOnlyList<ToolRow> Convert(string input)
     {

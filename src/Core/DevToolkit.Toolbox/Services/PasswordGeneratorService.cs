@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
 /// <summary>随机密码/密钥生成（加密随机数）。</summary>
-internal static class PasswordGeneratorService
+public static class PasswordGeneratorService
 {
     public const int DefaultLength = 24;
     public const int MaxLength = 256;

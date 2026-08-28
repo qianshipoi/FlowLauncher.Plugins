@@ -2,13 +2,13 @@ using System.Security.Cryptography;
 
 using System.Text;
 
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
 /// <summary>
 /// GUID 生成器：支持 RFC 4122 的 v1/v3/v4/v5 与 v7。
 /// v1 使用随机节点并置多播位，不采集真实 MAC 地址，避免泄露硬件信息。
 /// </summary>
-internal static class GuidGenerator
+public static class GuidGenerator
 {
     private static readonly long s_gregorianEpochTicks =
         new DateTime(1582, 10, 15, 0, 0, 0, DateTimeKind.Utc).Ticks;
@@ -18,10 +18,10 @@ internal static class GuidGenerator
     private static ushort s_clockSequence = (ushort)RandomNumberGenerator.GetInt32(0, 0x4000);
 
     /// <summary>RFC 4122 定义的 DNS 命名空间 UUID。</summary>
-    internal static readonly Guid DnsNamespace = new("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+    public static readonly Guid DnsNamespace = new("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
 
     /// <summary>RFC 4122 定义的 URL 命名空间 UUID。</summary>
-    internal static readonly Guid UrlNamespace = new("6ba7b811-9dad-11d1-80b4-00c04fd430c8");
+    public static readonly Guid UrlNamespace = new("6ba7b811-9dad-11d1-80b4-00c04fd430c8");
 
     /// <summary>生成 v1：基于时间戳与随机节点，同进程内严格递增不重复。</summary>
     public static Guid NewV1()

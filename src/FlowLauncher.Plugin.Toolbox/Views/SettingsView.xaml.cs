@@ -1,4 +1,4 @@
-using FlowLauncher.Plugin.Toolbox.ViewModels;
+using DevToolkit.Toolbox.ViewModels;
 
 using System.Windows;
 using System.Windows.Controls;

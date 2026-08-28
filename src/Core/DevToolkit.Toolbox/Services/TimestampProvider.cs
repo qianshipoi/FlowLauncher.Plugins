@@ -1,9 +1,9 @@
-namespace FlowLauncher.Plugin.Toolbox.Services;
+namespace DevToolkit.Toolbox.Services;
 
-internal sealed record TimestampEntry(string Description, string Value);
+public sealed record TimestampEntry(string Description, string Value);
 
 /// <summary>生成时间/时间戳条目，纯函数（时间由调用方传入）便于测试。</summary>
-internal static class TimestampProvider
+public static class TimestampProvider
 {
     public static IReadOnlyList<TimestampEntry> GetEntries(DateTimeOffset now)
     {

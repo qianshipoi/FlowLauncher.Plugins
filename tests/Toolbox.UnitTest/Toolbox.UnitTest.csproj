@@ -19,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\FlowLauncher.Plugin.Toolbox\FlowLauncher.Plugin.Toolbox.csproj" />
+		<ProjectReference Include="..\..\src\Core\DevToolkit.Toolbox\DevToolkit.Toolbox.csproj" />
 	</ItemGroup>
 
 </Project>

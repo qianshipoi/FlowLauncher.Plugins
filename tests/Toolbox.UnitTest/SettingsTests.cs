@@ -1,4 +1,4 @@
-using FlowLauncher.Plugin.Toolbox;
+using DevToolkit.Toolbox;
 
 namespace Toolbox.UnitTest;
 
