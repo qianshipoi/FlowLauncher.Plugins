@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 namespace DevToolkit.Views;
 
-public partial class VarNamePage : Page
+public partial class VarNamePage : UserControl
 {
     public VarNamePage(VarNamePageViewModel viewModel)
     {

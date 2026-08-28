@@ -12,7 +12,7 @@ using System.Windows.Input;
 
 namespace DevToolkit.Views;
 
-public partial class OpenDirectoryPage : Page
+public partial class OpenDirectoryPage : UserControl
 {
     public OpenDirectoryPage(OpenDirectoryViewModel viewModel)
     {

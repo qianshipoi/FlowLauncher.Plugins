@@ -68,27 +68,27 @@ public partial class MainWindow : Window
         switch (tag)
         {
             case "settings":
-                ContentFrame.Content = _settingsPage;
+                ContentHost.Content = _settingsPage;
                 break;
 
             case "opendirectory":
-                ContentFrame.Content = _openDirectoryPage;
+                ContentHost.Content = _openDirectoryPage;
                 break;
 
             case "portkiller":
-                ContentFrame.Content = _portKillerPage;
+                ContentHost.Content = _portKillerPage;
                 break;
 
             case "translator":
-                ContentFrame.Content = _translatorPage;
+                ContentHost.Content = _translatorPage;
                 break;
 
             case "varname":
-                ContentFrame.Content = _varNamePage;
+                ContentHost.Content = _varNamePage;
                 break;
 
             case "oss":
-                ContentFrame.Content = _ossPage;
+                ContentHost.Content = _ossPage;
                 break;
 
             case "aichat":
@@ -100,7 +100,7 @@ public partial class MainWindow : Window
                 break;
 
             default:
-                ContentFrame.Content = _toolboxPage;
+                ContentHost.Content = _toolboxPage;
                 break;
         }
     }

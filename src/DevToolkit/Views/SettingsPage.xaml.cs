@@ -4,7 +4,7 @@ using System.Windows.Controls;
 
 namespace DevToolkit.Views;
 
-public partial class SettingsPage : Page
+public partial class SettingsPage : UserControl
 {
     public SettingsPage(SettingsViewModel viewModel)
     {

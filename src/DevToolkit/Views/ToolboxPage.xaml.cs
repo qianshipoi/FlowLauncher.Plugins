@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace DevToolkit.Views;
 
-public partial class ToolboxPage : Page
+public partial class ToolboxPage : UserControl
 {
     public ToolboxPage(ToolboxViewModel viewModel)
     {

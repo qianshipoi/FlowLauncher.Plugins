@@ -4,7 +4,7 @@ using System.Windows.Controls;
 
 namespace DevToolkit.Views;
 
-public partial class OssPage : Page
+public partial class OssPage : UserControl
 {
     public OssPage(OssPageViewModel viewModel)
     {

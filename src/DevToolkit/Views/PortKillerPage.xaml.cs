@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 namespace DevToolkit.Views;
 
-public partial class PortKillerPage : Page
+public partial class PortKillerPage : UserControl
 {
     public PortKillerPage(PortKillerViewModel viewModel)
     {

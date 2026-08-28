@@ -19,6 +19,6 @@
             <ui:NavigationViewItem Content="AI 对话" Tag="aichat"/>
             <ui:NavigationViewItem Content="设置" Tag="settings"/>
         </ui:NavigationView.MenuItems>
-        <Frame x:Name="ContentFrame"/>
+        <ContentControl x:Name="ContentHost"/>
     </ui:NavigationView>
 </Window>
