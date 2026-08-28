@@ -2,6 +2,8 @@ using Flow.Launcher.Plugin;
 
 using FlowLauncher.Plugin.Toolbox.Services;
 
+using FlowLauncher.Plugin.Toolbox.ViewModels;
+
 using FlowLauncher.Plugin.Toolbox.Views;
 
 using System.IO;
@@ -12,10 +14,11 @@ using System.Windows;
 
 namespace FlowLauncher.Plugin.Toolbox;
 
-public class Main : IAsyncPlugin, IContextMenu
+public class Main : IAsyncPlugin, IContextMenu, ISettingProvider
 {
     private PluginInitContext _context = default!;
     private string _pluginDirectory = default!;
+    private Settings _settings = default!;
 
     private JsonEditorWindow? _jsonEditorWindow;
 
@@ -26,20 +29,42 @@ public class Main : IAsyncPlugin, IContextMenu
     {
         _context = context;
         _pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
+        _settings = context.API.LoadSettingJsonStorage<Settings>();
         return Task.CompletedTask;
+    }
+
+    public System.Windows.Controls.Control CreateSettingPanel()
+    {
+        var viewModel = new SettingsViewModel(_context.API, _settings);
+        return new SettingsView(viewModel);
     }
 
     public List<Result> LoadContextMenus(Result selectedResult)
     {
-        if (selectedResult?.ContextData is not Guid guid)
-            return new List<Result>();
+        var menus = new List<Result>();
 
-        return new List<Result>
+        if (selectedResult?.ContextData is Guid guid)
         {
-            CopyMenu("复制大写", guid.ToString("D").ToUpperInvariant()),
-            CopyMenu("复制小写无连字符", guid.ToString("N")),
-            CopyMenu("复制花括号格式", guid.ToString("B").ToUpperInvariant()),
-        };
+            menus.Add(CopyMenu("复制大写", guid.ToString("D").ToUpperInvariant()));
+            menus.Add(CopyMenu("复制小写无连字符", guid.ToString("N")));
+            menus.Add(CopyMenu("复制花括号格式", guid.ToString("B").ToUpperInvariant()));
+        }
+        else if (selectedResult?.ContextData is ToolRow { Description: "Payload" } payload && _settings.EnableJson)
+        {
+            menus.Add(new Result
+            {
+                Title = "在 JSON 编辑器中打开",
+                SubTitle = "用 tool json 的编辑器查看、编辑、格式化 Payload",
+                IcoPath = "favicon.ico",
+                Action = _ =>
+                {
+                    OpenJsonEditor(payload.Value);
+                    return true;
+                }
+            });
+        }
+
+        return menus;
     }
 
     private Result CopyMenu(string title, string value) => new()
@@ -61,29 +86,68 @@ public class Main : IAsyncPlugin, IContextMenu
         var command = parts[0].ToLowerInvariant();
         var argument = parts.Length > 1 ? parts[1].Trim() : string.Empty;
 
+        if (Settings.KnownCommands.Contains(command) && !_settings.IsEnabled(command))
+            return DisabledHint(command);
+
         return command switch
         {
             "guid" => HandleGuid(argument),
             "json" => HandleJson(argument),
             "fhash" => await HandleFileHashAsync(argument, query.ActionKeyword, token),
             "dt" => HandleDateTime(),
+            "enc" => HandleEnc(argument),
+            "pw" => HandlePw(argument),
+            "base" => HandleBase(argument),
+            "ts" => HandleTs(argument),
+            "jwt" => HandleJwt(argument),
+            "cron" => HandleCron(argument),
             _ => BuildHelp(command),
         };
     }
+
+    private static readonly (string Command, string Description)[] ToolCatalog =
+    [
+        ("guid", "生成 GUID（v1/v3/v4/v5/v7），右键菜单支持多种格式"),
+        ("json", "在编辑器窗口中查看、编辑、格式化 JSON"),
+        ("fhash", "计算文件哈希：MD5/SHA1/SHA256/SHA384/SHA512/CRC32"),
+        ("dt", "当前时间与时间戳，Enter 复制"),
+        ("enc", "文本编码转换：URL / Base64 / HTML 实体 / 十六进制"),
+        ("pw", "生成随机密码与密钥，如 tool pw 32"),
+        ("base", "进制转换与字符码点互查，如 tool base 0xFF"),
+        ("ts", "时间戳转日期，自动识别秒/毫秒"),
+        ("jwt", "解码 JWT：Header/Payload/过期时间"),
+        ("cron", "解析 Cron 表达式并预览未来执行时间"),
+    ];
 
     private List<Result> BuildHelp(string unknownCommand = "")
     {
         var results = new List<Result>();
 
         if (!string.IsNullOrWhiteSpace(unknownCommand))
-            results.Add(Hint($"未知命令 \"{unknownCommand}\"，可用命令：guid / json / fhash / dt"));
+            results.Add(Hint($"未知命令 \"{unknownCommand}\"，可用命令见下（输入 tool 回车）"));
 
-        results.Add(CommandRow("guid", "生成 GUID（v1/v3/v4/v5/v7），右键菜单支持多种格式"));
-        results.Add(CommandRow("json", "在编辑器窗口中查看、编辑、格式化 JSON"));
-        results.Add(CommandRow("fhash", "计算文件哈希：MD5/SHA1/SHA256/SHA384/SHA512/CRC32"));
-        results.Add(CommandRow("dt", "当前时间与时间戳，Enter 复制"));
+        var enabledTools = ToolCatalog.Where(tool => _settings.IsEnabled(tool.Command)).ToArray();
+        if (enabledTools.Length == 0)
+        {
+            results.Add(Hint("所有工具均已在插件设置中禁用，请在 Flow Launcher 设置 → 插件 → Toolbox 中开启"));
+            return results;
+        }
+
+        foreach (var (command, description) in enabledTools)
+            results.Add(CommandRow(command, description));
         return results;
     }
+
+    private static List<Result> DisabledHint(string command) =>
+    [
+        new Result
+        {
+            Title = $"\"tool {command}\" 已在插件设置中禁用",
+            SubTitle = "在 Flow Launcher 设置 → 插件 → Toolbox 中可重新开启",
+            IcoPath = "favicon.ico",
+            Action = _ => false
+        }
+    ];
 
     private Result CommandRow(string command, string description) => new()
     {
@@ -346,4 +410,90 @@ public class Main : IAsyncPlugin, IContextMenu
             })
             .ToList();
     }
+
+    private List<Result> HandleEnc(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return new List<Result> { Hint("用法：tool enc <文本>，显示 URL / Base64 / HTML 实体 / 十六进制等编解码结果") };
+        return ToCopyRows(TextEncoderService.GetTransforms(input));
+    }
+
+    private List<Result> HandlePw(string input)
+    {
+        var length = PasswordGeneratorService.DefaultLength;
+        if (!string.IsNullOrWhiteSpace(input)
+            && (!int.TryParse(input, out length) || length <= 0 || length > PasswordGeneratorService.MaxLength))
+            return new List<Result> { Hint($"用法：tool pw [长度]，长度 1-{PasswordGeneratorService.MaxLength}") };
+        return ToCopyRows(PasswordGeneratorService.Generate(length));
+    }
+
+    private List<Result> HandleBase(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return new List<Result> { Hint("用法：tool base <值>，支持 0x/0b/0o 前缀、十进制、裸十六进制、单字符与 U+码点") };
+        try
+        {
+            return ToCopyRows(BaseConverterService.Convert(input));
+        }
+        catch (FormatException ex)
+        {
+            return new List<Result> { Hint(ex.Message) };
+        }
+    }
+
+    private List<Result> HandleTs(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return new List<Result> { Hint("用法：tool ts <时间戳>，自动识别秒/毫秒并转日期") };
+        try
+        {
+            return ToCopyRows(TimestampParser.Parse(input, DateTimeOffset.Now));
+        }
+        catch (FormatException ex)
+        {
+            return new List<Result> { Hint(ex.Message) };
+        }
+    }
+
+    private List<Result> HandleJwt(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return new List<Result> { Hint("用法：tool jwt <token>，解码 Header/Payload 并显示过期时间（Payload 可右键进 JSON 编辑器）") };
+        try
+        {
+            return ToCopyRows(JwtDecoderService.Decode(input, DateTimeOffset.Now));
+        }
+        catch (FormatException ex)
+        {
+            return new List<Result> { Hint(ex.Message) };
+        }
+    }
+
+    private List<Result> HandleCron(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return new List<Result> { Hint("用法：tool cron <表达式>，如 tool cron 0 9 * * 1-5") };
+        try
+        {
+            return ToCopyRows(CronParserService.GetInfo(input, DateTime.Now));
+        }
+        catch (FormatException ex)
+        {
+            return new List<Result> { Hint(ex.Message) };
+        }
+    }
+
+    private List<Result> ToCopyRows(IReadOnlyList<ToolRow> rows) =>
+        rows.Select(row => new Result
+        {
+            Title = row.Value,
+            SubTitle = $"{row.Description} · Enter 复制",
+            IcoPath = "favicon.ico",
+            ContextData = row,
+            Action = _ =>
+            {
+                CopyToClipboard(row.Value);
+                return true;
+            }
+        }).ToList();
 }

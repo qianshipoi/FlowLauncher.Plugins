@@ -159,10 +159,11 @@ public class Main : IAsyncPlugin, ISettingProvider
 
 ### Toolbox（触发关键字: `tool`）
 
-- 工具合集，子命令: `guid`（GUID v1/v3/v4/v5/v7 生成）、`json`（WebView2 + jsoneditor 编辑器窗口）、`fhash`（单遍流式计算 MD5/SHA1/SHA256/SHA384/SHA512/CRC32）、`dt`（时间与时间戳）
+- 工具合集，子命令: `guid`（GUID v1/v3/v4/v5/v7 生成）、`json`（WebView2 + jsoneditor 编辑器窗口）、`fhash`（单遍流式计算 MD5/SHA1/SHA256/SHA384/SHA512/CRC32）、`dt`（时间与时间戳）、`enc`（URL/Base64/HTML/Hex 编解码）、`pw`（随机密码/密钥）、`base`（进制与字符码点互查）、`ts`（时间戳转日期）、`jwt`（解码 Header/Payload/exp，Payload 可右键进 JSON 编辑器）、`cron`（中文描述 + 未来 5 次执行，Cronos 包）
 - JSON 编辑器：`wwwroot/` 本地打包 jsoneditor 10.4.3，`SetVirtualHostNameToFolderMapping` 虚拟域名加载，`WebMessageReceived`/`PostWebMessageAsJson` 宿主↔页面通信，UserDataFolder 为插件目录下 `WebView2Cache`，窗口单实例复用并在 `Closed` 时 Dispose
+- 设置面板（ISettingProvider）：`Settings.cs` 各子命令独立启用开关（默认全开）+ `IsEnabled` 映射；`SettingsViewModel` 复选框变更即写回 `SaveSettingJsonStorage`；禁用命令查询返回提示行，帮助列表只显示启用项，`json` 开关联动 jwt 的"进 JSON 编辑器"菜单
 - 不使用 iNKORE 组件（普通 WPF Window），无 AssemblyResolve 需求
-- 依赖: Microsoft.Web.WebView2
+- 依赖: Microsoft.Web.WebView2, Cronos
 
 ## 编码规范
 
