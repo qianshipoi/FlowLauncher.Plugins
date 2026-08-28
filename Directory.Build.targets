@@ -1,0 +1,41 @@
+<Project>
+
+  <!--
+    Flow Launcher 插件发布约定（对全部插件生效，测试/Demo 项目无 plugin.json 自动跳过）：
+    使用 dotnet publish -p:PublishProfile=FolderProfile 时，在 pubxml 指定的 PublishDir（插件父目录）
+    末尾去掉路径分隔符后拼接 "-<Version>"，最终目录 = <PublishDir 去\>-<Version>\，
+    例如 ...\Plugins\FlowLauncher.Plugin.Toolbox-1.0.0\。
+    版本只需维护 plugin.json 一处，发布路径自动跟随。
+
+    复制文件前清空目标目录，避免已从项目移除的旧依赖 DLL 残留；
+    Flow Launcher 运行中会锁定插件 DLL，锁定时清理降级为警告，交由复制步骤报出明确错误。
+  -->
+  <Target Name="FlowLauncherAppendVersionToPublishDir"
+          BeforeTargets="PrepareForPublish"
+          Condition="'$(PublishProfile)' == 'FolderProfile' And Exists('$(MSBuildProjectDirectory)\plugin.json') And '$(PublishDir)' != ''">
+
+    <!-- 从 plugin.json 提取 "Version" 字段；MSBuild 无法直接解析 JSON，按行读入后用正则取值 -->
+    <ReadLinesFromFile File="$(MSBuildProjectDirectory)\plugin.json">
+      <Output TaskParameter="Lines" ItemName="_PluginJsonLine" />
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <_PluginJsonText>@(_PluginJsonLine, ' ')</_PluginJsonText>
+      <!-- 后行断言只捕获 "Version": "..." 的值本身，不含键名和引号 -->
+      <_PluginVersionRaw>$([System.Text.RegularExpressions.Regex]::Match($(_PluginJsonText), '(?&lt;=&quot;Version&quot;\s*:\s*&quot;)[^&quot;]+').Value)</_PluginVersionRaw>
+      <_PluginVersion>$([System.String]::new($(_PluginVersionRaw)).Trim())</_PluginVersion>
+      <_PluginVersion Condition="'$(_PluginVersionRaw)' == ''">0.0.0</_PluginVersion>
+      <!-- 目录名格式：插件目录-版本号（平铺，不嵌套版本子文件夹） -->
+      <PublishDir>$([System.IO.Path]::TrimEndingDirectorySeparator('$(PublishDir)'))-$(_PluginVersion)\</PublishDir>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="Flow Launcher 发布目录: $(PublishDir)" />
+  </Target>
+
+  <Target Name="FlowLauncherCleanPublishDir"
+          AfterTargets="FlowLauncherAppendVersionToPublishDir"
+          Condition="'$(PublishProfile)' == 'FolderProfile'">
+    <RemoveDir Directories="$(PublishDir)" Condition="Exists('$(PublishDir)')" ContinueOnError="true" />
+  </Target>
+
+</Project>

@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-这是一个 Flow Launcher 插件集合，使用 C# / .NET 9 / WPF 构建，包含 7 个独立插件和 1 个演示应用。
+这是一个 Flow Launcher 插件集合，使用 C# / .NET 9 / WPF 构建，包含 8 个独立插件和 1 个演示应用。
 
 ## 技术栈
 
@@ -27,10 +27,12 @@ FlowLauncher.Plugins/
 ├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件
 ├── FlowLauncher.Plugin.Translator/     # AI 翻译插件
 ├── FlowLauncher.Plugin.VarName/        # 变量命名插件
+├── FlowLauncher.Plugin.Toolbox/        # 工具合集插件（GUID/JSON/哈希/时间戳）
 └── tests/
     ├── AliyunOss.UnitTest/             # 阿里云 OSS 单元测试
     ├── PasswordManager.UnitTest/       # 密码管理器单元测试
-    └── VarName.UnitTest/               # 变量命名单元测试
+    ├── VarName.UnitTest/               # 变量命名单元测试
+    └── Toolbox.UnitTest/               # 工具合集单元测试
 ```
 
 ## 插件架构模式
@@ -155,6 +157,13 @@ public class Main : IAsyncPlugin, ISettingProvider
 - 快速打开常用目录（桌面、文档、下载等）
 - 轻量级插件，无外部依赖
 
+### Toolbox（触发关键字: `tool`）
+
+- 工具合集，子命令: `guid`（GUID v1/v3/v4/v5/v7 生成）、`json`（WebView2 + jsoneditor 编辑器窗口）、`fhash`（单遍流式计算 MD5/SHA1/SHA256/SHA384/SHA512/CRC32）、`dt`（时间与时间戳）
+- JSON 编辑器：`wwwroot/` 本地打包 jsoneditor 10.4.3，`SetVirtualHostNameToFolderMapping` 虚拟域名加载，`WebMessageReceived`/`PostWebMessageAsJson` 宿主↔页面通信，UserDataFolder 为插件目录下 `WebView2Cache`，窗口单实例复用并在 `Closed` 时 Dispose
+- 不使用 iNKORE 组件（普通 WPF Window），无 AssemblyResolve 需求
+- 依赖: Microsoft.Web.WebView2
+
 ## 编码规范
 
 - **命名空间**: `FlowLauncher.Plugin.{Name}`
@@ -198,4 +207,5 @@ dotnet test tests/VarName.UnitTest/VarName.UnitTest.csproj
 - `AppendTargetFrameworkToOutputPath` 设为 `false`，输出路径不含 TFM 子目录
 - 使用 `Result` 对象时，`IcoPath` 通常设为 `"favicon.ico"`
 - `Result.Action` 回调返回 `true` 关闭 Flow Launcher，`false` 保持打开
+- 发布配置：每个插件 `Properties/PublishProfiles/FolderProfile.pubxml` 为**本机配置，被 `.gitignore` 忽略、不入库**（其中硬编码了本机的 Flow Launcher 插件目录，不同电脑路径不同需自行创建）；`scripts/publish-*.ps1` 调用 `dotnet publish -p:PublishProfile=FolderProfile` 发布。根目录 `Directory.Build.targets` 负责把 plugin.json 的 `Version` 拼进目录名（最终目录 = `<插件名>-<Version>\`，平铺不嵌套）并在发布前清空目标目录；Flow Launcher 运行中会锁定已加载插件的 DLL，更新前需先退出
 - **更新插件前必须先读取该插件目录下的 `Readme.md`**，了解插件的功能、架构、数据模型和安全设计，避免破坏现有逻辑
