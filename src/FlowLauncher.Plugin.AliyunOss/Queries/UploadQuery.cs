@@ -1,10 +1,7 @@
 ﻿using Flow.Launcher.Plugin;
 
 using FlowLauncher.Plugin.AliyunOss.Services;
-
-using Microsoft.Win32;
-
-using System.IO;
+using FlowLauncher.Plugin.AliyunOss.Views;
 using System.Windows;
 
 namespace FlowLauncher.Plugin.AliyunOss.Queries;
@@ -14,65 +11,110 @@ namespace FlowLauncher.Plugin.AliyunOss.Queries;
 /// </summary>
 /// <param name="publicApi"></param>
 /// <param name="service"></param>
-internal class UploadQuery(IPublicAPI publicApi, OssService service)
+internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings settings)
 {
     private const string ForwardSlash = "/";
 
-    public async Task<List<Result>> ExecuteAsync(Query query, CancellationToken token = default)
+    public List<Result> GetTempUploadResult(string bucketName)
     {
-        var bucketName = query.SearchTerms[0];
-        var objectName = query.SearchTerms[1];
-
-        if (objectName.EndsWith(ForwardSlash))
-        {
-            return
-            [
-                ResultBuilder.Create("无法上传").Subtitle($"对象名称不能以 {ForwardSlash} 结尾").Build()
-            ];
-        }
-
-        var fileExist = await service.ExistsAsync(bucketName, objectName, token);
-
-        var uploadTitle = fileExist ? "替换文件" : "上传文件";
-
         return
         [
-            ResultBuilder.Create(uploadTitle).AsyncAction(ctx => UploadAsync(bucketName, objectName, token)).Build(),
-            ResultBuilder.Create("备份并替换文件").AsyncAction(ctx => BackupAndReplaceAsync(bucketName, objectName, token)).Build()
+            ResultBuilder
+                .Create("上传临时文件")
+                .Subtitle($"上传到 {bucketName}/tmp/ 目录")
+                .Action(_ =>
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        new UploadHelperWindow(publicApi, service, bucketName, "", tempUpload: true, settings: settings).Show();
+                    });
+                    return false;
+                })
+                .Build()
         ];
     }
 
-    private async ValueTask<bool> BackupAndReplaceAsync(string bucket, string key, CancellationToken cancellationToken = default)
+    public Task<List<Result>> ExecuteAsync(Query query, CancellationToken token = default)
     {
-        var backupKey = $"{key}.bak.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-        await service.CopyObjectAsync(bucket, key, bucket, backupKey, cancellationToken);
-        await UploadAsync(bucket, key, cancellationToken);
-        return true;
-    }
+        var bucketName = query.SearchTerms[0];
+        publicApi.LogInfo(nameof(UploadQuery), $"[TRACE] ExecuteAsync called. Search='{query.Search}', SearchTerms.Length={query.SearchTerms.Length}, Terms=[{string.Join(", ", query.SearchTerms.Select(t => $"'{t}'"))}]");
 
-    private async ValueTask<bool> UploadAsync(string bucket, string key, CancellationToken cancellationToken = default)
-    {
-        await publicApi.ShowProgressBoxAsync("上传中...", async (reportProcess) => {
-            var fileName = Path.GetFileName(key);
-            var ext = Path.GetExtension(fileName);
-            var dialog = new OpenFileDialog
-            {
-                Multiselect = false,
-                DefaultExt = ext,
-                Filter = string.IsNullOrWhiteSpace(ext) ? "所有文件|*.*" : $"{ext} 文件|*{ext}|所有文件|*.*",
-            };
-            var result = dialog.ShowDialog();
-            if (result != true) return;
-            var filePath = dialog.FileName;
-            await service.UploadFileAsync(bucket, key, filePath, reportProcess, cancellationToken);
+        if (query.SearchTerms.Length < 2 || string.IsNullOrWhiteSpace(query.SearchTerms[1]))
+        {
+            publicApi.LogInfo(nameof(UploadQuery), $"[TRACE] Returning temp upload result for bucket '{bucketName}'");
+            return Task.FromResult(GetTempUploadResult(bucketName));
+        }
 
-            var dailogResult = publicApi.ShowMsgBox("上传完毕，是否复制下载链接", "提示", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (dailogResult == MessageBoxResult.Yes)
+        var objectName = query.SearchTerms[1];
+        publicApi.LogInfo(nameof(UploadQuery), $"[TRACE] objectName='{objectName}'");
+
+        if (objectName.EndsWith(ForwardSlash))
+        {
+            return Task.FromResult(new List<Result>
             {
-                var url = await service.PresignDownloadUrlAsync(bucket, key, cancellationToken);
-                publicApi.CopyToClipboard(url);
-            }
+                ResultBuilder.Create("无法上传").Subtitle($"对象名称不能以 {ForwardSlash} 结尾").Build()
+            });
+        }
+
+        // 三个 term 且末尾为空 → 文件已确认存在，显示替换选项
+        if (query.SearchTerms.Length == 3)
+        {
+            return Task.FromResult(new List<Result>
+            {
+                ResultBuilder
+                    .Create("替换文件")
+                    .Subtitle($"{objectName} 已存在，上传并替换")
+                    .Action(_ =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            new UploadHelperWindow(publicApi, service, bucketName, objectName, settings: settings).Show();
+                        });
+                        return false;
+                    })
+                    .Build(),
+                ResultBuilder
+                    .Create("备份并替换文件")
+                    .Subtitle("先备份已有文件再上传替换")
+                    .Action(_ =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            new UploadHelperWindow(publicApi, service, bucketName, objectName, forceBackup: true, settings: settings).Show();
+                        });
+                        return false;
+                    })
+                    .Build()
+            });
+        }
+
+        // 首次查询，不检查文件是否存在
+        return Task.FromResult(new List<Result>
+        {
+            ResultBuilder
+                .Create("上传文件")
+                .Subtitle("选择文件并上传，如同名文件已存在则提示替换")
+                .Action(_ =>
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        new UploadHelperWindow(publicApi, service, bucketName, objectName, checkExists: true, settings: settings).Show();
+                    });
+                    return false;
+                })
+                .Build(),
+            ResultBuilder
+                .Create("备份并替换文件")
+                .Subtitle("先备份已有文件再上传替换")
+                .Action(_ =>
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        new UploadHelperWindow(publicApi, service, bucketName, objectName, settings: settings).Show();
+                    });
+                    return false;
+                })
+                .Build()
         });
-        return true;
     }
 }

@@ -2,6 +2,7 @@
 
 using Flow.Launcher.Plugin;
 
+using FlowLauncher.Plugin.AliyunOss.Models;
 using FlowLauncher.Plugin.AliyunOss.Utils;
 
 using Microsoft.Extensions.Caching.Memory;
@@ -41,7 +42,7 @@ public class OssService(IPublicAPI publicAPI, Settings settings)
         {
             publicAPI.LogInfo(nameof(OssService), "Returning cached buckets.");
 
-            return _buckets.Where(x => x.Contains(bucketName.Replace("-", ""))).ToList();
+            return _buckets.Where(x => x.Contains(bucketName, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         using var client = GetClient();
@@ -63,7 +64,7 @@ public class OssService(IPublicAPI publicAPI, Settings settings)
             _buckets.Add(item);
         }
 
-        return _buckets.Where(x => x.Contains(bucketName.Replace("-", ""))).ToList();
+        return _buckets.Where(x => x.Contains(bucketName, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     public async Task<bool> ExistsAsync(string bucketName, string key, CancellationToken cancellationToken = default)
@@ -114,6 +115,57 @@ public class OssService(IPublicAPI publicAPI, Settings settings)
     }
 
 
+
+    public async Task<(List<OssObjectInfo> Items, bool HasMore)> GetObjectsDetailedAsync(string bucketName, string prefix, int maxItems = 100, CancellationToken cancellationToken = default)
+    {
+        prefix ??= string.Empty;
+        prefix = prefix.Replace('\\', '/').TrimStart('/');
+        if (prefix.Length > 0 && !prefix.EndsWith('/')) prefix += '/';
+
+        publicAPI.LogInfo(nameof(OssService), $"GetObjectsDetailedAsync. bucketName: {bucketName}, prefix: {prefix}");
+
+        if (!_buckets.Contains(bucketName)) return ([], false);
+
+        using var client = GetClient();
+        var result = client.ListObjectsPaginator(new OSS.Models.ListObjectsRequest
+        {
+            Bucket = bucketName,
+            Prefix = prefix,
+            Delimiter = "/",
+            MaxKeys = 100,
+        });
+
+        var objects = new List<OssObjectInfo>();
+        await foreach (var page in result.IterPageAsync(cancellationToken))
+        {
+            foreach (var dir in page.CommonPrefixes ?? [])
+            {
+                if (objects.Count >= maxItems) return (objects, true);
+                objects.Add(new OssObjectInfo(dir.Prefix!, 0, DateTimeOffset.MinValue));
+            }
+            foreach (var obj in page.Contents ?? [])
+            {
+                if (obj.Key == prefix) continue;
+                if (objects.Count >= maxItems) return (objects, true);
+                objects.Add(new OssObjectInfo(
+                    obj.Key!,
+                    obj.Size ?? 0,
+                    obj.LastModified ?? DateTimeOffset.MinValue));
+            }
+        }
+        return (objects, false);
+    }
+
+    public string GeneratePresignedUploadUrl(string bucketName, string key)
+    {
+        using var client = GetClient();
+        var result = client.Presign(new OSS.Models.PutObjectRequest
+        {
+            Bucket = bucketName,
+            Key = key,
+        }, DateTime.Now.AddHours(6));
+        return result.Url!;
+    }
 
     public void ClearCache()
     {

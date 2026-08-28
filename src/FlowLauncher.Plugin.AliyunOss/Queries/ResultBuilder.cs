@@ -68,13 +68,13 @@ public class ResultBuilder
     public Result Build()
     {
         return new Result
-        {
+        { 
             IcoPath = "favicon.ico",
             Title = _title,
             SubTitle = _subtitle,
             AsyncAction = _asyncAction,
             Action = _action,
-            Preview = _previewInfo,
+            // Preview = _previewInfo,
         };
     }
 }
