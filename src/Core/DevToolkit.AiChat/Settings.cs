@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace FlowLauncher.Plugin.AiChat
+namespace DevToolkit.AiChat
 {
     public class Settings
     {

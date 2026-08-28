@@ -1,3 +1,5 @@
+using DevToolkit.AiChat;
+
 ﻿using iNKORE.UI.WPF.Modern.Controls.Helpers;
 
 using Microsoft.Web.WebView2.Wpf;
@@ -7,7 +9,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace FlowLauncher.Plugin.AiChat
+namespace DevToolkit.Core.Wpf
 {
     public partial class AiChatWindow : Window
     {

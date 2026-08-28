@@ -9,9 +9,9 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.System.Threading;
 
-namespace FlowLauncher.Plugin.PortKiller;
+namespace DevToolkit.PortKiller;
 
-internal static class ProcessHelpers
+public static class ProcessHelpers
 {
     public static unsafe string TryGetProcessFilename(Process p)
     {

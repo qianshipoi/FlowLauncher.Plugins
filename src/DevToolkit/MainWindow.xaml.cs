@@ -1,6 +1,10 @@
+using DevToolkit.AiChat;
+
 using DevToolkit.Core.Wpf;
 
 using DevToolkit.Toolbox.ViewModels;
+
+using DevToolkit.PortKiller;
 
 using DevToolkit.ViewModels;
 
@@ -16,7 +20,11 @@ public partial class MainWindow : Window
 {
     private readonly ToolboxPage _toolboxPage;
     private readonly SettingsPage _settingsPage;
+    private readonly OpenDirectoryPage _openDirectoryPage;
+    private readonly PortKillerPage _portKillerPage;
+
     private JsonEditorWindow? _jsonEditorWindow;
+    private AiChatWindow? _aiChatWindow;
 
     public MainWindow()
     {
@@ -27,6 +35,9 @@ public partial class MainWindow : Window
         _toolboxPage = new ToolboxPage(toolboxViewModel);
         _settingsPage = new SettingsPage(new SettingsViewModel(
             AppServices.ToolboxSettings, AppServices.SaveToolboxSettings));
+        _openDirectoryPage = new OpenDirectoryPage(new OpenDirectoryViewModel());
+        _portKillerPage = new PortKillerPage(new PortKillerViewModel(
+            new PortHistoryManager(AppServices.DataRoot)));
 
         NavView.ItemInvoked += (_, args) =>
         {
@@ -38,11 +49,28 @@ public partial class MainWindow : Window
 
     private void Navigate(string tag)
     {
-        ContentFrame.Content = tag switch
+        switch (tag)
         {
-            "settings" => _settingsPage,
-            _ => _toolboxPage,
-        };
+            case "settings":
+                ContentFrame.Content = _settingsPage;
+                break;
+
+            case "opendirectory":
+                ContentFrame.Content = _openDirectoryPage;
+                break;
+
+            case "portkiller":
+                ContentFrame.Content = _portKillerPage;
+                break;
+
+            case "aichat":
+                OpenAiChat();
+                break;
+
+            default:
+                ContentFrame.Content = _toolboxPage;
+                break;
+        }
     }
 
     private void OpenJsonEditor(string json)
@@ -57,6 +85,20 @@ public partial class MainWindow : Window
         {
             _jsonEditorWindow.Activate();
             _jsonEditorWindow.UpdateJson(json);
+        }
+    }
+
+    private void OpenAiChat()
+    {
+        if (_aiChatWindow is null)
+        {
+            _aiChatWindow = new AiChatWindow(AppServices.AiChatSettings, AppServices.SaveAiChatSettings);
+            _aiChatWindow.Closed += (_, _) => _aiChatWindow = null;
+            _aiChatWindow.Show();
+        }
+        else
+        {
+            _aiChatWindow.Activate();
         }
     }
 }

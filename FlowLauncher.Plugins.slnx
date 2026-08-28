@@ -18,5 +18,8 @@
   <Project Path="src/DevToolkit/DevToolkit.csproj" />
   <Project Path="src/Core/DevToolkit.Core.Wpf/DevToolkit.Core.Wpf.csproj" />
   <Project Path="src/Core/DevToolkit.Toolbox/DevToolkit.Toolbox.csproj" />
+  <Project Path="src/Core/DevToolkit.AiChat/DevToolkit.AiChat.csproj" />
+  <Project Path="src/Core/DevToolkit.OpenDirectory/DevToolkit.OpenDirectory.csproj" />
+  <Project Path="src/Core/DevToolkit.PortKiller/DevToolkit.PortKiller.csproj" />
   <Project Path="src/FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" />
 </Solution>

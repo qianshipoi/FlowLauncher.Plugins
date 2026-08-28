@@ -10,6 +10,9 @@
                        IsSettingsVisible="False">
         <ui:NavigationView.MenuItems>
             <ui:NavigationViewItem Content="工具箱" Tag="toolbox" IsSelected="True"/>
+            <ui:NavigationViewItem Content="打开目录" Tag="opendirectory"/>
+            <ui:NavigationViewItem Content="端口占用" Tag="portkiller"/>
+            <ui:NavigationViewItem Content="AI 对话" Tag="aichat"/>
             <ui:NavigationViewItem Content="设置" Tag="settings"/>
         </ui:NavigationView.MenuItems>
         <Frame x:Name="ContentFrame"/>

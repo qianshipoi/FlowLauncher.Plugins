@@ -20,26 +20,34 @@ public static class AppServices
 
     public static Settings ToolboxSettings { get; private set; } = LoadToolboxSettings();
 
-    public static void SaveToolboxSettings()
-    {
-        Directory.CreateDirectory(DataRoot);
-        File.WriteAllText(
-            Path.Combine(DataRoot, "toolbox-settings.json"),
-            JsonSerializer.Serialize(ToolboxSettings, JsonOptions));
-    }
+    public static AiChat.Settings AiChatSettings { get; private set; } =
+        LoadJson<AiChat.Settings>("aichat-settings.json") ?? new AiChat.Settings();
 
-    private static Settings LoadToolboxSettings()
+    public static void SaveToolboxSettings() => SaveJson("toolbox-settings.json", ToolboxSettings);
+
+    public static void SaveAiChatSettings() => SaveJson("aichat-settings.json", AiChatSettings);
+
+    private static Settings LoadToolboxSettings() =>
+        LoadJson<Settings>("toolbox-settings.json") ?? new Settings();
+
+    private static T? LoadJson<T>(string fileName)
     {
         try
         {
-            var path = Path.Combine(DataRoot, "toolbox-settings.json");
+            var path = Path.Combine(DataRoot, fileName);
             if (File.Exists(path))
-                return JsonSerializer.Deserialize<Settings>(File.ReadAllText(path)) ?? new Settings();
+                return JsonSerializer.Deserialize<T>(File.ReadAllText(path));
         }
         catch
         {
             // 设置文件损坏时回退默认值
         }
-        return new Settings();
+        return default;
+    }
+
+    private static void SaveJson<T>(string fileName, T value)
+    {
+        Directory.CreateDirectory(DataRoot);
+        File.WriteAllText(Path.Combine(DataRoot, fileName), JsonSerializer.Serialize(value, JsonOptions));
     }
 }

@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
-namespace FlowLauncher.Plugin.PortKiller;
+namespace DevToolkit.PortKiller;
 
-internal sealed class PortHistoryEntry
+public sealed class PortHistoryEntry
 {
     public string Query { get; init; }
     public DateTime Timestamp { get; init; }
@@ -18,7 +18,7 @@ internal sealed class PortHistoryEntry
     }
 }
 
-internal sealed class PortHistoryManager
+public sealed class PortHistoryManager
 {
     private readonly string _historyFilePath;
     private readonly int _maxEntries;

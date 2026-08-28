@@ -1,9 +1,11 @@
+using DevToolkit.AiChat;
+
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace FlowLauncher.Plugin.AiChat
+namespace DevToolkit.Core.Wpf
 {
     public partial class SettingsControl : UserControl
     {

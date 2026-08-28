@@ -1,4 +1,6 @@
 ﻿using Flow.Launcher.Plugin;
+using DevToolkit.AiChat;
+using DevToolkit.Core.Wpf;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Threading;
