@@ -10,11 +10,8 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="AlibabaCloud.OSS.V2" Version="0.1.2" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
-		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.11" />
 		<PackageReference Include="OpenAI" Version="2.8.0" />
 	</ItemGroup>
 
