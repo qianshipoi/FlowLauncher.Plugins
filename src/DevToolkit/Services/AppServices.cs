@@ -6,7 +6,7 @@ using DevToolkit.Toolbox;
 
 namespace DevToolkit;
 
-/// <summary>App 级共享服务：数据目录、Toolbox 设置持久化、WebView2 缓存路径。</summary>
+/// <summary>App 级共享服务：数据目录、各功能设置持久化、WebView2 缓存路径。</summary>
 public static class AppServices
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
@@ -23,9 +23,19 @@ public static class AppServices
     public static AiChat.Settings AiChatSettings { get; private set; } =
         LoadJson<AiChat.Settings>("aichat-settings.json") ?? new AiChat.Settings();
 
+    public static Translator.Settings TranslatorSettings { get; private set; } =
+        LoadJson<Translator.Settings>("translator-settings.json") ?? new Translator.Settings();
+
+    public static VarName.Settings VarNameSettings { get; private set; } =
+        LoadJson<VarName.Settings>("varname-settings.json") ?? new VarName.Settings();
+
     public static void SaveToolboxSettings() => SaveJson("toolbox-settings.json", ToolboxSettings);
 
     public static void SaveAiChatSettings() => SaveJson("aichat-settings.json", AiChatSettings);
+
+    public static void SaveTranslatorSettings() => SaveJson("translator-settings.json", TranslatorSettings);
+
+    public static void SaveVarNameSettings() => SaveJson("varname-settings.json", VarNameSettings);
 
     private static Settings LoadToolboxSettings() =>
         LoadJson<Settings>("toolbox-settings.json") ?? new Settings();

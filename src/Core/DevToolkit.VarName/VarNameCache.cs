@@ -3,9 +3,9 @@ using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Text.Json;
 
-namespace FlowLauncher.Plugin.VarName;
+namespace DevToolkit.VarName;
 
-internal sealed class VarNameCache : IDisposable
+public sealed class VarNameCache : IDisposable
 {
     private readonly SqliteConnection _conn;
 

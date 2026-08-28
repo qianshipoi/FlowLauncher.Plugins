@@ -22,6 +22,8 @@
 		<ProjectReference Include="..\Core\DevToolkit.OpenDirectory\DevToolkit.OpenDirectory.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.PortKiller\DevToolkit.PortKiller.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.Toolbox\DevToolkit.Toolbox.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.Translator\DevToolkit.Translator.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.VarName\DevToolkit.VarName.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,4 +1,4 @@
-﻿namespace FlowLauncher.Plugin.Translator;
+﻿namespace DevToolkit.Translator;
 
 public class Settings
 {

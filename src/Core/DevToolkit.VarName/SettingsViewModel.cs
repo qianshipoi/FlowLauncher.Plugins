@@ -1,16 +1,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+
 using CommunityToolkit.Mvvm.Input;
 
-using Flow.Launcher.Plugin;
+namespace DevToolkit.VarName;
 
-using OpenAI;
-using OpenAI.Chat;
-
-using System.ClientModel;
-
-namespace FlowLauncher.Plugin.VarName;
-
-public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) : ObservableObject
+/// <summary>
+/// 变量名设置 VM（宿主无关）：保存通过回调持久化，成功后触发 <see cref="ReQueryRequested"/>。
+/// </summary>
+public partial class SettingsViewModel(Settings settings, Action onChanged) : ObservableObject
 {
     [ObservableProperty]
     private string _modelName = settings.ModelName;
@@ -33,6 +30,9 @@ public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) 
         !string.IsNullOrWhiteSpace(ApiKey);
 
     public bool CanSubmit => IsFormValid && !IsBusy;
+
+    /// <summary>保存后触发，宿主可据此刷新界面。</summary>
+    public event Action? ReQueryRequested;
 
     partial void OnModelNameChanged(string value) => NotifyValidationState();
     partial void OnApiUrlChanged(string value) => NotifyValidationState();
@@ -58,9 +58,9 @@ public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) 
         settings.ModelName = ModelName;
         settings.ApiUrl = ApiUrl;
         settings.ApiKey = ApiKey;
-        publicApi.SaveSettingJsonStorage<Settings>();
+        onChanged();
         ValidationMessage = "配置已保存。";
-        publicApi.ReQuery();
+        ReQueryRequested?.Invoke();
     }
 
     [RelayCommand]
@@ -78,14 +78,14 @@ public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) 
 
         try
         {
-            var client = new ChatClient(
+            var client = new OpenAI.Chat.ChatClient(
                 ModelName,
-                new ApiKeyCredential(ApiKey),
-                new OpenAIClientOptions { Endpoint = new Uri(NormalizeUrl(ApiUrl)), NetworkTimeout = TimeSpan.FromSeconds(10) });
+                new System.ClientModel.ApiKeyCredential(ApiKey),
+                new OpenAI.OpenAIClientOptions { Endpoint = new Uri(NormalizeUrl(ApiUrl)), NetworkTimeout = TimeSpan.FromSeconds(10) });
 
             await client.CompleteChatAsync(
-                [new SystemChatMessage("You are checking API availability."), new UserChatMessage("Ping")],
-                options: new ChatCompletionOptions { MaxOutputTokenCount = 1 });
+                [new OpenAI.Chat.SystemChatMessage("You are checking API availability."), new OpenAI.Chat.UserChatMessage("Ping")],
+                options: new OpenAI.Chat.ChatCompletionOptions { MaxOutputTokenCount = 1 });
 
             ValidationMessage = "验证成功，API 响应正常。";
         }

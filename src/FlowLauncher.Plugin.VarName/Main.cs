@@ -1,5 +1,7 @@
+using DevToolkit.VarName;
+
 using Flow.Launcher.Plugin;
-using System.Text.RegularExpressions;
+
 using System.Windows;
 
 namespace FlowLauncher.Plugin.VarName;
@@ -28,7 +30,7 @@ public class Main : IAsyncPlugin, ISettingProvider
 
     public System.Windows.Controls.Control CreateSettingPanel()
     {
-        var vm = new SettingsViewModel(_context.API, _settings);
+        var vm = new SettingsViewModel(_settings, () => _context.API.SaveSettingJsonStorage<Settings>());
         return new SettingsView(vm);
     }
 
@@ -206,16 +208,7 @@ public class Main : IAsyncPlugin, ISettingProvider
     /// </summary>
     private List<Result> NamingVariants(string raw)
     {
-        var words = SplitToWords(raw);
-
-        var variants = new (string Label, string Func)[]
-        {
-            ("camelCase",        ToCamelCase(words)),
-            ("PascalCase",       ToPascalCase(words)),
-            ("snake_case",       ToSnakeCase(words)),
-            ("kebab-case",       ToKebabCase(words)),
-            ("UPPER_SNAKE_CASE", ToUpperSnakeCase(words)),
-        };
+        var variants = NamingStyleConverter.Variants(raw);
 
         // 按上次选中的命名规范排序
         var lastConvention = _cache.GetLastNamingConvention();
@@ -225,50 +218,15 @@ public class Main : IAsyncPlugin, ISettingProvider
 
         return [.. sorted.Select(v => new Result
         {
-            Title = v.Func,
+            Title = v.Value,
             SubTitle = v.Label,
             IcoPath = "favicon.ico",
             Action = _ =>
             {
                 _cache.SetLastNamingConvention(v.Label);
-                Clipboard.SetText(v.Func);
+                Clipboard.SetText(v.Value);
                 return true;
             }
         })];
     }
-
-    #region 命名规范转换
-
-    private static List<string> SplitToWords(string input)
-    {
-        // 处理 camelCase / PascalCase / snake_case / kebab-case / 空格分隔
-        var normalized = Regex.Replace(input, @"[_\-\s]+", " ");
-        // 在大小写边界插入空格
-        normalized = Regex.Replace(normalized, @"([a-z])([A-Z])", "$1 $2");
-        return [.. normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Select(w => w.ToLowerInvariant())];
-    }
-
-    private static string ToCamelCase(List<string> words)
-    {
-        if (words.Count == 0) return string.Empty;
-        return words[0] + string.Concat(words.Skip(1).Select(Capitalize));
-    }
-
-    private static string ToPascalCase(List<string> words)
-        => string.Concat(words.Select(Capitalize));
-
-    private static string ToSnakeCase(List<string> words)
-        => string.Join('_', words);
-
-    private static string ToKebabCase(List<string> words)
-        => string.Join('-', words);
-
-    private static string ToUpperSnakeCase(List<string> words)
-        => string.Join('_', words.Select(w => w.ToUpperInvariant()));
-
-    private static string Capitalize(string word)
-        => string.IsNullOrEmpty(word) ? word : char.ToUpperInvariant(word[0]) + word[1..];
-
-    #endregion
 }

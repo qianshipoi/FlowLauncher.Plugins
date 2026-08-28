@@ -1,4 +1,4 @@
-namespace FlowLauncher.Plugin.VarName;
+namespace DevToolkit.VarName;
 
 public class Settings
 {

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0-windows7.0</TargetFramework>
@@ -8,13 +8,14 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputType>Library</OutputType>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
-		<PackageReference Include="OpenAI" Version="2.8.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\Core\DevToolkit.Translator\DevToolkit.Translator.csproj" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="favicon.ico">

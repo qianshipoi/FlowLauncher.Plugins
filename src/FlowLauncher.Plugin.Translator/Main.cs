@@ -1,4 +1,6 @@
 ﻿using Flow.Launcher.Plugin;
+using DevToolkit.Translator;
+
 
 using System.Windows.Controls;
 
@@ -22,7 +24,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider
 
     public Control CreateSettingPanel()
     {
-        var viewModel = new SettingsViewModel(_context.API, _settings);
+        var viewModel = new SettingsViewModel(_settings, () => _context.API.SaveSettingJsonStorage<Settings>());
         return new SettingsView(viewModel);
     }
 

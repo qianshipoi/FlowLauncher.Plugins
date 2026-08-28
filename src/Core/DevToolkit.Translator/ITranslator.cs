@@ -3,14 +3,14 @@ using OpenAI.Chat;
 
 using System.ClientModel;
 
-namespace FlowLauncher.Plugin.Translator;
+namespace DevToolkit.Translator;
 
-internal interface ITranslator
+public interface ITranslator
 {
     Task<string> TranslateAsync(string text, string fromLanguage, string toLanguage, CancellationToken token);
 }
 
-internal class AiTanslator(Settings settings) : ITranslator
+public class AiTanslator(Settings settings) : ITranslator
 {
     public async Task<string> TranslateAsync(string text, string fromLanguage, string toLanguage, CancellationToken token)
     {

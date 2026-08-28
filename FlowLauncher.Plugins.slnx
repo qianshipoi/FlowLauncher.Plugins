@@ -21,5 +21,7 @@
   <Project Path="src/Core/DevToolkit.AiChat/DevToolkit.AiChat.csproj" />
   <Project Path="src/Core/DevToolkit.OpenDirectory/DevToolkit.OpenDirectory.csproj" />
   <Project Path="src/Core/DevToolkit.PortKiller/DevToolkit.PortKiller.csproj" />
+  <Project Path="src/Core/DevToolkit.Translator/DevToolkit.Translator.csproj" />
+  <Project Path="src/Core/DevToolkit.VarName/DevToolkit.VarName.csproj" />
   <Project Path="src/FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" />
 </Solution>

@@ -1,16 +1,20 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+
 using CommunityToolkit.Mvvm.Input;
 
-using Flow.Launcher.Plugin;
-
 using OpenAI;
+
 using OpenAI.Chat;
 
 using System.ClientModel;
 
-namespace FlowLauncher.Plugin.Translator;
+namespace DevToolkit.Translator;
 
-public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) : ObservableObject
+/// <summary>
+/// 翻译设置 VM（宿主无关）：保存通过 <paramref name="onChanged"/> 回调持久化，
+/// 保存成功后触发 <see cref="ReQueryRequested"/> 由宿主自行处理（插件转发 FL ReQuery，App 刷新页面）。
+/// </summary>
+public partial class SettingsViewModel(Settings settings, Action onChanged) : ObservableObject
 {
     [ObservableProperty]
     private string _modelName = settings.ModelName;
@@ -29,6 +33,9 @@ public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) 
         !string.IsNullOrWhiteSpace(ApiKey);
 
     public bool CanSubmit => IsFormValid && !IsBusy;
+
+    /// <summary>保存后触发，宿主可据此刷新界面。</summary>
+    public event Action? ReQueryRequested;
 
     partial void OnModelNameChanged(string value)
     {
@@ -69,9 +76,9 @@ public partial class SettingsViewModel(IPublicAPI publicApi, Settings settings) 
         settings.ModelName = ModelName;
         settings.ApiUrl = ApiUrl;
         settings.ApiKey = ApiKey;
-        publicApi.SaveSettingJsonStorage<Settings>();
+        onChanged();
         ValidationMessage = "配置已保存。";
-        publicApi.ReQuery();
+        ReQueryRequested?.Invoke();
     }
 
     [RelayCommand]

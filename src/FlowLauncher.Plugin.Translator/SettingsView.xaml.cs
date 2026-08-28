@@ -1,4 +1,6 @@
 ﻿using System.Windows.Controls;
+using DevToolkit.Translator;
+
 
 namespace FlowLauncher.Plugin.Translator
 {

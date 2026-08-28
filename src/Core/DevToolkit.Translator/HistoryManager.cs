@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Text.Json;
 
-namespace FlowLauncher.Plugin.Translator;
+namespace DevToolkit.Translator;
 
 /// <summary>
 /// 翻译记录
@@ -20,7 +20,7 @@ public record TranslationRecord(
 /// <summary>
 /// 翻译历史记录管理器
 /// </summary>
-internal class HistoryManager
+public class HistoryManager
 {
     private readonly string _historyFilePath;
     private readonly int _maxRecords;

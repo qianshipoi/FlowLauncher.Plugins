@@ -2,9 +2,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace FlowLauncher.Plugin.VarName;
+namespace DevToolkit.VarName;
 
-internal class VarNameService(Settings settings)
+public class VarNameService(Settings settings)
 {
     private static Uri NormalizeEndpoint(string url)
     {
@@ -58,7 +58,7 @@ internal class VarNameService(Settings settings)
         return ParseResponse(text);
     }
 
-    internal static List<string> ParseResponse(string text)
+    public static List<string> ParseResponse(string text)
     {
         return text
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)

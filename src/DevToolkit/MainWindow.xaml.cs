@@ -22,6 +22,8 @@ public partial class MainWindow : Window
     private readonly SettingsPage _settingsPage;
     private readonly OpenDirectoryPage _openDirectoryPage;
     private readonly PortKillerPage _portKillerPage;
+    private readonly TranslatorPage _translatorPage;
+    private readonly VarNamePage _varNamePage;
 
     private JsonEditorWindow? _jsonEditorWindow;
     private AiChatWindow? _aiChatWindow;
@@ -38,6 +40,13 @@ public partial class MainWindow : Window
         _openDirectoryPage = new OpenDirectoryPage(new OpenDirectoryViewModel());
         _portKillerPage = new PortKillerPage(new PortKillerViewModel(
             new PortHistoryManager(AppServices.DataRoot)));
+        _translatorPage = new TranslatorPage(new TranslatorPageViewModel(
+            AppServices.DataRoot,
+            AppServices.TranslatorSettings,
+            AppServices.SaveTranslatorSettings,
+            () => { }));
+        _varNamePage = new VarNamePage(new VarNamePageViewModel(
+            AppServices.DataRoot, AppServices.VarNameSettings));
 
         NavView.ItemInvoked += (_, args) =>
         {
@@ -61,6 +70,14 @@ public partial class MainWindow : Window
 
             case "portkiller":
                 ContentFrame.Content = _portKillerPage;
+                break;
+
+            case "translator":
+                ContentFrame.Content = _translatorPage;
+                break;
+
+            case "varname":
+                ContentFrame.Content = _varNamePage;
                 break;
 
             case "aichat":
