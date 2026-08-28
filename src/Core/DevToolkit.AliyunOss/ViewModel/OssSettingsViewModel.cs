@@ -1,11 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using Flow.Launcher.Plugin;
 
-namespace FlowLauncher.Plugin.AliyunOss.ViewModel;
+namespace DevToolkit.AliyunOss.ViewModel;
 
-public partial class OssSettingsViewModel(IPublicAPI publicApi, Settings settings) : ObservableObject
+public partial class OssSettingsViewModel(Settings settings, Action onChanged) : ObservableObject
 {
     [ObservableProperty]
     private string _accessKeyId = settings.AccessKeyId;
@@ -20,7 +19,7 @@ public partial class OssSettingsViewModel(IPublicAPI publicApi, Settings setting
         settings.AccessKeyId = AccessKeyId;
         settings.AccessKeySecret = AccessKeySecret;
         settings.Endpoint = Endpoint;
-        publicApi.SaveSettingJsonStorage<Settings>();
+        onChanged();
     }
 
 }

@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FlowLauncher.Plugin.AliyunOss.Utils;
+namespace DevToolkit.AliyunOss.Utils;
 
 /// <summary>
 /// 节流帮助类：限制委托在指定时间间隔内最多执行一次。

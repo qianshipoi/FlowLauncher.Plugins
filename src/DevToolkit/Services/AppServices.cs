@@ -29,6 +29,9 @@ public static class AppServices
     public static VarName.Settings VarNameSettings { get; private set; } =
         LoadJson<VarName.Settings>("varname-settings.json") ?? new VarName.Settings();
 
+    public static AliyunOss.Settings OssSettings { get; private set; } =
+        LoadJson<AliyunOss.Settings>("oss-settings.json") ?? new AliyunOss.Settings();
+
     public static void SaveToolboxSettings() => SaveJson("toolbox-settings.json", ToolboxSettings);
 
     public static void SaveAiChatSettings() => SaveJson("aichat-settings.json", AiChatSettings);
@@ -36,6 +39,8 @@ public static class AppServices
     public static void SaveTranslatorSettings() => SaveJson("translator-settings.json", TranslatorSettings);
 
     public static void SaveVarNameSettings() => SaveJson("varname-settings.json", VarNameSettings);
+
+    public static void SaveOssSettings() => SaveJson("oss-settings.json", OssSettings);
 
     private static Settings LoadToolboxSettings() =>
         LoadJson<Settings>("toolbox-settings.json") ?? new Settings();

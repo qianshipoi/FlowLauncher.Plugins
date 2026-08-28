@@ -27,6 +27,7 @@ public partial class MainWindow : Window
     private readonly PortKillerPage _portKillerPage;
     private readonly TranslatorPage _translatorPage;
     private readonly VarNamePage _varNamePage;
+    private readonly OssPage _ossPage;
 
     private JsonEditorWindow? _jsonEditorWindow;
     private AiChatWindow? _aiChatWindow;
@@ -51,6 +52,8 @@ public partial class MainWindow : Window
             () => { }));
         _varNamePage = new VarNamePage(new VarNamePageViewModel(
             AppServices.DataRoot, AppServices.VarNameSettings));
+        _ossPage = new OssPage(new OssPageViewModel(
+            AppServices.OssSettings, AppServices.SaveOssSettings));
 
         NavView.ItemInvoked += (_, args) =>
         {
@@ -82,6 +85,10 @@ public partial class MainWindow : Window
 
             case "varname":
                 ContentFrame.Content = _varNamePage;
+                break;
+
+            case "oss":
+                ContentFrame.Content = _ossPage;
                 break;
 
             case "aichat":

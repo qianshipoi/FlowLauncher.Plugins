@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FlowLauncher.Plugin.AliyunOss.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:viewmodel="clr-namespace:FlowLauncher.Plugin.AliyunOss.ViewModel"
+    xmlns:viewmodel="clr-namespace:DevToolkit.AliyunOss.ViewModel"
     d:Background="White"
     d:DataContext="{d:DesignInstance Type={x:Type viewmodel:OssSettingsViewModel}}"
     d:DesignWidth="400"

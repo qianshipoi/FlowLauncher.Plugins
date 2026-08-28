@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace FlowLauncher.Plugin.AliyunOss.ViewModel;
+namespace DevToolkit.AliyunOss.ViewModel;
 
 public partial class DownloadViewModel : ObservableObject
 {

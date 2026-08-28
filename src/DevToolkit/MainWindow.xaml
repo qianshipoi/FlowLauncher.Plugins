@@ -15,6 +15,7 @@
             <ui:NavigationViewItem Content="密码管理" Tag="passwordmanager"/>
             <ui:NavigationViewItem Content="翻译" Tag="translator"/>
             <ui:NavigationViewItem Content="变量名" Tag="varname"/>
+            <ui:NavigationViewItem Content="阿里云 OSS" Tag="oss"/>
             <ui:NavigationViewItem Content="AI 对话" Tag="aichat"/>
             <ui:NavigationViewItem Content="设置" Tag="settings"/>
         </ui:NavigationView.MenuItems>

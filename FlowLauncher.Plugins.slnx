@@ -19,6 +19,7 @@
   <Project Path="src/Core/DevToolkit.Core.Wpf/DevToolkit.Core.Wpf.csproj" />
   <Project Path="src/Core/DevToolkit.Toolbox/DevToolkit.Toolbox.csproj" />
   <Project Path="src/Core/DevToolkit.AiChat/DevToolkit.AiChat.csproj" />
+  <Project Path="src/Core/DevToolkit.AliyunOss/DevToolkit.AliyunOss.csproj" />
   <Project Path="src/Core/DevToolkit.OpenDirectory/DevToolkit.OpenDirectory.csproj" />
   <Project Path="src/Core/DevToolkit.PortKiller/DevToolkit.PortKiller.csproj" />
   <Project Path="src/Core/DevToolkit.Translator/DevToolkit.Translator.csproj" />

@@ -1,8 +1,7 @@
 ﻿using AlibabaCloud.OSS.V2;
 
-using Flow.Launcher.Plugin;
 
-using FlowLauncher.Plugin.AliyunOss.Utils;
+using DevToolkit.AliyunOss.Utils;
 
 using Microsoft.Extensions.Caching.Memory;
 
@@ -10,9 +9,9 @@ using System.IO;
 
 using OSS = AlibabaCloud.OSS.V2;
 
-namespace FlowLauncher.Plugin.AliyunOss.Services;
+namespace DevToolkit.AliyunOss.Services;
 
-public class OssService(IPublicAPI publicAPI, Settings settings)
+public class OssService(Settings settings, Action<string>? log = null)
 {
     private readonly HashSet<string> _buckets = [];
     private readonly IMemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
@@ -36,10 +35,10 @@ public class OssService(IPublicAPI publicAPI, Settings settings)
 
     public async Task<List<string>> GetBucketsAsync(string bucketName = "", CancellationToken cancellationToken = default)
     {
-        publicAPI.LogInfo(nameof(OssService), "GetBucketsAsync.");
+        log?.Invoke("GetBucketsAsync.");
         if (_buckets.Count > 0)
         {
-            publicAPI.LogInfo(nameof(OssService), "Returning cached buckets.");
+            log?.Invoke("Returning cached buckets.");
 
             return _buckets.Where(x => x.Contains(bucketName.Replace("-", ""))).ToList();
         }
@@ -91,7 +90,7 @@ public class OssService(IPublicAPI publicAPI, Settings settings)
     {
         prefix ??= string.Empty;
         prefix = prefix.Replace('\\', '/').TrimStart('/');
-        publicAPI.LogInfo(nameof(OssService), $"GetObjectsAsync. bucketName: {bucketName}, prefix: {prefix}");
+        log?.Invoke($"GetObjectsAsync. bucketName: {bucketName}, prefix: {prefix}");
 
         if (!_buckets.Contains(bucketName)) return [];
 

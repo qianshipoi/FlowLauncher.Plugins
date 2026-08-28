@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace FlowLauncher.Plugin.AliyunOss.Utils;
+namespace DevToolkit.AliyunOss.Utils;
 
 public static class FileHasher
 {

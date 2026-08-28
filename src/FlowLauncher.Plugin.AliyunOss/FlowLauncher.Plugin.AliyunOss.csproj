@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net9.0-windows7.0</TargetFramework>
@@ -10,16 +10,16 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="AlibabaCloud.OSS.V2" Version="0.1.2" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
-		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
-		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.11" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Core\DevToolkit.AliyunOss\DevToolkit.AliyunOss.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="favicon.ico">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="plugin.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -2,7 +2,16 @@
 
 ## 项目概述
 
-这是一个 Flow Launcher 插件集合，使用 C# / .NET 9 / WPF 构建，包含 8 个独立插件和 1 个演示应用。
+这是一个 Flow Launcher 插件集合 + 独立 WPF 应用（DevToolkit），使用 C# / .NET 9 / WPF 构建。
+
+## 架构：Core 与宿主
+
+**核心原则**：功能逻辑放在 `src/Core/DevToolkit.<功能>` 类库（无 Flow.Launcher 依赖，除密码管理等 Windows 专属能力外为 net9.0），Flow Launcher 插件是薄适配壳（查询分发 + FL API：剪贴板/通知/进度框），独立 App `src/DevToolkit/`（iNKORE.UI.WPF.Modern NavigationView 壳）直接复用同一批 Core 服务与 ViewModel。
+
+- 修改功能逻辑时改 Core 工程，插件与 App 同时受益；**不要**把逻辑写回插件 Main.cs
+- 跨宿主的 ViewModel 通过回调解耦持久化（`Action onChanged` 照 AiChat 范本）与事件（`ReQueryRequested`）；需要 UI 的视图放 `src/Core/DevToolkit.Core.Wpf`（宿主无关 WPF 窗口：AiChat 三窗口、JsonEditorWindow、密码管理 ManagerWindow/对话框），宿主需在 App.xaml 合并 iNKORE `ThemeResources` + `XamlControlsResources`
+- App 数据目录 `%AppData%\DevToolkit\<功能>\`，与插件目录数据相互隔离；App 用 `RollForward=LatestMajor` 以运行在更高版本 .NET 桌面运行时上
+- wwwroot（jsoneditor）单源在 DevToolkit.Core.Wpf，插件与 App 用 Content Link 复制
 
 ## 技术栈
 
@@ -19,20 +28,31 @@
 ```
 FlowLauncher.Plugins/
 ├── FlowLauncher.Plugins.slnx          # 解决方案文件
+├── Core/                              # 与宿主无关的功能核心库
+│   ├── DevToolkit.Toolbox/            # 工具合集服务 + 设置/VM
+│   ├── DevToolkit.PasswordManager/    # 密码管理（SQLCipher+DPAPI）模型/服务/VM
+│   ├── DevToolkit.Translator/         # 翻译服务/历史/设置/VM
+│   ├── DevToolkit.VarName/            # 变量名服务/缓存/命名转换器/VM
+│   ├── DevToolkit.AliyunOss/          # OSS 服务/下载服务/设置/VM
+│   ├── DevToolkit.PortKiller/         # netstat 解析 + 端口历史
+│   ├── DevToolkit.OpenDirectory/      # 路径规范化/打开
+│   ├── DevToolkit.AiChat/             # AI 对话设置
+│   └── DevToolkit.Core.Wpf/           # 宿主无关 WPF 窗口 + wwwroot
+├── DevToolkit/                        # 独立 WPF App（NavigationView 壳，全部功能页面）
 ├── DemoApp/                            # AiChat 独立演示应用 (WinExe)
-├── FlowLauncher.Plugin.AiChat/         # AI 聊天插件
-├── FlowLauncher.Plugin.AliyunOss/      # 阿里云 OSS 插件
-├── FlowLauncher.Plugin.OpenDirectory/  # 打开目录插件
-├── FlowLauncher.Plugin.PasswordManager/# 密码管理器插件
-├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件
-├── FlowLauncher.Plugin.Translator/     # AI 翻译插件
-├── FlowLauncher.Plugin.VarName/        # 变量命名插件
-├── FlowLauncher.Plugin.Toolbox/        # 工具合集插件（GUID/JSON/哈希/时间戳）
+├── FlowLauncher.Plugin.AiChat/         # AI 聊天插件（薄壳）
+├── FlowLauncher.Plugin.AliyunOss/      # 阿里云 OSS 插件（薄壳）
+├── FlowLauncher.Plugin.OpenDirectory/  # 打开目录插件（薄壳）
+├── FlowLauncher.Plugin.PasswordManager/# 密码管理器插件（薄壳）
+├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件（薄壳）
+├── FlowLauncher.Plugin.Translator/     # AI 翻译插件（薄壳）
+├── FlowLauncher.Plugin.VarName/        # 变量命名插件（薄壳）
+├── FlowLauncher.Plugin.Toolbox/        # 工具合集插件（薄壳）
 └── tests/
-    ├── AliyunOss.UnitTest/             # 阿里云 OSS 单元测试
-    ├── PasswordManager.UnitTest/       # 密码管理器单元测试
-    ├── VarName.UnitTest/               # 变量命名单元测试
-    └── Toolbox.UnitTest/               # 工具合集单元测试
+    ├── AliyunOss.UnitTest/             # 测 DevToolkit.AliyunOss
+    ├── PasswordManager.UnitTest/       # 测 DevToolkit.PasswordManager
+    ├── VarName.UnitTest/               # 测 DevToolkit.VarName
+    └── Toolbox.UnitTest/               # 测 DevToolkit.Toolbox
 ```
 
 ## 插件架构模式

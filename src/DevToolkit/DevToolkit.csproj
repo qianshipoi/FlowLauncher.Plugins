@@ -18,6 +18,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\DevToolkit.AiChat\DevToolkit.AiChat.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.AliyunOss\DevToolkit.AliyunOss.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.Core.Wpf\DevToolkit.Core.Wpf.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.OpenDirectory\DevToolkit.OpenDirectory.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.PasswordManager\DevToolkit.PasswordManager.csproj" />

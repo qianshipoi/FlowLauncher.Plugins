@@ -1,4 +1,4 @@
-﻿namespace FlowLauncher.Plugin.AliyunOss;
+﻿namespace DevToolkit.AliyunOss;
 
 public class SettingsNotConfiguredException : Exception
 {

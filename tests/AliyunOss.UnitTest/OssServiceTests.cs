@@ -1,12 +1,10 @@
-﻿using Flow.Launcher.Plugin; 
 
-using FlowLauncher.Plugin.AliyunOss;
-using FlowLauncher.Plugin.AliyunOss.Services;
-using FlowLauncher.Plugin.AliyunOss.Utils;
+using DevToolkit.AliyunOss;
+using DevToolkit.AliyunOss.Services;
+using DevToolkit.AliyunOss.Utils;
 
 using Microsoft.Extensions.Configuration;
 
-using Moq;
 
 namespace AliyunOss.UnitTest;
 
@@ -18,7 +16,7 @@ public class OssServiceTests
             .AddUserSecrets<OssServiceTests>()
             .Build();
 
-        return new OssService(new Mock<IPublicAPI>().Object, new Settings
+        return new OssService(new Settings
         {
             Endpoint = configuration.GetSection("Endpoint").Value,
             AccessKeyId = configuration.GetSection("AccessKeyId").Value,
