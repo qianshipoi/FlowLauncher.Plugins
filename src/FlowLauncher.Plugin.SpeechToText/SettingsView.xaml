@@ -1,0 +1,36 @@
+<UserControl x:Class="FlowLauncher.Plugin.SpeechToText.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel Margin="16" MaxWidth="560">
+        <TextBlock Text="语音转文字设置" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16"/>
+
+        <TextBlock Text="模型名称" FontWeight="SemiBold" Margin="0,0,0,4"/>
+        <TextBox Text="{Binding ModelName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+        <TextBlock Text="API 地址" FontWeight="SemiBold" Margin="0,0,0,4"/>
+        <TextBox Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
+
+        <TextBlock Text="API Key" FontWeight="SemiBold" Margin="0,0,0,4"/>
+        <PasswordBox x:Name="ApiKeyBox" Margin="0,0,0,12"/>
+        <TextBlock Text="语言代码" FontWeight="SemiBold" Margin="0,0,0,4"/>
+        <TextBox Text="{Binding Language, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
+                 Width="80" HorizontalAlignment="Left"/>
+
+        <TextBlock Text="采样率" FontWeight="SemiBold" Margin="0,0,0,4"/>
+        <TextBox Text="{Binding SampleRate, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"
+                 Width="120" HorizontalAlignment="Left"/>
+
+        <TextBlock Text="实时识别" FontWeight="SemiBold" Margin="0,0,0,4"/>
+        <CheckBox Content="录音过程中实时识别（边录边出结果）"
+                  IsChecked="{Binding EnableRealtimeTranscription}" Margin="0,0,0,8"/>
+        <TextBlock Text="识别间隔（毫秒，最低 500）" FontWeight="SemiBold" Margin="0,0,0,4"/>
+        <TextBox Text="{Binding RealtimeIntervalMs, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,16"
+                 Width="120" HorizontalAlignment="Left"/>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content="保存" Command="{Binding SaveCommand}" Padding="16,6" Margin="0,0,8,0"/>
+            <Button Content="测试连接" Command="{Binding TestConnectionCommand}" Padding="16,6"/>
+        </StackPanel>
+        <TextBlock Text="{Binding ConnectionStatus}" Margin="0,8,0,0" Foreground="#888"/>
+    </StackPanel>
+</UserControl>

@@ -11,6 +11,7 @@ public sealed class VarNameCache : IDisposable
 
     public VarNameCache(string pluginDirectory)
     {
+        Directory.CreateDirectory(pluginDirectory);
         var dbPath = Path.Combine(pluginDirectory, "varname_cache.db");
         _conn = new SqliteConnection($"Data Source={dbPath}");
         _conn.Open();

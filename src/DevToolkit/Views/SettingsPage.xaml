@@ -44,13 +44,50 @@
                         <TextBlock Grid.Row="1" Text="API 地址" VerticalAlignment="Center"/>
                         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"/>
                         <TextBlock Grid.Row="2" Text="API Key" VerticalAlignment="Center"/>
-                        <PasswordBox x:Name="ApiKeyBox" Grid.Row="2" Grid.Column="1" Margin="0,2"
-                                     PasswordChanged="ApiKeyBox_PasswordChanged"/>
+                        <PasswordBox x:Name="VarNameApiKeyBox" Grid.Row="2" Grid.Column="1" Margin="0,2"
+                                     PasswordChanged="VarNameApiKeyBox_PasswordChanged"/>
                     </Grid>
                     <StackPanel Orientation="Horizontal">
                         <Button Content="保存" MinWidth="80" Command="{Binding SaveCommand}"/>
                         <Button Content="验证连通" MinWidth="80" Margin="8,0,0,0" Command="{Binding ValidateCommand}"/>
                         <TextBlock Text="{Binding ValidationMessage}" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="#888888"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="语音转文字 · ASR 配置" Style="{StaticResource SectionTitle}" Margin="0,20,0,0"/>
+            <TextBlock Text="语音识别使用 OpenAI 兼容接口（如 mimo-v2.5-asr），与 Flow Launcher 插件的配置相互独立。"
+                       Style="{StaticResource PageHint}"/>
+            <Border Style="{StaticResource Card}">
+                <StackPanel x:Name="SttSection">
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="模型" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding ModelName, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"/>
+                        <TextBlock Grid.Row="1" Text="API 地址" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"/>
+                        <TextBlock Grid.Row="2" Text="API Key" VerticalAlignment="Center"/>
+                        <PasswordBox x:Name="SttApiKeyBox" Grid.Row="2" Grid.Column="1" Margin="0,2"
+                                     PasswordChanged="SttApiKeyBox_PasswordChanged"/>
+                        <TextBlock Grid.Row="3" Text="语言" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Language, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" Width="80" HorizontalAlignment="Left"/>
+                        <TextBlock Grid.Row="4" Text="采样率" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SampleRate, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" Width="120" HorizontalAlignment="Left"/>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="保存" MinWidth="80" Command="{Binding SaveCommand}"/>
+                        <Button Content="测试连接" MinWidth="80" Margin="8,0,0,0" Command="{Binding TestConnectionCommand}"/>
+                        <TextBlock Text="{Binding ConnectionStatus}" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="#888888"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -2,9 +2,7 @@ using DevToolkit.Core.Wpf;
 
 using DevToolkit.PortKiller;
 
-using DevToolkit.Toolbox.ViewModels;
-
-using DevToolkit.VarName;
+using DevToolkit.SpeechToText;
 
 using DevToolkit.ViewModels;
 
@@ -12,13 +10,14 @@ using DevToolkit.Views;
 
 using DevToolkit.Views.Tools;
 
-using System.IO;
+using Microsoft.Extensions.Logging;
 
 using System.Windows;
 
 using System.Windows.Controls;
 
 using NavigationViewItem = iNKORE.UI.WPF.Modern.Controls.NavigationViewItem;
+using SttSettingsViewModel = DevToolkit.SpeechToText.SettingsViewModel;
 using ToolboxSettingsViewModel = DevToolkit.Toolbox.ViewModels.SettingsViewModel;
 using VarNameSettingsViewModel = DevToolkit.VarName.SettingsViewModel;
 
@@ -44,6 +43,8 @@ public partial class MainWindow : Window
     private readonly SettingsPage _settingsPage;
     private readonly PortKillerPage _portKillerPage;
     private readonly VarNamePage _varNamePage;
+    private readonly SpeechToTextPage _speechToTextPage;
+    private readonly AboutPage _aboutPage;
     private readonly ToolboxSettingsViewModel _toolboxSettingsVm;
 
     private JsonEditorWindow? _jsonEditorWindow;
@@ -54,12 +55,17 @@ public partial class MainWindow : Window
         InitializeComponent();
 
         _toolboxSettingsVm = new ToolboxSettingsViewModel(AppServices.ToolboxSettings, OnToolboxSettingsChanged);
-        _settingsPage = new SettingsPage(_toolboxSettingsVm, new VarNameSettingsViewModel(
-            AppServices.VarNameSettings, AppServices.SaveVarNameSettings));
+        _settingsPage = new SettingsPage(_toolboxSettingsVm,
+            new VarNameSettingsViewModel(AppServices.VarNameSettings, AppServices.SaveVarNameSettings),
+            new SttSettingsViewModel(AppServices.SpeechToTextSettings, AppServices.SaveSpeechToTextSettings));
         _portKillerPage = new PortKillerPage(new PortKillerViewModel(
             new PortHistoryManager(AppServices.DataRoot)));
         _varNamePage = new VarNamePage(new VarNamePageViewModel(
             AppServices.DataRoot, AppServices.VarNameSettings));
+        _speechToTextPage = new SpeechToTextPage(new SpeechToTextViewModel(
+            AppServices.SpeechToTextSettings, AppServices.DataRoot,
+            AppServices.LoggerFactory.CreateLogger<SpeechToTextViewModel>()));
+        _aboutPage = new AboutPage();
 
         NavView.ItemInvoked += (_, args) =>
         {
@@ -92,6 +98,8 @@ public partial class MainWindow : Window
         "tool:cron" => "\uE9D9",       // Diagnostic
         "portkiller" => "\uE71A",      // Stop
         "varname" => "\uE8AC",         // Rename
+        "speechtotext" => "\uE720",    // Microphone
+        "about" => "\uE946",           // Info
         _ => "\uE713",                 // Settings
     };
 
@@ -109,7 +117,9 @@ public partial class MainWindow : Window
 
         NavView.MenuItems.Add(MakeItem("portkiller", "端口占用"));
         NavView.MenuItems.Add(MakeItem("varname", "变量名"));
-        NavView.MenuItems.Add(MakeItem("settings", "设置"));
+        NavView.MenuItems.Add(MakeItem("speechtotext", "语音转文字"));
+        NavView.FooterMenuItems.Add(MakeItem("about", "关于"));
+        NavView.FooterMenuItems.Add(MakeItem("settings", "设置"));
 
         // 当前选中项被禁用时，回退到第一个可用的工具
         if (FindByTag(_currentTag) is null && _currentTag.StartsWith("tool:"))
@@ -142,6 +152,8 @@ public partial class MainWindow : Window
             "settings" => _settingsPage,
             "portkiller" => _portKillerPage,
             "varname" => _varNamePage,
+            "speechtotext" => _speechToTextPage,
+            "about" => _aboutPage,
             _ => GetToolView(tag["tool:".Length..]),
         };
     }

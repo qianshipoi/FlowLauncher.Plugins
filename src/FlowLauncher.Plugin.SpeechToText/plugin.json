@@ -1,0 +1,11 @@
+{
+    "ID": "a7c3e1b2-4d5f-6a89-b012-c3d4e5f6a7b8",
+    "ActionKeyword": "asr",
+    "Name": "Speech To Text",
+    "Description": "语音转文字，基于 ASR 模型实时识别",
+    "Author": "DevToolkit",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.SpeechToText.dll"
+}
