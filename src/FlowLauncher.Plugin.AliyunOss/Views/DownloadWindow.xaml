@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:FlowLauncher.Plugin.AliyunOss.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
-    xmlns:viewmodel="clr-namespace:FlowLauncher.Plugin.AliyunOss.ViewModel"
+    xmlns:viewmodel="clr-namespace:DevToolkit.AliyunOss.ViewModel"
     Title="DownloadWindow"
     Width="800"
     Height="450"

@@ -1,4 +1,4 @@
-﻿using FlowLauncher.Plugin.AliyunOss.ViewModel;
+﻿using DevToolkit.AliyunOss.ViewModel;
 
 using System.Windows;
 

@@ -1,0 +1,22 @@
+<UserControl x:Class="DevToolkit.Views.Tools.PwView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:DevToolkit.Views.Controls">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,16" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="密码生成" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="强密码（大小写 + 数字 + 符号）、无易混淆字符密码（去 0O1lI）与 Hex 密钥。"
+                       Style="{StaticResource PageSubtitle}"/>
+            <TextBlock Text="长度（默认 24，上限 256）" Style="{StaticResource SectionTitle}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBox x:Name="LengthBox" Text="24" MinWidth="80" VerticalContentAlignment="Center"
+                         KeyDown="Length_KeyDown"/>
+                <Button Content="生成" MinWidth="88" Margin="8,0,0,0" Click="Generate_Click" IsDefault="True"/>
+                <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="#888888"/>
+            </StackPanel>
+            <Border Style="{StaticResource Card}">
+                <c:ResultRowsView x:Name="Rows"/>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

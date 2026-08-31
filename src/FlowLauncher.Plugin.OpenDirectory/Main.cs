@@ -1,3 +1,5 @@
+using DevToolkit.OpenDirectory;
+
 using Flow.Launcher.Plugin;
 
 using System.Diagnostics;
@@ -33,7 +35,7 @@ public class Main : IAsyncPlugin
             });
         }
 
-        var normalized = NormalizePath(raw);
+        var normalized = PathService.Normalize(raw);
 
         if (!Path.IsPathRooted(normalized))
         {
@@ -66,7 +68,7 @@ public class Main : IAsyncPlugin
                 IcoPath = "favicon.ico",
                 Action = _ =>
                 {
-                    OpenDirectory(normalized, dirToOpen);
+                    PathService.OpenInExplorer(normalized, dirToOpen);
                     return true;
                 }
             });
@@ -118,38 +120,5 @@ public class Main : IAsyncPlugin
         }
 
         return Task.FromResult(results);
-    }
-
-    /// <summary>
-    /// 规范化路径：将连续反斜杠合并为单个，同时保留 UNC 路径前缀
-    /// </summary>
-    private static string NormalizePath(string raw)
-    {
-        var path = raw.Replace("\\\\", "\\");
-
-        if (raw.StartsWith("\\\\") || raw.StartsWith("//"))
-        {
-            path = @"\\" + path.TrimStart('\\', '/');
-        }
-
-        return path;
-    }
-
-    private static void OpenDirectory(string path, string dirToOpen)
-    {
-        if (File.Exists(path))
-        {
-            Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"")
-            {
-                UseShellExecute = true
-            });
-        }
-        else
-        {
-            Process.Start(new ProcessStartInfo("explorer.exe", $"\"{dirToOpen}\"")
-            {
-                UseShellExecute = true
-            });
-        }
     }
 }

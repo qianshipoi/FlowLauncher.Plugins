@@ -2,7 +2,16 @@
 
 ## 项目概述
 
-这是一个 Flow Launcher 插件集合，使用 C# / .NET 9 / WPF 构建，包含 7 个独立插件和 1 个演示应用。
+这是一个 Flow Launcher 插件集合 + 独立 WPF 应用（DevToolkit），使用 C# / .NET 9 / WPF 构建。
+
+## 架构：Core 与宿主
+
+**核心原则**：功能逻辑放在 `src/Core/DevToolkit.<功能>` 类库（无 Flow.Launcher 依赖，除密码管理等 Windows 专属能力外为 net9.0），Flow Launcher 插件是薄适配壳（查询分发 + FL API：剪贴板/通知/进度框），独立 App `src/DevToolkit/`（iNKORE.UI.WPF.Modern NavigationView 壳）直接复用同一批 Core 服务与 ViewModel。
+
+- 修改功能逻辑时改 Core 工程，插件与 App 同时受益；**不要**把逻辑写回插件 Main.cs
+- 跨宿主的 ViewModel 通过回调解耦持久化（`Action onChanged` 回调）；需要 UI 的视图放 `src/DevToolkit.Core.Wpf`（宿主无关 WPF 窗口：JsonEditorWindow、密码管理 ManagerWindow/对话框），宿主需在 App.xaml 合并 iNKORE `ThemeResources` + `XamlControlsResources`
+- App 数据目录 `%AppData%\DevToolkit\<功能>\`，与插件目录数据相互隔离；App 用 `RollForward=LatestMajor` 以运行在更高版本 .NET 桌面运行时上
+- wwwroot（jsoneditor）单源在 DevToolkit.Core.Wpf，插件与 App 用 Content Link 复制
 
 ## 技术栈
 
@@ -19,18 +28,26 @@
 ```
 FlowLauncher.Plugins/
 ├── FlowLauncher.Plugins.slnx          # 解决方案文件
-├── DemoApp/                            # AiChat 独立演示应用 (WinExe)
-├── FlowLauncher.Plugin.AiChat/         # AI 聊天插件
-├── FlowLauncher.Plugin.AliyunOss/      # 阿里云 OSS 插件
-├── FlowLauncher.Plugin.OpenDirectory/  # 打开目录插件
-├── FlowLauncher.Plugin.PasswordManager/# 密码管理器插件
-├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件
-├── FlowLauncher.Plugin.Translator/     # AI 翻译插件
-├── FlowLauncher.Plugin.VarName/        # 变量命名插件
+├── Core/                              # 与宿主无关的功能核心库
+│   ├── DevToolkit.Toolbox/            # 工具合集服务 + 设置/VM
+│   ├── DevToolkit.PasswordManager/    # 密码管理（SQLCipher+DPAPI）模型/服务/VM
+│   ├── DevToolkit.VarName/            # 变量名服务/缓存/命名转换器/VM
+│   ├── DevToolkit.AliyunOss/          # OSS 服务/下载服务/设置/VM
+│   ├── DevToolkit.PortKiller/         # netstat 解析 + 端口历史
+│   ├── DevToolkit.OpenDirectory/      # 路径规范化/打开
+│   └── DevToolkit.Core.Wpf/           # 宿主无关 WPF 窗口 + wwwroot
+├── DevToolkit/                        # 独立 WPF App（NavigationView 壳，全部功能页面）
+├── FlowLauncher.Plugin.AliyunOss/      # 阿里云 OSS 插件（薄壳）
+├── FlowLauncher.Plugin.OpenDirectory/  # 打开目录插件（薄壳）
+├── FlowLauncher.Plugin.PasswordManager/# 密码管理器插件（薄壳）
+├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件（薄壳）
+├── FlowLauncher.Plugin.VarName/        # 变量命名插件（薄壳）
+├── FlowLauncher.Plugin.Toolbox/        # 工具合集插件（薄壳）
 └── tests/
-    ├── AliyunOss.UnitTest/             # 阿里云 OSS 单元测试
-    ├── PasswordManager.UnitTest/       # 密码管理器单元测试
-    └── VarName.UnitTest/               # 变量命名单元测试
+    ├── AliyunOss.UnitTest/             # 测 DevToolkit.AliyunOss
+    ├── PasswordManager.UnitTest/       # 测 DevToolkit.PasswordManager
+    ├── VarName.UnitTest/               # 测 DevToolkit.VarName
+    └── Toolbox.UnitTest/               # 测 DevToolkit.Toolbox
 ```
 
 ## 插件架构模式
@@ -101,8 +118,6 @@ public class Main : IAsyncPlugin, ISettingProvider
 
 ## 各插件详情
 
-### AiChat（触发关键字: `ai`）
-
 - 打开 AI 聊天网页（如豆包），支持多标签页
 - 使用 WebView2 渲染网页
 - 支持浮动窗口模式
@@ -124,8 +139,6 @@ public class Main : IAsyncPlugin, ISettingProvider
 - 使用 CsWin32 P/Invoke 获取进程文件路径
 - JSON 文件持久化查询历史
 - 依赖: Microsoft.Windows.CsWin32
-
-### Translator（触发关键字: `trans`）
 
 - AI 翻译器，基于 OpenAI API
 - 可配置模型、API 地址和密钥
@@ -155,12 +168,20 @@ public class Main : IAsyncPlugin, ISettingProvider
 - 快速打开常用目录（桌面、文档、下载等）
 - 轻量级插件，无外部依赖
 
+### Toolbox（触发关键字: `tool`）
+
+- 工具合集，子命令: `guid`（GUID v1/v3/v4/v5/v7 生成）、`json`（WebView2 + jsoneditor 编辑器窗口）、`fhash`（单遍流式计算 MD5/SHA1/SHA256/SHA384/SHA512/CRC32）、`dt`（时间与时间戳）、`enc`（URL/Base64/HTML/Hex 编解码）、`pw`（随机密码/密钥）、`base`（进制与字符码点互查）、`ts`（时间戳转日期）、`jwt`（解码 Header/Payload/exp，Payload 可右键进 JSON 编辑器）、`cron`（中文描述 + 未来 5 次执行，Cronos 包）
+- JSON 编辑器：`wwwroot/` 本地打包 jsoneditor 10.4.3，`SetVirtualHostNameToFolderMapping` 虚拟域名加载，`WebMessageReceived`/`PostWebMessageAsJson` 宿主↔页面通信，UserDataFolder 为插件目录下 `WebView2Cache`，窗口单实例复用并在 `Closed` 时 Dispose
+- 设置面板（ISettingProvider）：`Settings.cs` 各子命令独立启用开关（默认全开）+ `IsEnabled` 映射；`SettingsViewModel` 复选框变更即写回 `SaveSettingJsonStorage`；禁用命令查询返回提示行，帮助列表只显示启用项，`json` 开关联动 jwt 的"进 JSON 编辑器"菜单
+- 不使用 iNKORE 组件（普通 WPF Window），无 AssemblyResolve 需求
+- 依赖: Microsoft.Web.WebView2, Cronos
+
 ## 编码规范
 
 - **命名空间**: `FlowLauncher.Plugin.{Name}`
 - **异步优先**: 所有查询使用 `QueryAsync`，支持 `CancellationToken`
 - **主构造函数**: 服务类使用 C# 12 主构造函数语法
-- **记录类型**: 数据模型使用 `record`（如 `TranslationRecord`）
+- **记录类型**: 数据模型使用 `record`（如 `ToolRow`、`HashResult`）
 - **不可变集合**: 使用 `IReadOnlyList<T>` 作为返回类型
 - **线程安全**: 使用 `Lock` 对象（.NET 9）保护共享状态
 - **WPF UI 更新**: 通过 `Application.Current.Dispatcher.Invoke` 在主线程执行
@@ -173,7 +194,7 @@ public class Main : IAsyncPlugin, ISettingProvider
 dotnet build FlowLauncher.Plugins.slnx
 
 # 构建单个插件
-dotnet build FlowLauncher.Plugin.AiChat/FlowLauncher.Plugin.AiChat.csproj
+dotnet build FlowLauncher.Plugin.Toolbox/FlowLauncher.Plugin.Toolbox.csproj
 
 # 运行测试
 dotnet test tests/AliyunOss.UnitTest/AliyunOss.UnitTest.csproj
@@ -198,4 +219,5 @@ dotnet test tests/VarName.UnitTest/VarName.UnitTest.csproj
 - `AppendTargetFrameworkToOutputPath` 设为 `false`，输出路径不含 TFM 子目录
 - 使用 `Result` 对象时，`IcoPath` 通常设为 `"favicon.ico"`
 - `Result.Action` 回调返回 `true` 关闭 Flow Launcher，`false` 保持打开
+- 发布配置：每个插件 `Properties/PublishProfiles/FolderProfile.pubxml` 为**本机配置，被 `.gitignore` 忽略、不入库**（其中硬编码了本机的 Flow Launcher 插件目录，不同电脑路径不同需自行创建）；`scripts/publish-*.ps1` 调用 `dotnet publish -p:PublishProfile=FolderProfile` 发布。根目录 `Directory.Build.targets` 负责把 plugin.json 的 `Version` 拼进目录名（最终目录 = `<插件名>-<Version>\`，平铺不嵌套）并在发布前清空目标目录；Flow Launcher 运行中会锁定已加载插件的 DLL，更新前需先退出
 - **更新插件前必须先读取该插件目录下的 `Readme.md`**，了解插件的功能、架构、数据模型和安全设计，避免破坏现有逻辑

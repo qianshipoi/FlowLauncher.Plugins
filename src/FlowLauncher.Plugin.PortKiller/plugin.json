@@ -2,7 +2,7 @@
     "ID": "F99DD6AB51A8452791324ABBD9845CE5",
     "ActionKeyword": "kp", 
     "Name": "Kill port", 
-    "Description": "阿里云对象存储下载器", 
+    "Description": "查询端口占用进程并结束进程", 
     "Author": "qianshi",
     "Version": "1.0.0",
     "Language": "csharp", 

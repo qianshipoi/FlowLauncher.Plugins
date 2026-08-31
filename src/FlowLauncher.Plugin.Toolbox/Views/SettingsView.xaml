@@ -1,0 +1,32 @@
+<UserControl x:Class="FlowLauncher.Plugin.Toolbox.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="380" d:DesignWidth="560">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16,12">
+            <TextBlock Text="启用的工具"
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,4"/>
+            <TextBlock Text="取消勾选后，对应子命令在查询中将被禁用（输入 tool 可查看当前可用的工具）；更改即时生效，无需重启 Flow Launcher。"
+                       TextWrapping="Wrap"
+                       Foreground="#666666"
+                       Margin="0,0,0,10"/>
+            <UniformGrid Columns="2">
+                <CheckBox Content="GUID 生成（guid）"     IsChecked="{Binding EnableGuid}"  Margin="0,4,16,6"/>
+                <CheckBox Content="JSON 编辑器（json）"   IsChecked="{Binding EnableJson}"  Margin="0,4,16,6"/>
+                <CheckBox Content="文件哈希（fhash）"     IsChecked="{Binding EnableFhash}" Margin="0,4,16,6"/>
+                <CheckBox Content="时间与时间戳（dt）"    IsChecked="{Binding EnableDt}"    Margin="0,4,16,6"/>
+                <CheckBox Content="编码转换（enc）"       IsChecked="{Binding EnableEnc}"   Margin="0,4,16,6"/>
+                <CheckBox Content="密码生成（pw）"        IsChecked="{Binding EnablePw}"    Margin="0,4,16,6"/>
+                <CheckBox Content="进制转换（base）"      IsChecked="{Binding EnableBase}"  Margin="0,4,16,6"/>
+                <CheckBox Content="时间戳转日期（ts）"    IsChecked="{Binding EnableTs}"    Margin="0,4,16,6"/>
+                <CheckBox Content="JWT 解码（jwt）"       IsChecked="{Binding EnableJwt}"   Margin="0,4,16,6"/>
+                <CheckBox Content="Cron 解析（cron）"     IsChecked="{Binding EnableCron}"  Margin="0,4,16,6"/>
+            </UniformGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

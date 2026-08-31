@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net9.0-windows7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<!-- 机器上仅安装更高版本的 .NET 桌面运行时（如 10.x）时允许向前滚动，免去单独装 9.x -->
+		<RollForward>LatestMajor</RollForward>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="iNKORE.UI.WPF" Version="1.2.8" />
+		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Core\DevToolkit.Core.Wpf\DevToolkit.Core.Wpf.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.PortKiller\DevToolkit.PortKiller.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.Toolbox\DevToolkit.Toolbox.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.VarName\DevToolkit.VarName.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\Core\DevToolkit.Core.Wpf\wwwroot\**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+</Project>

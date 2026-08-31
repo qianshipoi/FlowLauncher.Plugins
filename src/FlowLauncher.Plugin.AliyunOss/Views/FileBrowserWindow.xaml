@@ -5,7 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:FlowLauncher.Plugin.AliyunOss.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:model="clr-namespace:FlowLauncher.Plugin.AliyunOss.Models"
     xmlns:viewmodel="clr-namespace:FlowLauncher.Plugin.AliyunOss.ViewModel"
     Title="OSS 文件浏览器"
     Width="900"

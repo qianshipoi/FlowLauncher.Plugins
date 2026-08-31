@@ -1,11 +1,13 @@
 ﻿using AlibabaCloud.OSS.V2;
+using DevToolkit.AliyunOss;
 
 using Flow.Launcher.Plugin;
 
 using FlowLauncher.Plugin.AliyunOss.Queries;
-using FlowLauncher.Plugin.AliyunOss.Services;
-using FlowLauncher.Plugin.AliyunOss.ViewModel;
+using DevToolkit.AliyunOss.Services;
+using DevToolkit.AliyunOss.ViewModel;
 using FlowLauncher.Plugin.AliyunOss.Views;
+using FlowLauncher.Plugin.AliyunOss.ViewModel;
 
 using System.IO;
 using System.Reflection;
@@ -48,7 +50,7 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
 
     public Control CreateSettingPanel()
     {
-        return new OssSettings(new OssSettingsViewModel(_context.API, _settings));
+        return new OssSettings(new OssSettingsViewModel(_settings, () => _context.API.SaveSettingJsonStorage<Settings>()));
     }
 
     public Task InitAsync(PluginInitContext context)
@@ -58,7 +60,7 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
         _context.API.AddActionKeyword(_context.CurrentPluginMetadata.ID, "ossu");
         _context.API.AddActionKeyword(_context.CurrentPluginMetadata.ID, "ossb");
         _settings = context.API.LoadSettingJsonStorage<Settings>();
-        _service = new OssService(_context.API, _settings);
+        _service = new OssService(_settings);
         _downloadQuery = new DownloadQuery(_context.API, _service);
         _uploadQuery = new UploadQuery(_context.API, _service, _settings);
         return Task.CompletedTask;

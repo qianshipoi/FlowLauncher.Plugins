@@ -1,6 +1,7 @@
 ﻿using Flow.Launcher.Plugin;
 
-using FlowLauncher.Plugin.AliyunOss.Services;
+using DevToolkit.AliyunOss.Services;
+
 using FlowLauncher.Plugin.AliyunOss.Views;
 
 using System.Windows;
