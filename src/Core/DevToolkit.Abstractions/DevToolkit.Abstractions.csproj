@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0-windows7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- 主题资源作为契约资源编译进程序集（不编译为 BAML Page），宿主通过 pack URI 合并；
+			 插件页面经 StaticResource 查找链回退到宿主 Application.Resources。 -->
+		<Page Remove="Resources\Theme.xaml" />
+		<Resource Include="Resources\Theme.xaml" />
+	</ItemGroup>
+
+</Project>

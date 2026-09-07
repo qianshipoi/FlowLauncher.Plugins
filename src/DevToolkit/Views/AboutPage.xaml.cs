@@ -4,14 +4,17 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
+using DevToolkit.Services;
+
 namespace DevToolkit.Views;
 
 public partial class AboutPage : UserControl
 {
-    public AboutPage()
+    public AboutPage(PluginManager pluginManager)
     {
         InitializeComponent();
         LoadInfo();
+        PluginList.ItemsSource = pluginManager.Plugins;
     }
 
     private void LoadInfo()

@@ -1,40 +1,30 @@
-using DevToolkit.Toolbox.ViewModels;
-
 using System.Windows.Controls;
 
-using SttSettingsViewModel = DevToolkit.SpeechToText.SettingsViewModel;
-using VarNameSettingsViewModel = DevToolkit.VarName.SettingsViewModel;
+using DevToolkit.Services;
 
 namespace DevToolkit.Views;
 
+/// <summary>宿主设置页数据项：一个插件配置分区对应一个 <see cref="DevToolkit.Abstractions.IPluginSettingsSection"/>。</summary>
+/// <param name="Title">分区标题。</param>
+/// <param name="Description">分区说明。</param>
+/// <param name="View">分区表单视图。</param>
+public sealed record SettingsSectionItem(string Title, string Description, object View);
+
+/// <summary>
+/// 宿主设置页：聚合所有插件注册的 <see cref="DevToolkit.Abstractions.IPluginSettingsSection"/> 配置表单分区，
+/// 每个分区渲染为 iNKORE SettingsExpander 分组。
+/// </summary>
 public partial class SettingsPage : UserControl
 {
-    private readonly VarNameSettingsViewModel _varNameSettings;
-    private readonly SttSettingsViewModel _sttSettings;
-
-    public SettingsPage(SettingsViewModel toolboxSettings, VarNameSettingsViewModel varNameSettings, SttSettingsViewModel sttSettings)
+    public SettingsPage(PluginManager pluginManager)
     {
         InitializeComponent();
-        _varNameSettings = varNameSettings;
-        _sttSettings = sttSettings;
-        DataContext = toolboxSettings;
-        VarNameSection.DataContext = varNameSettings;
-        SttSection.DataContext = sttSettings;
         DataDirText.Text = $"数据目录：{AppServices.DataRoot}";
-        // PasswordBox 不可数据绑定，手动双向同步
-        VarNameApiKeyBox.Password = varNameSettings.ApiKey;
-        SttApiKeyBox.Password = sttSettings.ApiKey;
-    }
 
-    private void VarNameApiKeyBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
-    {
-        if (_varNameSettings.ApiKey != VarNameApiKeyBox.Password)
-            _varNameSettings.ApiKey = VarNameApiKeyBox.Password;
-    }
+        var items = new List<SettingsSectionItem>();
+        foreach (var (_, section) in pluginManager.GetSettingsSections())
+            items.Add(new SettingsSectionItem(section.Title, section.Description, section.CreateView()));
 
-    private void SttApiKeyBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
-    {
-        if (_sttSettings.ApiKey != SttApiKeyBox.Password)
-            _sttSettings.ApiKey = SttApiKeyBox.Password;
+        SectionsHost.ItemsSource = items;
     }
 }

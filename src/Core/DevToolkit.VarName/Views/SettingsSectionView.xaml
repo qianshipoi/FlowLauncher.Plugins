@@ -1,0 +1,25 @@
+<UserControl x:Class="DevToolkit.VarName.Views.SettingsSectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uic="clr-namespace:iNKORE.UI.WPF.Modern.Controls;assembly=iNKORE.UI.WPF.Modern.Controls">
+    <StackPanel>
+        <uic:SettingsCard Header="模型" Description="OpenAI 兼容模型名，用于变量名生成">
+            <TextBox Text="{Binding ModelName, UpdateSourceTrigger=PropertyChanged}" MinWidth="240"/>
+        </uic:SettingsCard>
+        <uic:SettingsCard Header="API 地址" Description="OpenAI 兼容接口 Base URL">
+            <TextBox Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" MinWidth="240"/>
+        </uic:SettingsCard>
+        <uic:SettingsCard Header="API Key" Description="用于鉴权的密钥，点击保存后生效">
+            <PasswordBox x:Name="ApiKeyBox" MinWidth="240"
+                         PasswordChanged="ApiKeyBox_PasswordChanged"/>
+        </uic:SettingsCard>
+        <uic:SettingsCard Header="保存与验证" Description="保存配置并校验 API 连通性">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="保存" MinWidth="80" Command="{Binding SaveCommand}"/>
+                <Button Content="验证连通" MinWidth="90" Margin="8,0,0,0" Command="{Binding ValidateCommand}"/>
+            </StackPanel>
+        </uic:SettingsCard>
+        <TextBlock Text="{Binding ValidationMessage}" Margin="16,8,16,0"
+                   Foreground="#888888" TextWrapping="Wrap"/>
+    </StackPanel>
+</UserControl>

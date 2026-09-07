@@ -32,6 +32,30 @@
                 </StackPanel>
             </Border>
 
+            <!-- 已加载插件 -->
+            <TextBlock Text="已加载插件" Style="{StaticResource SectionTitle}"/>
+            <TextBlock Text="以插件形式提供功能的模块列表。" Style="{StaticResource PageHint}"/>
+            <Border Style="{StaticResource Card}" Margin="0,0,0,20">
+                <ItemsControl x:Name="PluginList">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,3">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Id}" Foreground="#888888" FontSize="11"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding Version}" Foreground="#888888"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
             <!-- 目录快捷跳转 -->
             <TextBlock Text="目录快捷跳转" Style="{StaticResource SectionTitle}"/>
             <TextBlock Text="点击按钮在文件资源管理器中打开对应目录。" Style="{StaticResource PageHint}"/>

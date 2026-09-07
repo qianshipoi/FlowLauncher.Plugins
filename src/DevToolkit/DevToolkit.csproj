@@ -21,15 +21,24 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Core\DevToolkit.Abstractions\DevToolkit.Abstractions.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.Core.Wpf\DevToolkit.Core.Wpf.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.PasswordManager\DevToolkit.PasswordManager.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.PortKiller\DevToolkit.PortKiller.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.SpeechToText\DevToolkit.SpeechToText.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.Toolbox\DevToolkit.Toolbox.csproj" />
 		<ProjectReference Include="..\Core\DevToolkit.VarName\DevToolkit.VarName.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.AliyunOss\DevToolkit.AliyunOss.csproj" />
+		<ProjectReference Include="..\Core\DevToolkit.OpenDirectory\DevToolkit.OpenDirectory.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="..\Core\DevToolkit.Core.Wpf\wwwroot\**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
+
+	<!-- 运行时第三方插件目录：PluginManager 启动时扫描 {BaseDir}\Plugins\*.dll 动态加载 -->
+	<Target Name="EnsurePluginDirectory" AfterTargets="Build">
+		<MakeDir Directories="$(OutputPath)Plugins" />
+	</Target>
 
 </Project>

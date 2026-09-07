@@ -6,20 +6,10 @@
         Height="720"
         Width="1080"
         WindowStartupLocation="CenterScreen">
+    <!-- 导航项由插件注册动态构建（MainWindow.xaml.cs） -->
     <ui:NavigationView x:Name="NavView"
                        IsBackButtonVisible="Collapsed"
                        IsSettingsVisible="False">
-        <ui:NavigationView.MenuItems>
-            <ui:NavigationViewItem Content="工具箱"
-                                   Tag="toolbox"
-                                   IsSelected="True"/>
-            <ui:NavigationViewItem Content="端口占用"
-                                   Tag="portkiller"/>
-            <ui:NavigationViewItem Content="变量名"
-                                   Tag="varname"/>
-            <ui:NavigationViewItem Content="语音转文字"
-                                   Tag="speechtotext"/>
-        </ui:NavigationView.MenuItems>
         <ContentControl x:Name="ContentHost"/>
     </ui:NavigationView>
 </Window>

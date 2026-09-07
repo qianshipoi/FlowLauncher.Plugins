@@ -3,7 +3,7 @@ using Flow.Launcher.Plugin;
 using DevToolkit.PasswordManager.Models;
 using DevToolkit.PasswordManager.Services;
 using DevToolkit.PasswordManager.ViewModels;
-using DevToolkit.Core.Wpf;
+using DevToolkit.PasswordManager.Views;
 using FlowLauncher.Plugin.PasswordManager.Views;
 
 using SQLitePCL;

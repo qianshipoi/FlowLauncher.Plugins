@@ -1,71 +1,35 @@
-using DevToolkit.Core.Wpf;
-
-using DevToolkit.PortKiller;
-
-using DevToolkit.SpeechToText;
-
-using DevToolkit.ViewModels;
-
-using DevToolkit.Views;
-
-using DevToolkit.Views.Tools;
-
-using Microsoft.Extensions.Logging;
-
 using System.Windows;
 
 using System.Windows.Controls;
 
+using DevToolkit.Abstractions;
+using DevToolkit.Services;
+using DevToolkit.Views;
+
 using NavigationViewItem = iNKORE.UI.WPF.Modern.Controls.NavigationViewItem;
-using SttSettingsViewModel = DevToolkit.SpeechToText.SettingsViewModel;
-using ToolboxSettingsViewModel = DevToolkit.Toolbox.ViewModels.SettingsViewModel;
-using VarNameSettingsViewModel = DevToolkit.VarName.SettingsViewModel;
 
 namespace DevToolkit;
 
 public partial class MainWindow : Window
 {
-    private static readonly (string Command, string DisplayName)[] ToolCatalog =
-    [
-        ("guid", "GUID 生成"),
-        ("json", "JSON 编辑器"),
-        ("fhash", "文件哈希"),
-        ("dt", "时间与时间戳"),
-        ("enc", "编码转换"),
-        ("pw", "密码生成"),
-        ("base", "进制转换"),
-        ("ts", "时间戳转日期"),
-        ("jwt", "JWT 解码"),
-        ("cron", "Cron 解析"),
-    ];
+    private const string AboutTag = "about";
+    private const string SettingsTag = "settings";
 
-    private readonly Dictionary<string, UserControl> _toolViews = [];
-    private readonly SettingsPage _settingsPage;
-    private readonly PortKillerPage _portKillerPage;
-    private readonly VarNamePage _varNamePage;
-    private readonly SpeechToTextPage _speechToTextPage;
+    private readonly PluginManager _pluginManager;
+    private readonly IHostServices _host;
     private readonly AboutPage _aboutPage;
-    private readonly ToolboxSettingsViewModel _toolboxSettingsVm;
+    private readonly Dictionary<string, object> _contentCache = [];
+    private string _currentTag = AboutTag;
 
-    private JsonEditorWindow? _jsonEditorWindow;
-    private string _currentTag = "tool:guid";
-
-    public MainWindow()
+    public MainWindow(PluginManager pluginManager, IHostServices host)
     {
         InitializeComponent();
+        _pluginManager = pluginManager;
+        _host = host;
+        _aboutPage = new AboutPage(pluginManager);
 
-        _toolboxSettingsVm = new ToolboxSettingsViewModel(AppServices.ToolboxSettings, OnToolboxSettingsChanged);
-        _settingsPage = new SettingsPage(_toolboxSettingsVm,
-            new VarNameSettingsViewModel(AppServices.VarNameSettings, AppServices.SaveVarNameSettings),
-            new SttSettingsViewModel(AppServices.SpeechToTextSettings, AppServices.SaveSpeechToTextSettings));
-        _portKillerPage = new PortKillerPage(new PortKillerViewModel(
-            new PortHistoryManager(AppServices.DataRoot)));
-        _varNamePage = new VarNamePage(new VarNamePageViewModel(
-            AppServices.DataRoot, AppServices.VarNameSettings));
-        _speechToTextPage = new SpeechToTextPage(new SpeechToTextViewModel(
-            AppServices.SpeechToTextSettings, AppServices.DataRoot,
-            AppServices.LoggerFactory.CreateLogger<SpeechToTextViewModel>()));
-        _aboutPage = new AboutPage();
+        foreach (var plugin in pluginManager.Plugins)
+            plugin.NavigationChanged += OnNavigationChanged;
 
         NavView.ItemInvoked += (_, args) =>
         {
@@ -74,58 +38,32 @@ public partial class MainWindow : Window
         };
 
         BuildNav();
-        Navigate(_currentTag);
     }
 
-    private void OnToolboxSettingsChanged()
-    {
-        AppServices.SaveToolboxSettings();
-        BuildNav();
-    }
+    /// <summary>插件导航结构变化（如工具开关切换）时重建导航。</summary>
+    private void OnNavigationChanged(object? sender, EventArgs e) => BuildNav();
 
-    /// <summary>导航图标（Segoe MDL2 Assets）。</summary>
-    private static string GetGlyph(string tag) => tag switch
-    {
-        "tool:guid" => "\uE8E5",       // TwoPage
-        "tool:json" => "\uE70F",       // Edit
-        "tool:fhash" => "\uE7C1",      // Page
-        "tool:dt" => "\uE823",         // Recent
-        "tool:enc" => "\uE8AB",        // Switch
-        "tool:pw" => "\uE72E",         // Lock
-        "tool:base" => "\uE8EF",       // Calculator
-        "tool:ts" => "\uE787",         // Calendar
-        "tool:jwt" => "\uE8A5",        // Document
-        "tool:cron" => "\uE9D9",       // Diagnostic
-        "portkiller" => "\uE71A",      // Stop
-        "varname" => "\uE8AC",         // Rename
-        "speechtotext" => "\uE720",    // Microphone
-        "about" => "\uE946",           // Info
-        _ => "\uE713",                 // Settings
-    };
-
-    /// <summary>按设置重建导航：启用的工具与端口占用/变量名/设置同级排列。</summary>
+    /// <summary>按插件注册的导航项重建导航；"关于/设置"固定在底部。</summary>
     private void BuildNav()
     {
         NavView.MenuItems.Clear();
+        NavView.FooterMenuItems.Clear();
 
-        foreach (var (command, displayName) in ToolCatalog)
+        foreach (var item in _pluginManager.GetNavigationItems())
         {
-            if (!AppServices.ToolboxSettings.IsEnabled(command))
+            if (item.IsVisible?.Invoke() == false)
                 continue;
-            NavView.MenuItems.Add(MakeItem("tool:" + command, displayName));
+            NavView.MenuItems.Add(MakeItem(item));
         }
 
-        NavView.MenuItems.Add(MakeItem("portkiller", "端口占用"));
-        NavView.MenuItems.Add(MakeItem("varname", "变量名"));
-        NavView.MenuItems.Add(MakeItem("speechtotext", "语音转文字"));
-        NavView.FooterMenuItems.Add(MakeItem("about", "关于"));
-        NavView.FooterMenuItems.Add(MakeItem("settings", "设置"));
+        NavView.FooterMenuItems.Add(MakeItem(AboutTag, "关于", "\uE946"));
+        NavView.FooterMenuItems.Add(MakeItem(SettingsTag, "设置", "\uE713"));
 
-        // 当前选中项被禁用时，回退到第一个可用的工具
-        if (FindByTag(_currentTag) is null && _currentTag.StartsWith("tool:"))
+        // 当前选中项不可用时回退到第一个可用导航项
+        if (FindByTag(_currentTag) is null)
         {
-            var first = ToolCatalog.FirstOrDefault(t => AppServices.ToolboxSettings.IsEnabled(t.Command));
-            _currentTag = first.Command is not null ? "tool:" + first.Command : "portkiller";
+            var first = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault();
+            _currentTag = first?.Tag as string ?? AboutTag;
         }
 
         if (FindByTag(_currentTag) is { } selected)
@@ -135,66 +73,58 @@ public partial class MainWindow : Window
     }
 
     private NavigationViewItem? FindByTag(string tag) =>
-        NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault(i => i.Tag as string == tag);
+        NavView.MenuItems.OfType<NavigationViewItem>()
+            .Concat(NavView.FooterMenuItems.OfType<NavigationViewItem>())
+            .FirstOrDefault(i => i.Tag as string == tag);
 
-    private static NavigationViewItem MakeItem(string tag, string content) => new()
+    private static NavigationViewItem MakeItem(PluginNavigationItem item) => new()
+    {
+        Content = item.DisplayName,
+        Tag = item.Tag,
+        Icon = new iNKORE.UI.WPF.Modern.Controls.FontIcon { Glyph = item.Glyph },
+    };
+
+    private static NavigationViewItem MakeItem(string tag, string content, string glyph) => new()
     {
         Content = content,
         Tag = tag,
-        Icon = new iNKORE.UI.WPF.Modern.Controls.FontIcon { Glyph = GetGlyph(tag) },
+        Icon = new iNKORE.UI.WPF.Modern.Controls.FontIcon { Glyph = glyph },
     };
 
     private void Navigate(string tag)
     {
+        if (tag == AboutTag)
+        {
+            _currentTag = tag;
+            ContentHost.Content = _aboutPage;
+            return;
+        }
+
+        if (tag == SettingsTag)
+        {
+            _currentTag = tag;
+            ContentHost.Content = new SettingsPage(_pluginManager);
+            return;
+        }
+
+        var item = _pluginManager.GetNavigationItems().FirstOrDefault(i => i.Tag == tag);
+        if (item is null)
+            return;
+
+        // 窗口型导航：打开独立窗口，内容区保持当前页面
+        if (item.OpenAsWindow)
+        {
+            if (item.ContentFactory() is Window window)
+                _host.ShowWindow(window);
+            return;
+        }
+
         _currentTag = tag;
-        ContentHost.Content = tag switch
+        if (!_contentCache.TryGetValue(tag, out var content))
         {
-            "settings" => _settingsPage,
-            "portkiller" => _portKillerPage,
-            "varname" => _varNamePage,
-            "speechtotext" => _speechToTextPage,
-            "about" => _aboutPage,
-            _ => GetToolView(tag["tool:".Length..]),
-        };
-    }
-
-    private UserControl GetToolView(string command)
-    {
-        if (!_toolViews.TryGetValue(command, out var view))
-        {
-            view = CreateToolView(command);
-            _toolViews[command] = view;
+            content = item.ContentFactory();
+            _contentCache[tag] = content;
         }
-        return view;
-    }
-
-    private UserControl CreateToolView(string command) => command switch
-    {
-        "guid" => new GuidView(),
-        "json" => new JsonView(OpenJsonEditor),
-        "fhash" => new HashView(),
-        "dt" => new DtView(),
-        "enc" => new EncView(),
-        "pw" => new PwView(),
-        "base" => new BaseView(),
-        "ts" => new TsView(),
-        "jwt" => new JwtView(OpenJsonEditor),
-        "cron" => new CronView(),
-        _ => throw new ArgumentOutOfRangeException(nameof(command), command, null),
-    };
-
-    private void OpenJsonEditor(string json)
-    {
-        if (_jsonEditorWindow is null)
-        {
-            _jsonEditorWindow = new JsonEditorWindow(AppServices.WwwRoot, AppServices.WebView2CacheDir, json);
-            _jsonEditorWindow.Closed += (_, _) => _jsonEditorWindow = null;
-            _jsonEditorWindow.Show();
-        }
-        else
-        {
-            _jsonEditorWindow.Activate();
-            _jsonEditorWindow.UpdateJson(json);
-        }
+        ContentHost.Content = content;
     }
 }

@@ -1,96 +1,30 @@
 <UserControl x:Class="DevToolkit.Views.SettingsPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:uic="clr-namespace:iNKORE.UI.WPF.Modern.Controls;assembly=iNKORE.UI.WPF.Modern.Controls">
+    <!-- 每个插件分区 = 一个组件库 SettingsExpander 分组：默认折叠只显示名称，展开显示配置卡片（SettingsCard/ToggleSwitch） -->
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24,16" MaxWidth="720" HorizontalAlignment="Left">
+        <StackPanel Margin="24,16" MaxWidth="780" HorizontalAlignment="Left">
             <TextBlock Text="设置" Style="{StaticResource PageTitle}"/>
-            <TextBlock x:Name="DataDirText" Style="{StaticResource PageSubtitle}"/>
+            <TextBlock x:Name="DataDirText" Style="{StaticResource PageSubtitle}" Margin="0,0,0,12"/>
 
-            <TextBlock Text="工具箱 · 启用的工具" Style="{StaticResource SectionTitle}"/>
-            <TextBlock Text="取消勾选后，对应工具将从左侧导航中移除；更改即时生效。"
-                       Style="{StaticResource PageHint}"/>
-            <Border Style="{StaticResource Card}" Margin="0,0,0,20">
-                <UniformGrid Columns="2">
-                    <CheckBox Content="GUID 生成（guid）"     IsChecked="{Binding EnableGuid}"  Margin="4,6,16,6"/>
-                    <CheckBox Content="JSON 编辑器（json）"   IsChecked="{Binding EnableJson}"  Margin="4,6,16,6"/>
-                    <CheckBox Content="文件哈希（fhash）"     IsChecked="{Binding EnableFhash}" Margin="4,6,16,6"/>
-                    <CheckBox Content="时间与时间戳（dt）"    IsChecked="{Binding EnableDt}"    Margin="4,6,16,6"/>
-                    <CheckBox Content="编码转换（enc）"       IsChecked="{Binding EnableEnc}"   Margin="4,6,16,6"/>
-                    <CheckBox Content="密码生成（pw）"        IsChecked="{Binding EnablePw}"    Margin="4,6,16,6"/>
-                    <CheckBox Content="进制转换（base）"      IsChecked="{Binding EnableBase}"  Margin="4,6,16,6"/>
-                    <CheckBox Content="时间戳转日期（ts）"    IsChecked="{Binding EnableTs}"    Margin="4,6,16,6"/>
-                    <CheckBox Content="JWT 解码（jwt）"       IsChecked="{Binding EnableJwt}"   Margin="4,6,16,6"/>
-                    <CheckBox Content="Cron 解析（cron）"     IsChecked="{Binding EnableCron}"  Margin="4,6,16,6"/>
-                </UniformGrid>
-            </Border>
-
-            <TextBlock Text="变量名 · AI 配置" Style="{StaticResource SectionTitle}"/>
-            <TextBlock Text="变量名生成使用 OpenAI 兼容接口，与 Flow Launcher 插件的配置相互独立。"
-                       Style="{StaticResource PageHint}"/>
-            <Border Style="{StaticResource Card}">
-                <StackPanel x:Name="VarNameSection">
-                    <Grid Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="90"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="模型" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1" Text="{Binding ModelName, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"/>
-                        <TextBlock Grid.Row="1" Text="API 地址" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"/>
-                        <TextBlock Grid.Row="2" Text="API Key" VerticalAlignment="Center"/>
-                        <PasswordBox x:Name="VarNameApiKeyBox" Grid.Row="2" Grid.Column="1" Margin="0,2"
-                                     PasswordChanged="VarNameApiKeyBox_PasswordChanged"/>
-                    </Grid>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Content="保存" MinWidth="80" Command="{Binding SaveCommand}"/>
-                        <Button Content="验证连通" MinWidth="80" Margin="8,0,0,0" Command="{Binding ValidateCommand}"/>
-                        <TextBlock Text="{Binding ValidationMessage}" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="#888888"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="语音转文字 · ASR 配置" Style="{StaticResource SectionTitle}" Margin="0,20,0,0"/>
-            <TextBlock Text="语音识别使用 OpenAI 兼容接口（如 mimo-v2.5-asr），与 Flow Launcher 插件的配置相互独立。"
-                       Style="{StaticResource PageHint}"/>
-            <Border Style="{StaticResource Card}">
-                <StackPanel x:Name="SttSection">
-                    <Grid Margin="0,0,0,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="90"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="模型" VerticalAlignment="Center"/>
-                        <TextBox Grid.Column="1" Text="{Binding ModelName, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"/>
-                        <TextBlock Grid.Row="1" Text="API 地址" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,2"/>
-                        <TextBlock Grid.Row="2" Text="API Key" VerticalAlignment="Center"/>
-                        <PasswordBox x:Name="SttApiKeyBox" Grid.Row="2" Grid.Column="1" Margin="0,2"
-                                     PasswordChanged="SttApiKeyBox_PasswordChanged"/>
-                        <TextBlock Grid.Row="3" Text="语言" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Language, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" Width="80" HorizontalAlignment="Left"/>
-                        <TextBlock Grid.Row="4" Text="采样率" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SampleRate, UpdateSourceTrigger=PropertyChanged}" Margin="0,2" Width="120" HorizontalAlignment="Left"/>
-                    </Grid>
-                    <StackPanel Orientation="Horizontal">
-                        <Button Content="保存" MinWidth="80" Command="{Binding SaveCommand}"/>
-                        <Button Content="测试连接" MinWidth="80" Margin="8,0,0,0" Command="{Binding TestConnectionCommand}"/>
-                        <TextBlock Text="{Binding ConnectionStatus}" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="#888888"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+            <ItemsControl x:Name="SectionsHost">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <!-- 表单视图放入 Items（展开区）：SettingsExpander 的 Content 会渲染在标题区且不随折叠隐藏 -->
+                        <uic:SettingsExpander Header="{Binding Title}"
+                                              Description="{Binding Description}"
+                                              IsExpanded="False"
+                                              Margin="0,0,0,10"
+                                              HorizontalContentAlignment="Stretch"
+                                              ItemContainerStyleSelector="{x:Null}">
+                            <uic:SettingsExpander.Items>
+                                <ContentControl Content="{Binding View}"/>
+                            </uic:SettingsExpander.Items>
+                        </uic:SettingsExpander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

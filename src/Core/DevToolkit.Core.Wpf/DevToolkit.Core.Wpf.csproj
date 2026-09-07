@@ -14,10 +14,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="../DevToolkit.PasswordManager/DevToolkit.PasswordManager.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<!-- jsoneditor 静态资源单源：插件与 App 均通过 Content Link 复制到各自输出目录 -->
 		<Content Include="wwwroot\**\*" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
