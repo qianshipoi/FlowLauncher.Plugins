@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:DevToolkit.Toolbox.Views.Controls">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24,16" MaxWidth="760" HorizontalAlignment="Left">
+        <StackPanel Margin="24,16">
             <TextBlock Text="文件哈希" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="单次读盘同时计算 MD5 / SHA1 / SHA256 / SHA384 / SHA512 / CRC32，支持大文件。"
                        Style="{StaticResource PageSubtitle}"/>

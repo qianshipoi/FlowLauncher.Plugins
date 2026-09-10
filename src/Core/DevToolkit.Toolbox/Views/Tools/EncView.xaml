@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:DevToolkit.Toolbox.Views.Controls">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24,16" MaxWidth="760" HorizontalAlignment="Left">
+        <StackPanel Margin="24,16">
             <TextBlock Text="编码转换" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="URL / Base64 / HTML 实体 / 十六进制编解码；解码结果仅在有效且与输入不同时显示。"
                        Style="{StaticResource PageSubtitle}"/>
@@ -12,7 +12,8 @@
                      VerticalContentAlignment="Top" KeyDown="Input_KeyDown"/>
             <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
                 <Button Content="转换" MinWidth="88" Click="Convert_Click" IsDefault="True"/>
-                <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="#888888"/>
+                <TextBlock x:Name="StatusText" VerticalAlignment="Center" Margin="12,0,0,0"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
             </StackPanel>
             <Border Style="{StaticResource Card}">
                 <c:ResultRowsView x:Name="Rows"/>

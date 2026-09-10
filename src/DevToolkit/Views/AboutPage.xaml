@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24,16" MaxWidth="720" HorizontalAlignment="Left">
+        <StackPanel Margin="24,16">
             <TextBlock Text="关于" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="DevToolkit — 开发者工具箱" Style="{StaticResource PageSubtitle}"/>
 
@@ -46,9 +46,11 @@
                                 </Grid.ColumnDefinitions>
                                 <StackPanel>
                                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding Id}" Foreground="#888888" FontSize="11"/>
+                                    <TextBlock Text="{Binding Id}" FontSize="11"
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                 </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding Version}" Foreground="#888888"
+                                <TextBlock Grid.Column="1" Text="{Binding Version}"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            VerticalAlignment="Center"/>
                             </Grid>
                         </DataTemplate>
@@ -75,25 +77,29 @@
                         </Grid.RowDefinitions>
                         <TextBlock Text="程序目录" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" x:Name="AppDirText" VerticalAlignment="Center"
-                                   Foreground="#888" TextTrimming="CharacterEllipsis" Margin="0,4"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,4"/>
                         <Button Grid.Column="2" Content="打开" Padding="12,4" Margin="8,2"
                                 Click="OpenAppDir_Click"/>
 
                         <TextBlock Grid.Row="1" Text="数据目录" VerticalAlignment="Center"/>
                         <TextBlock Grid.Row="1" Grid.Column="1" x:Name="DataDirText" VerticalAlignment="Center"
-                                   Foreground="#888" TextTrimming="CharacterEllipsis" Margin="0,4"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,4"/>
                         <Button Grid.Row="1" Grid.Column="2" Content="打开" Padding="12,4" Margin="8,2"
                                 Click="OpenDataDir_Click"/>
 
                         <TextBlock Grid.Row="2" Text="日志目录" VerticalAlignment="Center"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" x:Name="LogsDirText" VerticalAlignment="Center"
-                                   Foreground="#888" TextTrimming="CharacterEllipsis" Margin="0,4"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,4"/>
                         <Button Grid.Row="2" Grid.Column="2" Content="打开" Padding="12,4" Margin="8,2"
                                 Click="OpenLogsDir_Click"/>
 
                         <TextBlock Grid.Row="3" Text="录音文件" VerticalAlignment="Center"/>
                         <TextBlock Grid.Row="3" Grid.Column="1" x:Name="RecordingsDirText" VerticalAlignment="Center"
-                                   Foreground="#888" TextTrimming="CharacterEllipsis" Margin="0,4"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextTrimming="CharacterEllipsis" Margin="0,4"/>
                         <Button Grid.Row="3" Grid.Column="2" Content="打开" Padding="12,4" Margin="8,2"
                                 Click="OpenRecordingsDir_Click"/>
                     </Grid>

@@ -11,7 +11,7 @@
         </Border>
 
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="24,16" MaxWidth="760" HorizontalAlignment="Left">
+            <StackPanel Margin="24,16">
                 <TextBlock Text="语音转文字" Style="{StaticResource PageTitle}"/>
                 <TextBlock Text="点击麦克风按钮开始录音，支持实时流式识别，录音文件和结果自动保存到历史记录。"
                            Style="{StaticResource PageSubtitle}"/>
@@ -65,7 +65,8 @@
                         <TextBlock Text="{Binding StatusText}" HorizontalAlignment="Center"
                                    FontSize="14" Margin="0,4,0,0"/>
                         <TextBlock Text="{Binding DurationText}" HorizontalAlignment="Center"
-                                   Foreground="#888" FontSize="12" Margin="0,2,0,0"/>
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   FontSize="12" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Border>
 
@@ -77,7 +78,8 @@
                                  TextWrapping="Wrap" AcceptsReturn="True" MinHeight="80"
                                  VerticalScrollBarVisibility="Auto" FontSize="14"
                                  IsReadOnly="True" Background="Transparent" BorderThickness="0"/>
-                        <TextBlock Text="转写结果将显示在这里" Foreground="#AAA" Margin="4"
+                        <TextBlock Text="转写结果将显示在这里" Margin="4"
+                                   Foreground="{DynamicResource TextFillColorTertiaryBrush}"
                                    IsHitTestVisible="False">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
@@ -123,9 +125,11 @@
                                     <TextBlock Text="{Binding Text}" TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="1" Text="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm'}"
-                                               Foreground="#888" VerticalAlignment="Center" Margin="12,0"/>
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="12,0"/>
                                     <TextBlock Grid.Column="2" Text="{Binding Duration, StringFormat='mm\:ss'}"
-                                               Foreground="#888" VerticalAlignment="Center"/>
+                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                               VerticalAlignment="Center"/>
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

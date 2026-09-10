@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:DevToolkit.Toolbox.Views.Controls">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24,16" MaxWidth="760" HorizontalAlignment="Left">
+        <StackPanel Margin="24,16">
             <TextBlock Text="时间与时间戳" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="当前本地时间与 Unix 秒 / 毫秒时间戳，点击行尾复制。"
                        Style="{StaticResource PageSubtitle}"/>

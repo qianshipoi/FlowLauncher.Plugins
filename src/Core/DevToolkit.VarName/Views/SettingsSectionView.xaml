@@ -20,6 +20,6 @@
             </StackPanel>
         </uic:SettingsCard>
         <TextBlock Text="{Binding ValidationMessage}" Margin="16,8,16,0"
-                   Foreground="#888888" TextWrapping="Wrap"/>
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"/>
     </StackPanel>
 </UserControl>

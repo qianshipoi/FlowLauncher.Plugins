@@ -10,6 +10,8 @@
     <ui:NavigationView x:Name="NavView"
                        IsBackButtonVisible="Collapsed"
                        IsSettingsVisible="False">
-        <ContentControl x:Name="ContentHost"/>
+        <ContentControl x:Name="ContentHost"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"/>
     </ui:NavigationView>
 </Window>

@@ -2,37 +2,61 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- 应用级 Fluent 风格样式（宿主主题契约）：由宿主 Application.Resources 合并，
-         插件页面通过 StaticResource 引用，查找链回退到宿主 Application.Resources。 -->
+         插件页面通过 StaticResource 引用，查找链回退到宿主 Application.Resources。
 
+         约定：全部颜色使用 Fluent 主题画刷（DynamicResource），随系统浅色/深色主题自动切换，
+         不得硬编码颜色；字号/字重遵循 Windows 11 Fluent 排版层级。 -->
+
+    <!-- 页面主标题：Fluent Title（28 / SemiBold / 主文本色） -->
     <Style x:Key="PageTitle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="26"/>
+        <Setter Property="FontSize" Value="28"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
         <Setter Property="Margin" Value="0,0,0,4"/>
     </Style>
 
+    <!-- 页面副标题：Fluent Body（14 / 次级文本色） -->
     <Style x:Key="PageSubtitle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="#888888"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
-        <Setter Property="Margin" Value="0,0,0,16"/>
+        <Setter Property="Margin" Value="0,0,0,20"/>
     </Style>
 
+    <!-- 区块标题：Fluent Subtitle（18 / SemiBold） -->
     <Style x:Key="SectionTitle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Margin" Value="0,0,0,6"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorPrimaryBrush}"/>
+        <Setter Property="Margin" Value="0,8,0,4"/>
     </Style>
 
+    <!-- 区块提示：Fluent Caption（13 / 次级文本色） -->
     <Style x:Key="PageHint" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="#888888"/>
-        <Setter Property="Margin" Value="0,0,0,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
     </Style>
 
+    <!-- 次级文本：状态行、说明文字等 -->
+    <Style x:Key="SecondaryText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+    </Style>
+
+    <!-- 三级文本：占位符、弱化提示 -->
+    <Style x:Key="TertiaryText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+    </Style>
+
+    <!-- Fluent 卡片容器：CardBackgroundFillColorDefault + 卡片描边 + 8px 圆角 -->
     <Style x:Key="Card" TargetType="Border">
-        <Setter Property="Background" Value="#FFFFFF"/>
-        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="8"/>
-        <Setter Property="Padding" Value="12"/>
+        <Setter Property="Padding" Value="16"/>
     </Style>
 
 </ResourceDictionary>

@@ -38,7 +38,8 @@
         </DataGrid>
 
         <!-- 状态栏 -->
-        <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,0" Foreground="Gray"
-                   Text="{Binding StatusText}"/>
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,0"
+                   Text="{Binding StatusText}"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
     </DockPanel>
 </Window>

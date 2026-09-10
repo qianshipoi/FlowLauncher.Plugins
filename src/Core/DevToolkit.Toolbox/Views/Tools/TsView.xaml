@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:DevToolkit.Toolbox.Views.Controls">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="24,16" MaxWidth="760" HorizontalAlignment="Left">
+        <StackPanel Margin="24,16">
             <TextBlock Text="时间戳转日期" Style="{StaticResource PageTitle}"/>
             <TextBlock Text="自动识别秒与毫秒时间戳，输出本地时间、UTC 与相对时间。"
                        Style="{StaticResource PageSubtitle}"/>
