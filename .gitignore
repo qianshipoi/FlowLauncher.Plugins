@@ -16,6 +16,9 @@
 # ZCode
 .zcode/
 
+# CodeBuddy
+.codebuddy/
+
 # Mono auto generated files
 mono_crash.*
 
