@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace DevToolkit.VarName;
 
 /// <summary>
-/// 变量名设置 VM（宿主无关）：保存通过回调持久化，成功后触发 <see cref="ReQueryRequested"/>。
+/// 变量名设置 VM（宿主无关）：API Key 不回显，留空保持不变；保存通过回调持久化，成功后触发 <see cref="ReQueryRequested"/>。
 /// </summary>
 public partial class SettingsViewModel(Settings settings, Action onChanged) : ObservableObject
 {
@@ -13,8 +13,16 @@ public partial class SettingsViewModel(Settings settings, Action onChanged) : Ob
     private string _modelName = settings.ModelName;
     [ObservableProperty]
     private string _apiUrl = settings.ApiUrl;
+
+    /// <summary>新 API Key 输入；不回显已存值，留空则保存时保持不变。</summary>
     [ObservableProperty]
-    private string _apiKey = settings.ApiKey;
+    private string _apiKeyInput = "";
+
+    [ObservableProperty]
+    private string _apiKeyHint = string.IsNullOrEmpty(settings.GetPlainApiKey())
+        ? "尚未配置"
+        : "已配置，留空则不修改";
+
     [ObservableProperty]
     private string _validationMessage = string.Empty;
     [ObservableProperty]
@@ -24,10 +32,14 @@ public partial class SettingsViewModel(Settings settings, Action onChanged) : Ob
     [ObservableProperty]
     private bool _isModelListOpen;
 
+    /// <summary>本次操作使用的明文 Key：输入框为空则沿用已存值。</summary>
+    private string ResolveApiKey() =>
+        string.IsNullOrWhiteSpace(ApiKeyInput) ? settings.GetPlainApiKey() : ApiKeyInput;
+
     public bool IsFormValid =>
         !string.IsNullOrWhiteSpace(ModelName) &&
         !string.IsNullOrWhiteSpace(ApiUrl) &&
-        !string.IsNullOrWhiteSpace(ApiKey);
+        !string.IsNullOrWhiteSpace(ResolveApiKey());
 
     public bool CanSubmit => IsFormValid && !IsBusy;
 
@@ -36,7 +48,7 @@ public partial class SettingsViewModel(Settings settings, Action onChanged) : Ob
 
     partial void OnModelNameChanged(string value) => NotifyValidationState();
     partial void OnApiUrlChanged(string value) => NotifyValidationState();
-    partial void OnApiKeyChanged(string value) => NotifyValidationState();
+    partial void OnApiKeyInputChanged(string value) => NotifyValidationState();
     partial void OnIsBusyChanged(bool value) => OnPropertyChanged(nameof(CanSubmit));
 
     private void NotifyValidationState()
@@ -57,8 +69,14 @@ public partial class SettingsViewModel(Settings settings, Action onChanged) : Ob
 
         settings.ModelName = ModelName;
         settings.ApiUrl = ApiUrl;
-        settings.ApiKey = ApiKey;
+        // 留空 = 保留已存 Key
+        settings.SetApiKey(string.IsNullOrWhiteSpace(ApiKeyInput) ? null : ApiKeyInput);
         onChanged();
+
+        ApiKeyInput = "";
+        ApiKeyHint = string.IsNullOrEmpty(settings.GetPlainApiKey())
+            ? "尚未配置"
+            : "已配置，留空则不修改";
         ValidationMessage = "配置已保存。";
         ReQueryRequested?.Invoke();
     }
@@ -80,7 +98,7 @@ public partial class SettingsViewModel(Settings settings, Action onChanged) : Ob
         {
             var client = new OpenAI.Chat.ChatClient(
                 ModelName,
-                new System.ClientModel.ApiKeyCredential(ApiKey),
+                new System.ClientModel.ApiKeyCredential(ResolveApiKey()),
                 new OpenAI.OpenAIClientOptions { Endpoint = new Uri(NormalizeUrl(ApiUrl)), NetworkTimeout = TimeSpan.FromSeconds(10) });
 
             await client.CompleteChatAsync(
@@ -102,7 +120,7 @@ public partial class SettingsViewModel(Settings settings, Action onChanged) : Ob
     [RelayCommand]
     private async Task FetchModelsAsync()
     {
-        if (string.IsNullOrWhiteSpace(ApiUrl) || string.IsNullOrWhiteSpace(ApiKey))
+        if (string.IsNullOrWhiteSpace(ApiUrl) || string.IsNullOrWhiteSpace(ResolveApiKey()))
         {
             ValidationMessage = "请先填写 API 地址和 API Key。";
             return;
@@ -113,7 +131,9 @@ public partial class SettingsViewModel(Settings settings, Action onChanged) : Ob
 
         try
         {
-            var service = new VarNameService(new Settings { ApiUrl = ApiUrl, ApiKey = ApiKey, ModelName = ModelName });
+            var probe = new Settings { ApiUrl = ApiUrl, ModelName = ModelName };
+            probe.SetApiKey(ResolveApiKey());
+            var service = new VarNameService(probe);
             var models = await service.GetModelsAsync(CancellationToken.None);
             ModelList = models;
             IsModelListOpen = true;

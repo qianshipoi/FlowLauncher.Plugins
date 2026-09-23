@@ -28,6 +28,11 @@ public sealed class DevToolkitPlugin : IDevToolkitPlugin
     {
         _host = host;
         _settings = host.LoadJsonSettings<Settings>(Id, SettingsFileName) ?? new Settings();
+        // 旧版明文 API Key 自动升级为 DPAPI 密文
+        if (_settings.TryUpgradeSecrets())
+        {
+            host.SaveJsonSettings(Id, SettingsFileName, _settings);
+        }
         _settingsVm = new SettingsViewModel(_settings, () => host.SaveJsonSettings(Id, SettingsFileName, _settings));
     }
 

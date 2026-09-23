@@ -50,9 +50,23 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
 
     public bool HasSelectedFile => SelectedFile is not null && !SelectedFile.IsDirectory;
 
-    public string SelectedFileAccessUrl => SelectedFile is { IsDirectory: false }
-        ? service.GeneratePresignedUploadUrl(BucketName, SelectedFile.Key)
-        : "";
+    public string SelectedFileAccessUrl
+    {
+        get
+        {
+            if (SelectedFile is not { IsDirectory: false } file)
+                return "";
+            try
+            {
+                // 访问链接用于下载/查看，必须是 GET 预签名，而非 PUT
+                return service.GeneratePresignedDownloadUrl(BucketName, file.Key);
+            }
+            catch (Exception ex)
+            {
+                return $"生成链接失败: {ex.Message}";
+            }
+        }
+    }
 
     public ObservableCollection<OssObjectInfo> Files { get; } = [];
 
@@ -108,16 +122,44 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
                 ? fileName
                 : Prefix.TrimEnd('/') + '/' + fileName;
 
+            using var cts = new CancellationTokenSource();
+            var cancelled = false;
+
             try
             {
-                await publicApi.ShowProgressBoxAsync($"上传 {fileName}...", async (reportProgress) =>
+                await publicApi.ShowProgressBoxAsync(
+                    $"上传 {fileName}...",
+                    async reportProgress =>
+                    {
+                        // FlowLauncher 进度条要求 0-100；OssService 上报的是 0-1
+                        await service.UploadFileAsync(
+                            BucketName,
+                            objectName,
+                            filePath,
+                            p => reportProgress(p * 100),
+                            cts.Token);
+                    },
+                    cancelProgress: () =>
+                    {
+                        cancelled = true;
+                        try
+                        {
+                            cts.Cancel();
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                        }
+                    });
+
+                if (cancelled || cts.IsCancellationRequested)
                 {
-                    await service.UploadFileAsync(BucketName, objectName, filePath, reportProgress);
-                });
+                    StatusText = $"已取消上传: {fileName}";
+                    break;
+                }
 
                 if (AutoCopyLink)
                 {
-                    var url = service.GeneratePresignedUploadUrl(BucketName, objectName);
+                    var url = await service.PresignDownloadUrlAsync(BucketName, objectName);
                     publicApi.CopyToClipboard(url);
                     StatusText = $"上传完成，链接已复制: {fileName}";
                 }
@@ -126,8 +168,19 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
                     StatusText = $"上传完成: {fileName}";
                 }
             }
+            catch (OperationCanceledException)
+            {
+                StatusText = $"已取消上传: {fileName}";
+                break;
+            }
             catch (Exception ex)
             {
+                if (cancelled || cts.IsCancellationRequested)
+                {
+                    StatusText = $"已取消上传: {fileName}";
+                    break;
+                }
+
                 StatusText = $"上传失败 {fileName}: {ex.Message}";
             }
         }

@@ -1,4 +1,4 @@
-﻿using AlibabaCloud.OSS.V2;
+using AlibabaCloud.OSS.V2;
 
 
 using DevToolkit.AliyunOss.Models;
@@ -19,8 +19,10 @@ public class OssService(Settings settings, Action<string>? log = null)
 
     private Client GetClient()
     {
-        if (string.IsNullOrWhiteSpace(settings.AccessKeyId) ||
-            string.IsNullOrWhiteSpace(settings.AccessKeySecret) ||
+        var accessKeyId = settings.GetPlainAccessKeyId();
+        var accessKeySecret = settings.GetPlainAccessKeySecret();
+        if (string.IsNullOrWhiteSpace(accessKeyId) ||
+            string.IsNullOrWhiteSpace(accessKeySecret) ||
             string.IsNullOrWhiteSpace(settings.Endpoint))
         {
             throw new SettingsNotConfiguredException("OSS settings are not configured properly.");
@@ -30,18 +32,20 @@ public class OssService(Settings settings, Action<string>? log = null)
         {
             Endpoint = settings.Endpoint,
             Region = new Uri(settings.Endpoint).Host.Split('.')[0].Replace("oss-", ""),
-            CredentialsProvider = new OSS.Credentials.StaticCredentialsProvider(settings.AccessKeyId, settings.AccessKeySecret)
+            CredentialsProvider = new OSS.Credentials.StaticCredentialsProvider(accessKeyId, accessKeySecret)
         });
     }
 
     public async Task<List<string>> GetBucketsAsync(string bucketName = "", CancellationToken cancellationToken = default)
     {
         log?.Invoke("GetBucketsAsync.");
-        if (_buckets.Count > 0)
+        lock (_buckets)
         {
-            log?.Invoke("Returning cached buckets.");
-
-            return _buckets.Where(x => x.Contains(bucketName, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (_buckets.Count > 0)
+            {
+                log?.Invoke("Returning cached buckets.");
+                return _buckets.Where(x => x.Contains(bucketName, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
         }
 
         using var client = GetClient();
@@ -57,34 +61,32 @@ public class OssService(Settings settings, Action<string>? log = null)
             }
         }
 
-        foreach (var item in results)
+        lock (_buckets)
         {
-            if (_buckets.Contains(item)) continue;
-            _buckets.Add(item);
-        }
+            foreach (var item in results)
+            {
+                _buckets.Add(item);
+            }
 
-        return _buckets.Where(x => x.Contains(bucketName, StringComparison.OrdinalIgnoreCase)).ToList();
+            return _buckets.Where(x => x.Contains(bucketName, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
     }
+
+    private static string ObjectExistCacheKey(string bucketName, string key) =>
+        "object_exist_" + bucketName + "_" + key;
 
     public async Task<bool> ExistsAsync(string bucketName, string key, CancellationToken cancellationToken = default)
     {
-        if (!_buckets.Contains(bucketName)) return false;
-        return await _cache.GetOrCreateAsync("object_exist_" + bucketName + "_" + key, async entry => {
+        return await _cache.GetOrCreateAsync(ObjectExistCacheKey(bucketName, key), async entry => {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
             using var client = GetClient();
             return await client.IsObjectExistAsync(bucketName, key, cancellationToken: cancellationToken);
         });
     }
 
-    public async Task<string> PresignDownloadUrlAsync(string bucketName, string key, CancellationToken cancellationToken = default)
+    public Task<string> PresignDownloadUrlAsync(string bucketName, string key, CancellationToken cancellationToken = default)
     {
-        using var client = GetClient();
-        var result = client.Presign(new OSS.Models.GetObjectRequest
-        {
-            Bucket = bucketName,
-            Key = key
-        }, DateTime.Now.AddHours(6));
-        return await Task.FromResult(result.Url!);
+        return Task.FromResult(GeneratePresignedDownloadUrl(bucketName, key));
     }
 
     public async Task<List<string>> GetObjectsAsync(string bucketName, string prefix, CancellationToken cancellationToken = default)
@@ -93,14 +95,12 @@ public class OssService(Settings settings, Action<string>? log = null)
         prefix = prefix.Replace('\\', '/').TrimStart('/');
         log?.Invoke($"GetObjectsAsync. bucketName: {bucketName}, prefix: {prefix}");
 
-        if (!_buckets.Contains(bucketName)) return [];
-
         using var client = GetClient();
         var result = client.ListObjectsPaginator(new OSS.Models.ListObjectsRequest
         {
             Bucket = bucketName,
             Prefix = prefix,
-            MaxKeys = 10,
+            MaxKeys = 100,
         });
         var results = new List<string>();
         await foreach (var page in result.IterPageAsync(cancellationToken))
@@ -122,8 +122,6 @@ public class OssService(Settings settings, Action<string>? log = null)
         if (prefix.Length > 0 && !prefix.EndsWith('/')) prefix += '/';
 
         log?.Invoke($"GetObjectsDetailedAsync. bucketName: {bucketName}, prefix: {prefix}");
-
-        if (!_buckets.Contains(bucketName)) return ([], false);
 
         using var client = GetClient();
         var result = client.ListObjectsPaginator(new OSS.Models.ListObjectsRequest
@@ -155,6 +153,19 @@ public class OssService(Settings settings, Action<string>? log = null)
         return (objects, false);
     }
 
+    /// <summary>生成下载（GET）预签名链接，用于分享/访问对象。</summary>
+    public string GeneratePresignedDownloadUrl(string bucketName, string key)
+    {
+        using var client = GetClient();
+        var result = client.Presign(new OSS.Models.GetObjectRequest
+        {
+            Bucket = bucketName,
+            Key = key
+        }, DateTime.Now.AddHours(6));
+        return result.Url!;
+    }
+
+    /// <summary>生成上传（PUT）预签名链接，用于外部直传。</summary>
     public string GeneratePresignedUploadUrl(string bucketName, string key)
     {
         using var client = GetClient();
@@ -168,18 +179,24 @@ public class OssService(Settings settings, Action<string>? log = null)
 
     public void ClearCache()
     {
-        _buckets.Clear();
+        lock (_buckets)
+        {
+            _buckets.Clear();
+        }
     }
 
     public async Task UploadFileAsync(string bucketName, string objectName, string filePath, Action<double> reportProcess, CancellationToken cancellationToken = default)
     {
         using var client = GetClient();
+        using var body = File.OpenRead(filePath);
         var request = new OSS.Models.PutObjectRequest
         {
             Bucket = bucketName,
             Key = objectName,
-            Body = File.OpenRead(filePath),
-            ProgressFn = (long increment, long transferred, long total) => {
+            Body = body,
+            ProgressFn = (long increment, long transferred, long total) =>
+            {
+                if (total <= 0) return;
                 reportProcess((double)transferred / total);
             },
             Metadata = new Dictionary<string, string>()
@@ -188,7 +205,9 @@ public class OssService(Settings settings, Action<string>? log = null)
             }
         };
         request.Headers.Add("x-oss-meta-source", "flow-launcher-plugin-aliyun-oss");
-        var result = await client.PutObjectAsync(request, cancellationToken: cancellationToken);
+        await client.PutObjectAsync(request, cancellationToken: cancellationToken);
+        _cache.Remove(ObjectExistCacheKey(bucketName, objectName));
+        reportProcess(1);
     }
 
     public async Task CopyObjectAsync(string bucket1, string key, string bucket2, string backupKey, CancellationToken cancellationToken)
@@ -204,5 +223,6 @@ public class OssService(Settings settings, Action<string>? log = null)
         };
 
         await client.CopyObjectAsync(request, cancellationToken: cancellationToken);
+        _cache.Remove(ObjectExistCacheKey(bucket2, backupKey));
     }
 }

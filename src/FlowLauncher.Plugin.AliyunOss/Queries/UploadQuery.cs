@@ -116,7 +116,7 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        new UploadHelperWindow(publicApi, service, bucketName, objectName, settings: settings).Show();
+                        new UploadHelperWindow(publicApi, service, bucketName, objectName, forceBackup: true, settings: settings).Show();
                     });
                     return false;
                 })

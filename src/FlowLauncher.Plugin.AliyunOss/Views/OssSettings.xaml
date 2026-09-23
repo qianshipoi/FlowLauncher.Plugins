@@ -8,7 +8,7 @@
     xmlns:viewmodel="clr-namespace:DevToolkit.AliyunOss.ViewModel"
     d:Background="White"
     d:DataContext="{d:DesignInstance Type={x:Type viewmodel:OssSettingsViewModel}}"
-    d:DesignWidth="400"
+    d:DesignWidth="420"
     mc:Ignorable="d">
     <Grid Margin="20">
         <Grid.ColumnDefinitions>
@@ -16,6 +16,8 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
@@ -28,25 +30,21 @@
             Margin="5"
             VerticalAlignment="Center"
             Text="Access Key ID:" />
-        <TextBox
-            Grid.Row="0"
-            Grid.Column="1"
-            Margin="0,10"
-            VerticalAlignment="Center"
-            Text="{Binding AccessKeyId}" />
+        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,8">
+            <TextBox Text="{Binding AccessKeyId, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock Margin="2,2,0,0" FontSize="11" Foreground="Gray" Text="明文保存，可直接查看" />
+        </StackPanel>
 
         <TextBlock
             Grid.Row="1"
             Grid.Column="0"
             Margin="5"
             VerticalAlignment="Center"
-            Text="Accces Key Secret:" />
-        <TextBox
-            Grid.Row="1"
-            Grid.Column="1"
-            Margin="0,10"
-            VerticalAlignment="Center"
-            Text="{Binding AccessKeySecret}" />
+            Text="Access Key Secret:" />
+        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,8">
+            <PasswordBox x:Name="SecretBox" PasswordChanged="SecretBox_PasswordChanged" />
+            <TextBlock Margin="2,2,0,0" FontSize="11" Foreground="Gray" Text="{Binding AccessKeySecretHint}" />
+        </StackPanel>
 
         <TextBlock
             Grid.Row="2"
@@ -61,14 +59,37 @@
             VerticalAlignment="Center"
             Text="{Binding Endpoint}" />
 
-        <StackPanel
+        <TextBlock
             Grid.Row="3"
+            Grid.Column="0"
+            Margin="5"
+            VerticalAlignment="Center"
+            Text="连接测试:" />
+        <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,8" Orientation="Horizontal">
+            <Button MinWidth="72" Command="{Binding TestCommand}" Content="测试" />
+            <TextBlock
+                Margin="10,0,0,0"
+                VerticalAlignment="Center"
+                TextWrapping="Wrap"
+                Text="{Binding TestStatus}" />
+        </StackPanel>
+
+        <TextBlock
+            Grid.Row="4"
+            Grid.ColumnSpan="2"
+            Margin="5,0"
+            FontSize="11"
+            Foreground="Gray"
+            Text="Secret 留空则不修改已保存的密钥；填入新值后点保存才会更新。"
+            TextWrapping="Wrap" />
+
+        <StackPanel
+            Grid.Row="5"
             Grid.ColumnSpan="2"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
             Orientation="Horizontal">
-            <Button Command="{Binding SaveCommand}" Content="Save" />
+            <Button Content="Save" Click="Save_Click" />
         </StackPanel>
     </Grid>
-
 </UserControl>

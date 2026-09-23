@@ -12,6 +12,7 @@
 		<PackageReference Include="iNKORE.UI.WPF.Modern" Version="0.10.2.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
 		<PackageReference Include="NAudio" Version="2.2.1" />
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.11" />
 	</ItemGroup>
 
 	<ItemGroup>

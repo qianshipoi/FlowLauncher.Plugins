@@ -3,18 +3,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:uic="clr-namespace:iNKORE.UI.WPF.Modern.Controls;assembly=iNKORE.UI.WPF.Modern.Controls">
     <StackPanel>
-        <uic:SettingsCard Header="AccessKey ID" Description="阿里云账号的 AccessKey ID">
+        <uic:SettingsCard Header="AccessKey ID" Description="阿里云账号的 AccessKey ID（明文保存）">
             <TextBox Text="{Binding AccessKeyId, UpdateSourceTrigger=PropertyChanged}" MinWidth="240"/>
         </uic:SettingsCard>
-        <uic:SettingsCard Header="AccessKey Secret" Description="与 ID 配对的密钥，点击保存后生效">
+        <uic:SettingsCard Header="AccessKey Secret" Description="{Binding AccessKeySecretHint}">
             <PasswordBox x:Name="SecretBox" MinWidth="240"
                          PasswordChanged="SecretBox_PasswordChanged"/>
         </uic:SettingsCard>
         <uic:SettingsCard Header="Endpoint" Description="如 oss-cn-hangzhou.aliyuncs.com">
             <TextBox Text="{Binding Endpoint, UpdateSourceTrigger=PropertyChanged}" MinWidth="240"/>
         </uic:SettingsCard>
-        <uic:SettingsCard Header="保存" Description="保存后即可在 OSS 页使用">
-            <Button Content="保存" MinWidth="80" Command="{Binding SaveCommand}"/>
+        <uic:SettingsCard Header="连接测试" Description="用当前填写值（Secret 留空则用已存值）列出存储空间">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="测试" MinWidth="80" Margin="0,0,8,0"
+                        Command="{Binding TestCommand}"/>
+                <TextBlock Text="{Binding TestStatus}" VerticalAlignment="Center"
+                           TextWrapping="Wrap" MaxWidth="320"/>
+            </StackPanel>
+        </uic:SettingsCard>
+        <uic:SettingsCard Header="保存" Description="Secret 留空则不修改已保存的密钥">
+            <Button Content="保存" MinWidth="80" Click="Save_Click"/>
         </uic:SettingsCard>
     </StackPanel>
 </UserControl>

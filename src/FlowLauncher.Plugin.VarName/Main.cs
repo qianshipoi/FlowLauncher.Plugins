@@ -21,8 +21,18 @@ public class Main : IAsyncPlugin, ISettingProvider
     public Task InitAsync(PluginInitContext context)
     {
         _context = context;
-        _context.API.AddActionKeyword(_context.CurrentPluginMetadata.ID, "vname");
+        // 先查再加，避免每次 Init 重复注册触发词
+        if (_context.CurrentPluginMetadata.ActionKeywords?.Contains("vname", StringComparer.OrdinalIgnoreCase) != true &&
+            !_context.API.ActionKeywordAssigned("vname"))
+        {
+            _context.API.AddActionKeyword(_context.CurrentPluginMetadata.ID, "vname");
+        }
         _settings = context.API.LoadSettingJsonStorage<Settings>();
+        // 旧版明文 API Key 自动升级为 DPAPI 密文
+        if (_settings.TryUpgradeSecrets())
+        {
+            context.API.SaveSettingJsonStorage<Settings>();
+        }
         _service = new VarNameService(_settings);
         _cache = new VarNameCache(context.CurrentPluginMetadata.PluginDirectory);
         return Task.CompletedTask;

@@ -1,5 +1,4 @@
-using DevToolkit.VarName.ViewModels;
-
+using System.Windows;
 using System.Windows.Controls;
 
 namespace DevToolkit.VarName.Views;
@@ -13,13 +12,17 @@ public partial class SettingsSectionView : UserControl
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = viewModel;
-        // PasswordBox 不可数据绑定，手动同步
-        ApiKeyBox.Password = viewModel.ApiKey;
+        // API Key 不回显已存值；PasswordBox 初始保持为空
     }
 
-    private void ApiKeyBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
+    private void ApiKeyBox_PasswordChanged(object sender, RoutedEventArgs e)
     {
-        if (_viewModel.ApiKey != ApiKeyBox.Password)
-            _viewModel.ApiKey = ApiKeyBox.Password;
+        _viewModel.ApiKeyInput = ApiKeyBox.Password;
+    }
+
+    private void Save_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SaveCommand.Execute(null);
+        ApiKeyBox.Clear();
     }
 }

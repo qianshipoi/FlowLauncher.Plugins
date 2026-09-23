@@ -36,7 +36,7 @@ public class VarNameService(Settings settings)
         };
 
         using var http = new HttpClient();
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiKey);
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.GetPlainApiKey());
 
         var jsonContent = new StringContent(
             JsonSerializer.Serialize(requestBody),
@@ -76,7 +76,7 @@ public class VarNameService(Settings settings)
         var modelsUrl = new Uri(endpoint, "models").ToString();
 
         using var http = new HttpClient();
-        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiKey);
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.GetPlainApiKey());
 
         var response = await http.GetAsync(modelsUrl, token);
         response.EnsureSuccessStatusCode();

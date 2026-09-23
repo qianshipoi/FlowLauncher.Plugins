@@ -1,5 +1,6 @@
-using System.Windows.Controls;
 using DevToolkit.SpeechToText;
+
+using System.Windows.Controls;
 
 namespace FlowLauncher.Plugin.SpeechToText;
 
@@ -12,9 +13,17 @@ public partial class SettingsView : UserControl
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = viewModel;
+        // API Key 不回显已存值；PasswordBox 初始保持为空
+    }
 
-        // 同步 API Key（PasswordBox 不支持直接绑定）
-        ApiKeyBox.Password = viewModel.ApiKey;
-        ApiKeyBox.PasswordChanged += (_, _) => _viewModel.ApiKey = ApiKeyBox.Password;
+    private void ApiKeyBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
+    {
+        _viewModel.ApiKeyInput = ApiKeyBox.Password;
+    }
+
+    private void Save_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+        _viewModel.SaveCommand.Execute(null);
+        ApiKeyBox.Clear();
     }
 }

@@ -101,7 +101,7 @@ public class SpeechToTextService
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Add("api-key", _settings.ApiKey);
+            request.Headers.Add("api-key", _settings.GetPlainApiKey());
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             using var response = await _http.SendAsync(request,
@@ -229,7 +229,7 @@ public class SpeechToTextService
             });
 
             using var request = new HttpRequestMessage(HttpMethod.Post, url);
-            request.Headers.Add("api-key", _settings.ApiKey);
+            request.Headers.Add("api-key", _settings.GetPlainApiKey());
             request.Content = new StringContent(body, Encoding.UTF8, "application/json");
             using var response = await _http.SendAsync(request, ct);
 
@@ -272,7 +272,8 @@ public class SpeechToTextService
     {
         if (_http.DefaultRequestHeaders.Contains("api-key"))
             _http.DefaultRequestHeaders.Remove("api-key");
-        if (!string.IsNullOrEmpty(_settings.ApiKey))
-            _http.DefaultRequestHeaders.Add("api-key", _settings.ApiKey);
+        var plainKey = _settings.GetPlainApiKey();
+        if (!string.IsNullOrEmpty(plainKey))
+            _http.DefaultRequestHeaders.Add("api-key", plainKey);
     }
 }

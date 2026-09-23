@@ -20,6 +20,8 @@ public partial class UploadHelperWindow : Window
     private readonly bool _forceBackup;
     private readonly bool _tempUpload;
     private readonly Settings _settings;
+    private readonly CancellationTokenSource _cts = new();
+    private bool _cancelled;
 
     public UploadHelperWindow(IPublicAPI publicApi, OssService service, string bucket, string key,
         bool checkExists = false, bool forceBackup = false, bool tempUpload = false, Settings? settings = null)
@@ -33,22 +35,43 @@ public partial class UploadHelperWindow : Window
         _forceBackup = forceBackup;
         _tempUpload = tempUpload;
         _settings = settings ?? new Settings();
+        Closed += OnClosed;
         Loaded += OnLoaded;
+    }
+
+    private void OnClosed(object? sender, EventArgs e)
+    {
+        CancelCore();
+        _cts.Dispose();
+    }
+
+    private void CancelCore()
+    {
+        _cancelled = true;
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         try
         {
+            var token = _cts.Token;
+
             if (_forceBackup)
             {
                 StatusText.Text = "备份中...";
                 var backupKey = $"{_key}.bak.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-                await _service.CopyObjectAsync(_bucket, _key, _bucket, backupKey, CancellationToken.None);
+                await _service.CopyObjectAsync(_bucket, _key, _bucket, backupKey, token);
             }
             else if (_checkExists)
             {
-                var exists = await _service.ExistsAsync(_bucket, _key);
+                var exists = await _service.ExistsAsync(_bucket, _key, token);
                 if (exists)
                 {
                     StatusText.Text = "文件已存在，请选择操作";
@@ -56,18 +79,19 @@ public partial class UploadHelperWindow : Window
                     var existsDialog = new FileExistsDialog(_key);
                     if (existsDialog.ShowDialog() != true)
                     {
-                        Close();
                         return;
                     }
 
                     if (existsDialog.Result == FileExistsDialog.Choice.BackupAndReplace)
                     {
                         var backupKey = $"{_key}.bak.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-                        await _service.CopyObjectAsync(_bucket, _key, _bucket, backupKey, CancellationToken.None);
+                        await _service.CopyObjectAsync(_bucket, _key, _bucket, backupKey, token);
                     }
                     // Choice.Replace → 直接替换，继续上传
                 }
             }
+
+            token.ThrowIfCancellationRequested();
 
             StatusText.Text = "请选择文件...";
             var dialog = new OpenFileDialog
@@ -78,7 +102,6 @@ public partial class UploadHelperWindow : Window
             };
             if (dialog.ShowDialog() != true)
             {
-                Close();
                 return;
             }
 
@@ -88,12 +111,28 @@ public partial class UploadHelperWindow : Window
                 : _key;
 
             StatusText.Text = "上传中...";
-            await _publicApi.ShowProgressBoxAsync("上传中...", async (reportProgress) =>
-            {
-                await _service.UploadFileAsync(_bucket, uploadKey, filePath, reportProgress);
-            });
+            await _publicApi.ShowProgressBoxAsync(
+                "上传中...",
+                async reportProgress =>
+                {
+                    // FlowLauncher 进度条要求 0-100；OssService 上报的是 0-1
+                    await _service.UploadFileAsync(
+                        _bucket,
+                        uploadKey,
+                        filePath,
+                        p => reportProgress(p * 100),
+                        _cts.Token);
+                },
+                cancelProgress: () => CancelCore());
 
-            var url = await _service.PresignDownloadUrlAsync(_bucket, uploadKey);
+            // 取消后不再执行签名、剪贴板等后续流程
+            if (_cancelled || _cts.IsCancellationRequested)
+            {
+                StatusText.Text = "已取消上传";
+                return;
+            }
+
+            var url = await _service.PresignDownloadUrlAsync(_bucket, uploadKey, token);
 
             if (_settings.AutoCopyLink)
             {
@@ -109,12 +148,25 @@ public partial class UploadHelperWindow : Window
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            StatusText.Text = "已取消上传";
+        }
         catch (Exception ex)
         {
-            _publicApi.ShowMsgError("上传失败", ex.Message);
+            if (!_cancelled && !_cts.IsCancellationRequested)
+            {
+                _publicApi.ShowMsgError("上传失败", ex.Message);
+            }
+            else
+            {
+                StatusText.Text = "已取消上传";
+            }
         }
-
-        Close();
+        finally
+        {
+            Close();
+        }
     }
 
     private static string GetFilter(string key)

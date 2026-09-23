@@ -1,4 +1,4 @@
-﻿using AlibabaCloud.OSS.V2;
+using AlibabaCloud.OSS.V2;
 using DevToolkit.AliyunOss;
 
 using Flow.Launcher.Plugin;
@@ -53,13 +53,36 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
         return new OssSettings(new OssSettingsViewModel(_settings, () => _context.API.SaveSettingJsonStorage<Settings>()));
     }
 
+    /// <summary>
+    /// 补齐子命令触发词（ossd/ossu/ossb）。
+    /// 必须先查 ActionKeywordAssigned / 已有 ActionKeywords，否则每次 Init 都会重复注册。
+    /// </summary>
+    private void EnsureActionKeywords()
+    {
+        var api = _context.API;
+        var pluginId = _context.CurrentPluginMetadata.ID;
+        var existing = _context.CurrentPluginMetadata.ActionKeywords ?? [];
+
+        foreach (var keyword in new[] { "ossd", "ossu", "ossb" })
+        {
+            if (existing.Contains(keyword, StringComparer.OrdinalIgnoreCase))
+                continue;
+            if (api.ActionKeywordAssigned(keyword))
+                continue;
+            api.AddActionKeyword(pluginId, keyword);
+        }
+    }
+
     public Task InitAsync(PluginInitContext context)
     {
         _context = context;
-        _context.API.AddActionKeyword(_context.CurrentPluginMetadata.ID, "ossd");
-        _context.API.AddActionKeyword(_context.CurrentPluginMetadata.ID, "ossu");
-        _context.API.AddActionKeyword(_context.CurrentPluginMetadata.ID, "ossb");
+        EnsureActionKeywords();
         _settings = context.API.LoadSettingJsonStorage<Settings>();
+        // 旧版配置规范化：ID 还原明文、Secret 升级为 DPAPI 密文
+        if (_settings.TryUpgradeSecrets())
+        {
+            context.API.SaveSettingJsonStorage<Settings>();
+        }
         _service = new OssService(_settings);
         _downloadQuery = new DownloadQuery(_context.API, _service);
         _uploadQuery = new UploadQuery(_context.API, _service, _settings);

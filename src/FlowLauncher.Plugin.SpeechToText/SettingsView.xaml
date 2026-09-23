@@ -11,7 +11,8 @@
         <TextBox Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"/>
 
         <TextBlock Text="API Key" FontWeight="SemiBold" Margin="0,0,0,4"/>
-        <PasswordBox x:Name="ApiKeyBox" Margin="0,0,0,12"/>
+        <PasswordBox x:Name="ApiKeyBox" Margin="0,0,0,4" PasswordChanged="ApiKeyBox_PasswordChanged"/>
+        <TextBlock Text="{Binding ApiKeyHint}" FontSize="11" Foreground="Gray" Margin="0,0,0,12"/>
         <TextBlock Text="语言代码" FontWeight="SemiBold" Margin="0,0,0,4"/>
         <TextBox Text="{Binding Language, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,12"
                  Width="80" HorizontalAlignment="Left"/>
@@ -28,7 +29,7 @@
                  Width="120" HorizontalAlignment="Left"/>
 
         <StackPanel Orientation="Horizontal">
-            <Button Content="保存" Command="{Binding SaveCommand}" Padding="16,6" Margin="0,0,8,0"/>
+            <Button Content="保存" Click="Save_Click" Padding="16,6" Margin="0,0,8,0"/>
             <Button Content="测试连接" Command="{Binding TestConnectionCommand}" Padding="16,6"/>
         </StackPanel>
         <TextBlock Text="{Binding ConnectionStatus}" Margin="0,8,0,0" Foreground="#888"/>

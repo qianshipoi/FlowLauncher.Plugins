@@ -19,6 +19,11 @@ public class Main : IAsyncPlugin, ISettingProvider
     {
         _context = context;
         _settings = context.API.LoadSettingJsonStorage<Settings>();
+        // 旧版明文 API Key 自动升级为 DPAPI 密文
+        if (_settings.TryUpgradeSecrets())
+        {
+            context.API.SaveSettingJsonStorage<Settings>();
+        }
         return Task.CompletedTask;
     }
 

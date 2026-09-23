@@ -1,5 +1,6 @@
 using DevToolkit.AliyunOss.ViewModel;
 
+using System.Windows;
 using System.Windows.Controls;
 
 namespace DevToolkit.AliyunOss.Views;
@@ -13,13 +14,17 @@ public partial class SettingsSectionView : UserControl
         InitializeComponent();
         _viewModel = viewModel;
         DataContext = viewModel;
-        // PasswordBox 不可数据绑定，手动同步
-        SecretBox.Password = viewModel.AccessKeySecret;
+        // Secret 不回显已存值；PasswordBox 初始保持为空
     }
 
-    private void SecretBox_PasswordChanged(object sender, System.Windows.RoutedEventArgs e)
+    private void SecretBox_PasswordChanged(object sender, RoutedEventArgs e)
     {
-        if (_viewModel.AccessKeySecret != SecretBox.Password)
-            _viewModel.AccessKeySecret = SecretBox.Password;
+        _viewModel.AccessKeySecretInput = SecretBox.Password;
+    }
+
+    private void Save_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SaveCommand.Execute(null);
+        SecretBox.Clear();
     }
 }

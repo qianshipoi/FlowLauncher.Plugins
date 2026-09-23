@@ -7,25 +7,24 @@ namespace FlowLauncher.Plugin.VarName;
 
 public partial class SettingsView : UserControl
 {
-    private SettingsViewModel _viewModel = default!;
+    private readonly SettingsViewModel _viewModel;
 
-    public SettingsView()
+    public SettingsView(SettingsViewModel viewModel)
     {
         InitializeComponent();
-    }
-
-    public SettingsView(SettingsViewModel viewModel) : this()
-    {
         _viewModel = viewModel;
-        DataContext = _viewModel;
-
-        // PasswordBox 无法直接绑定，手动同步初始值
-        ApiKeyPasswordBox.Password = _viewModel.ApiKey;
+        this.DataContext = viewModel;
+        // API Key 不回显已存值；PasswordBox 初始保持为空
     }
 
     private void ApiKeyPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
     {
-        if (_viewModel is not null)
-            _viewModel.ApiKey = ApiKeyPasswordBox.Password;
+        _viewModel.ApiKeyInput = ApiKeyPasswordBox.Password;
+    }
+
+    private void Save_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SaveCommand.Execute(null);
+        ApiKeyPasswordBox.Clear();
     }
 }

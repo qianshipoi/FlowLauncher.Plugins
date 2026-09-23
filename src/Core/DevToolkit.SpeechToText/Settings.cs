@@ -1,9 +1,13 @@
+using DevToolkit.SpeechToText.Utils;
+
 namespace DevToolkit.SpeechToText;
 
 public class Settings
 {
     public string ModelName { get; set; } = "mimo-v2.5-asr";
     public string ApiUrl { get; set; } = "https://api.xiaomimimo.com/v1/";
+
+    /// <summary>磁盘形态：DPAPI 密文（<c>dpapi:</c> 前缀）或旧版明文。</summary>
     public string ApiKey { get; set; } = "";
     public string Language { get; set; } = "auto";
     public int SampleRate { get; set; } = 16000;
@@ -22,8 +26,27 @@ public class Settings
     public double? BubbleLeft { get; set; }
     public double? BubbleTop { get; set; }
 
+    /// <summary>业务侧使用的明文 API Key。</summary>
+    public string GetPlainApiKey() => SecretProtector.Unprotect(ApiKey);
+
+    /// <summary>写入 API Key；传 null 表示不修改已存值。</summary>
+    public void SetApiKey(string? apiKey)
+    {
+        if (apiKey is not null)
+            ApiKey = SecretProtector.Protect(apiKey);
+    }
+
+    /// <summary>旧版明文升级为 DPAPI 密文；返回是否变更。</summary>
+    public bool TryUpgradeSecrets()
+    {
+        if (string.IsNullOrEmpty(ApiKey) || SecretProtector.IsProtected(ApiKey))
+            return false;
+        ApiKey = SecretProtector.Protect(ApiKey);
+        return true;
+    }
+
     public bool IsValid() =>
         !string.IsNullOrWhiteSpace(ModelName) &&
         !string.IsNullOrWhiteSpace(ApiUrl) &&
-        !string.IsNullOrWhiteSpace(ApiKey);
+        !string.IsNullOrWhiteSpace(GetPlainApiKey());
 }

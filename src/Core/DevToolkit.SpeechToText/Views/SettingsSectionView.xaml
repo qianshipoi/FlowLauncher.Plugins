@@ -9,7 +9,7 @@
         <uic:SettingsCard Header="API 地址" Description="OpenAI 兼容接口 Base URL">
             <TextBox Text="{Binding ApiUrl, UpdateSourceTrigger=PropertyChanged}" MinWidth="240"/>
         </uic:SettingsCard>
-        <uic:SettingsCard Header="API Key" Description="用于鉴权的密钥，点击保存后生效">
+        <uic:SettingsCard Header="API Key" Description="{Binding ApiKeyHint}">
             <PasswordBox x:Name="ApiKeyBox" MinWidth="240"
                          PasswordChanged="ApiKeyBox_PasswordChanged"/>
         </uic:SettingsCard>
@@ -19,9 +19,9 @@
         <uic:SettingsCard Header="采样率" Description="录音采样率（Hz）">
             <TextBox Text="{Binding SampleRate, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
         </uic:SettingsCard>
-        <uic:SettingsCard Header="保存与测试" Description="保存配置并测试接口连接">
+        <uic:SettingsCard Header="保存与测试" Description="Key 留空则不修改已保存的密钥">
             <StackPanel Orientation="Horizontal">
-                <Button Content="保存" MinWidth="80" Command="{Binding SaveCommand}"/>
+                <Button Content="保存" MinWidth="80" Click="Save_Click"/>
                 <Button Content="测试连接" MinWidth="90" Margin="8,0,0,0" Command="{Binding TestConnectionCommand}"/>
             </StackPanel>
         </uic:SettingsCard>
