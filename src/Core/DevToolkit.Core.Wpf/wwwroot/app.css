@@ -1,0 +1,58 @@
+/* 仅补充注入到 jsoneditor 菜单栏的自定义按钮，对齐默认菜单按钮样式 */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+#editor {
+    height: 100%;
+}
+
+/* 与 .jsoneditor-menu>button 保持一致（蓝底、24px 图标位） */
+.jsoneditor-menu .jsoneditor-custom {
+    width: 26px;
+    height: 26px;
+    margin: 2px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background-color: transparent;
+    background-image: url(img/custom-icons.svg);
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    color: #fff;
+    opacity: 0.8;
+    font-family: arial, sans-serif;
+    font-size: 12px;
+    float: left;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.jsoneditor-menu .jsoneditor-custom.jsoneditor-copy {
+    background-position: 0 0;
+}
+
+.jsoneditor-menu .jsoneditor-custom.jsoneditor-import {
+    background-position: -24px 0;
+}
+
+.jsoneditor-menu .jsoneditor-custom.jsoneditor-export {
+    background-position: -48px 0;
+}
+
+.jsoneditor-menu .jsoneditor-custom:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.jsoneditor-menu .jsoneditor-custom:active,
+.jsoneditor-menu .jsoneditor-custom:focus {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 自定义按钮与左侧默认按钮组隔开 */
+.jsoneditor-menu .jsoneditor-custom.jsoneditor-copy {
+    margin-left: 10px;
+}

@@ -1,5 +1,8 @@
+using Microsoft.Win32;
+
 using Microsoft.Web.WebView2.Core;
 
+using System.IO;
 using System.Text.Json;
 
 using System.Windows;
@@ -72,6 +75,34 @@ public partial class JsonEditorWindow : Window
                 var text = message.RootElement.GetProperty("text").GetString() ?? string.Empty;
                 Clipboard.SetText(text);
                 break;
+
+            case "export":
+                ExportJson(message.RootElement.GetProperty("text").GetString() ?? string.Empty);
+                break;
+        }
+    }
+
+    private void ExportJson(string text)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Title = "导出 JSON",
+            Filter = "JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*",
+            FileName = "data.json",
+            DefaultExt = ".json",
+            AddExtension = true,
+            OverwritePrompt = true,
+        };
+        if (dialog.ShowDialog(this) != true)
+            return;
+
+        try
+        {
+            File.WriteAllText(dialog.FileName, text);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"导出失败：{ex.Message}", "JSON 编辑器");
         }
     }
 

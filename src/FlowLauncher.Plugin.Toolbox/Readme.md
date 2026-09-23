@@ -14,9 +14,11 @@
 ### JSON 编辑器（`tool json`）
 
 - `tool json {"name": "value"}` 打开编辑器窗口；`tool json`（无参数）读取剪贴板内容
-- 查询结果会预校验 JSON 并提示错误位置，无效 JSON 也可打开修复（自动切换到 code 模式）
+- 查询结果会预校验 JSON 并提示错误位置，无效 JSON 也可打开修复（默认/保持 code 模式）
 - 编辑器窗口基于 WebView2 加载本地打包的 [jsoneditor](https://github.com/josdejong/jsoneditor)（离线可用，无需联网）
-- 窗口工具栏：格式化 / 压缩 / 复制（格式化）/ 复制（压缩）
+- 默认进入「代码」视图；菜单栏右侧注入复制 / 导入 / 导出（jsoneditor 无官方自定义按钮 API，挂到 `.jsoneditor-menu`）
+- 导出走宿主「另存为」对话框选路径后写入文件（浏览器预览时回退为直接下载）
+- 窗口置顶显示，标题栏带固定图标
 - WebView2 用户数据目录：`插件目录/WebView2Cache`
 
 ### 文件哈希（`tool fhash`）

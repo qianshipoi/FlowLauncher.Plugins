@@ -4,122 +4,12 @@
     <meta charset="utf-8">
     <title>JSON 编辑器</title>
     <link rel="stylesheet" href="vendor/jsoneditor.min.css">
-    <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #toolbar {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            padding: 8px 12px;
-            background: #f3f3f3;
-            border-bottom: 1px solid #ddd;
-            flex: none;
-        }
-
-            #toolbar button {
-                padding: 4px 14px;
-                cursor: pointer;
-            }
-
-        #status {
-            margin-left: auto;
-            color: #666;
-            font-size: 13px;
-        }
-
-            #status.error {
-                color: #d9534f;
-            }
-
-        #editor {
-            flex: 1;
-            min-height: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="app.css">
 </head>
 <body>
-    <div id="toolbar">
-        <button id="btn-format">格式化</button>
-        <button id="btn-compact">压缩</button>
-        <button id="btn-copy-formatted">复制（格式化）</button>
-        <button id="btn-copy-compact">复制（压缩）</button>
-        <span id="status">等待宿主注入 JSON…</span>
-    </div>
     <div id="editor"></div>
-
+    <input id="file-input" type="file" accept=".json,application/json,text/plain" hidden>
     <script src="vendor/jsoneditor.min.js"></script>
-    <script>
-        const statusEl = document.getElementById('status');
-        const editor = new JSONEditor(document.getElementById('editor'), {
-            mode: 'tree',
-            modes: ['tree', 'code', 'view']
-        });
-
-        function setStatus(text, isError) {
-            statusEl.textContent = text;
-            statusEl.className = isError ? 'error' : '';
-        }
-
-        function tryGetCurrentJson() {
-            try {
-                return { ok: true, value: editor.get() };
-            } catch (err) {
-                return { ok: false, error: String(err.message || err) };
-            }
-        }
-
-        document.getElementById('btn-format').onclick = () => {
-            const result = tryGetCurrentJson();
-            if (!result.ok) return setStatus('JSON 无效：' + result.error, true);
-            editor.setText(JSON.stringify(result.value, null, 2));
-            setStatus('已格式化');
-        };
-
-        document.getElementById('btn-compact').onclick = () => {
-            const result = tryGetCurrentJson();
-            if (!result.ok) return setStatus('JSON 无效：' + result.error, true);
-            editor.setText(JSON.stringify(result.value));
-            setStatus('已压缩');
-        };
-
-        function copyAs(compact) {
-            const result = tryGetCurrentJson();
-            if (!result.ok) return setStatus('JSON 无效：' + result.error, true);
-            const text = JSON.stringify(result.value, null, compact ? 0 : 2);
-            window.chrome.webview.postMessage({ type: 'copy', text: text });
-            setStatus(compact ? '已复制（压缩）' : '已复制（格式化）');
-        }
-
-        document.getElementById('btn-copy-formatted').onclick = () => copyAs(false);
-        document.getElementById('btn-copy-compact').onclick = () => copyAs(true);
-
-        window.chrome.webview.addEventListener('message', (e) => {
-            const message = e.data;
-            if (message.type !== 'init') return;
-
-            const json = message.json;
-            try {
-                JSON.parse(json);
-                editor.setMode('tree');
-                editor.setText(json);
-                setStatus('已加载 (' + json.length + ' 字符)');
-            } catch (err) {
-                // 无效 JSON 切换到 code 模式，方便修复
-                editor.setMode('code');
-                editor.setText(json);
-                setStatus('JSON 无效：' + (err.message || err), true);
-            }
-        });
-
-        window.chrome.webview.postMessage({ type: 'ready' });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>

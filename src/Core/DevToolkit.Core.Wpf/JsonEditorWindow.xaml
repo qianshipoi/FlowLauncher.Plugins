@@ -4,6 +4,8 @@
         xmlns:webview2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="JSON 编辑器 - Toolbox"
         Width="1100" Height="750"
+        Icon="Resources/app.ico"
+        Topmost="True"
         WindowStartupLocation="CenterScreen">
     <webview2:WebView2 x:Name="WebView" />
 </Window>
