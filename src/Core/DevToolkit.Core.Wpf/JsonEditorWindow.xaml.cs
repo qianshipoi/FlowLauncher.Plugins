@@ -1,4 +1,4 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 using Microsoft.Web.WebView2.Core;
 
@@ -30,6 +30,7 @@ public partial class JsonEditorWindow : Window
         _webRoot = webRoot;
         _userDataFolder = userDataFolder;
         _pendingJson = json;
+        UpdatePinButton();
         Loaded += OnLoaded;
         Closed += (_, _) =>
         {
@@ -81,6 +82,65 @@ public partial class JsonEditorWindow : Window
                 break;
         }
     }
+
+    private void TitleBar_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            ToggleMaximize();
+            return;
+        }
+
+        // DragMove 要求主键仍处于按下状态；WPF 在部分点击路径下会在抬起后触发
+        if (e.LeftButton != System.Windows.Input.MouseButtonState.Pressed)
+            return;
+
+        try
+        {
+            DragMove();
+        }
+        catch (InvalidOperationException)
+        {
+            // 按钮已释放等竞态，忽略
+        }
+    }
+
+    private void Pin_Click(object sender, RoutedEventArgs e)
+    {
+        Topmost = !Topmost;
+        UpdatePinButton();
+    }
+
+    private void UpdatePinButton()
+    {
+        if (PinButton is null)
+            return;
+
+        // 固定：实心蓝；未固定：灰色描边感
+        PinButton.Foreground = Topmost
+            ? System.Windows.Media.Brushes.SteelBlue
+            : new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(0x44, 0x44, 0x44));
+        PinButton.ToolTip = Topmost ? "取消固定" : "固定到最前";
+        PinButton.Background = Topmost
+            ? new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(0x33, 0x2F, 0x6F, 0xED))
+            : System.Windows.Media.Brushes.Transparent;
+
+        if (PinGlyph is not null)
+            PinGlyph.Opacity = Topmost ? 1.0 : 0.75;
+    }
+
+    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void Maximize_Click(object sender, RoutedEventArgs e) => ToggleMaximize();
+
+    private void ToggleMaximize()
+    {
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
     private void ExportJson(string text)
     {
