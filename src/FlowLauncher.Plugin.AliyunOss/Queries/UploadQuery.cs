@@ -20,14 +20,17 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
     private const string ForwardSlash = "/";
 
     private readonly ITransferHost _host = new FlowTransferHost(publicApi);
+    private readonly ILocalization _loc = new FlowLocalization(publicApi);
+
+    private string T(string key, params object[] args) => _loc.Get(key, args);
 
     public List<Result> GetTempUploadResult(string bucketName)
     {
         return
         [
             ResultBuilder
-                .Create("上传临时文件")
-                .Subtitle($"上传到 {bucketName}/tmp/ 目录")
+                .Create(T("ossu_temp_upload"))
+                .Subtitle(T("ossu_temp_upload_subtitle", bucketName))
                 .Action(_ => ShowUpload(bucketName, "", tempUpload: true))
                 .Build()
         ];
@@ -39,7 +42,7 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
         {
             return Task.FromResult(new List<Result>
             {
-                ResultBuilder.Create("请输入桶名").Subtitle("用法: ossu <桶名> <对象路径>").Build()
+                ResultBuilder.Create(T("ossu_input_bucket")).Subtitle(T("ossu_usage")).Build()
             });
         }
 
@@ -62,7 +65,7 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
         {
             return Task.FromResult(new List<Result>
             {
-                ResultBuilder.Create("无法上传").Subtitle($"对象名称不能以 {ForwardSlash} 结尾").Build()
+                ResultBuilder.Create(T("ossu_object_slash")).Build()
             });
         }
 
@@ -72,13 +75,13 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
             return Task.FromResult(new List<Result>
             {
                 ResultBuilder
-                    .Create("替换文件")
-                    .Subtitle($"{objectName} 已存在，上传并替换")
+                    .Create(T("ossu_action_replace"))
+                    .Subtitle(T("ossu_action_replace_subtitle", objectName))
                     .Action(_ => ShowUpload(bucketName, objectName))
                     .Build(),
                 ResultBuilder
-                    .Create("备份并替换文件")
-                    .Subtitle("先备份已有文件再上传替换")
+                    .Create(T("ossu_action_backup_replace"))
+                    .Subtitle(T("ossu_action_backup_replace_subtitle"))
                     .Action(_ => ShowUpload(bucketName, objectName, forceBackup: true))
                     .Build()
             });
@@ -88,13 +91,13 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
         return Task.FromResult(new List<Result>
         {
             ResultBuilder
-                .Create("上传文件")
-                .Subtitle("选择文件并上传，如同名文件已存在则提示替换")
+                .Create(T("ossu_action_upload"))
+                .Subtitle(T("ossu_action_upload_subtitle"))
                 .Action(_ => ShowUpload(bucketName, objectName, checkExists: true))
                 .Build(),
             ResultBuilder
-                .Create("备份并替换文件")
-                .Subtitle("先备份已有文件再上传替换")
+                .Create(T("ossu_action_backup_replace"))
+                .Subtitle(T("ossu_action_backup_replace_subtitle"))
                 .Action(_ => ShowUpload(bucketName, objectName, forceBackup: true))
                 .Build()
         });
@@ -105,7 +108,7 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
         Application.Current.Dispatcher.Invoke(() =>
         {
             TransferWindow
-                .ForUpload(service, settings, _host, bucketName, objectName, checkExists, forceBackup, tempUpload)
+                .ForUpload(service, settings, _host, _loc, bucketName, objectName, checkExists, forceBackup, tempUpload)
                 .Show();
         });
         return false;

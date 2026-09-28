@@ -20,3 +20,13 @@ public interface ITransferHost
 
 /// <summary>气泡窗口在屏幕上的位置（窗口左上角，设备无关像素）。</summary>
 public sealed record BubblePosition(double X, double Y);
+
+/// <summary>
+/// 本地化文案提供者。宿主实现（Flow Launcher 经 GetTranslation 读取插件语言目录，
+/// 独立 App 可直接返回中文），缺 key 时返回 key 本身以便排查。
+/// </summary>
+public interface ILocalization
+{
+    /// <summary>按 key 取当前语言文案；支持 {0} 式占位参数。</summary>
+    string Get(string key, params object[] args);
+}

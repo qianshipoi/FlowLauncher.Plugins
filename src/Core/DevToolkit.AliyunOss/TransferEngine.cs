@@ -1,4 +1,4 @@
-using DevToolkit.AliyunOss.Models;
+﻿using DevToolkit.AliyunOss.Models;
 using DevToolkit.AliyunOss.Services;
 using DevToolkit.AliyunOss.Transfer;
 
@@ -13,8 +13,10 @@ public sealed record UploadRequest(string Bucket, string Key, string FilePath);
 /// 上传/下载的业务编排：冲突处理、备份、上传、生成访问链接。
 /// 不依赖任何 WPF 或宿主 API，进度与交互通过参数回传。
 /// </summary>
-public sealed class TransferEngine(OssService service)
+public sealed class TransferEngine(OssService service, ILocalization loc)
 {
+
+    private readonly ILocalization _loc = loc;
     /// <summary>临时上传使用的对象名（<c>tmp/{guid}{ext}</c>）。</summary>
     public static string BuildTempKey(string filePath) =>
         $"tmp/{Guid.NewGuid():N}{Path.GetExtension(filePath)}";
@@ -29,12 +31,12 @@ public sealed class TransferEngine(OssService service)
     {
         if (forceBackup)
         {
-            ui.SetStatus("正在备份原文件…");
+            ui.SetStatus(_loc.Get("transfer_status_backup"));
             await BackupAsync(bucket, key, cancellationToken);
             return UploadConflictChoice.BackupAndReplace;
         }
 
-        ui.SetStatus("正在检查同名对象…");
+        ui.SetStatus(_loc.Get("transfer_status_checking"));
         if (!await service.ExistsAsync(bucket, key, cancellationToken))
         {
             return UploadConflictChoice.Replace;
@@ -43,7 +45,7 @@ public sealed class TransferEngine(OssService service)
         var choice = await ui.AskConflictAsync(key, cancellationToken);
         if (choice == UploadConflictChoice.BackupAndReplace)
         {
-            ui.SetStatus("正在备份原文件…");
+            ui.SetStatus(_loc.Get("transfer_status_backup"));
             await BackupAsync(bucket, key, cancellationToken);
         }
 
@@ -57,10 +59,10 @@ public sealed class TransferEngine(OssService service)
         IProgress<TransferProgress> progress,
         CancellationToken cancellationToken = default)
     {
-        ui.SetStatus("正在上传…");
+        ui.SetStatus(_loc.Get("transfer_status_uploading"));
         await service.UploadFileAsync(request.Bucket, request.Key, request.FilePath, progress, cancellationToken);
 
-        ui.SetStatus("正在生成访问链接…");
+        ui.SetStatus(_loc.Get("transfer_status_signing"));
         var link = await service.PresignDownloadUrlAsync(request.Bucket, request.Key, cancellationToken);
 
         return new TransferOutcome(link);
@@ -74,7 +76,7 @@ public sealed class TransferEngine(OssService service)
         IProgress<TransferProgress> progress,
         CancellationToken cancellationToken = default)
     {
-        ui.SetStatus("正在下载…");
+        ui.SetStatus(_loc.Get("transfer_status_downloading"));
         await DownloadService.DownloadFileAsync(url, filePath, progress, cancellationToken);
         return new TransferOutcome(null, filePath);
     }

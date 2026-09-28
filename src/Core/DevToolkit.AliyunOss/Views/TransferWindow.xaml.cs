@@ -1,4 +1,4 @@
-using DevToolkit.AliyunOss;
+﻿using DevToolkit.AliyunOss;
 using DevToolkit.AliyunOss.Services;
 using DevToolkit.AliyunOss.Transfer;
 using DevToolkit.AliyunOss.ViewModels;
@@ -30,6 +30,7 @@ public partial class TransferWindow : Window
 
     private readonly TransferViewModel _viewModel;
     private readonly ITransferHost _host;
+    private readonly ILocalization _loc;
     private UploadSession? _upload;
     private DownloadSession? _download;
     private IReadOnlyList<UploadRequest>? _batch;
@@ -40,11 +41,12 @@ public partial class TransferWindow : Window
     private bool _positionRestored;
     private double _bubbleTarget = BubbleCompact;
 
-    private TransferWindow(TransferViewModel viewModel, ITransferHost host)
+    private TransferWindow(TransferViewModel viewModel, ITransferHost host, ILocalization loc)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _host = host;
+        _loc = loc;
         DataContext = viewModel;
 
         _viewModel.CloseRequested += Close;
@@ -328,6 +330,7 @@ public partial class TransferWindow : Window
         OssService service,
         Settings settings,
         ITransferHost host,
+        ILocalization loc,
         string bucket,
         string key,
         bool checkExists = false,
@@ -335,9 +338,9 @@ public partial class TransferWindow : Window
         bool tempUpload = false)
     {
         var window = new TransferWindow(
-            new TransferViewModel(new TransferEngine(service), settings, host), host)
+            new TransferViewModel(new TransferEngine(service, loc), settings, host, loc), host, loc)
         {
-            Title = tempUpload ? "上传临时文件" : "上传文件",
+            Title = tempUpload ? loc.Get("transfer_title_upload_temp") : loc.Get("transfer_title_upload"),
         };
         window._upload = new UploadSession(bucket, key, checkExists, forceBackup, tempUpload);
         window.Loaded += window.OnUploadLoaded;
@@ -349,12 +352,13 @@ public partial class TransferWindow : Window
         OssService service,
         Settings settings,
         ITransferHost host,
-        string url)
+        string url,
+        ILocalization loc)
     {
         var window = new TransferWindow(
-            new TransferViewModel(new TransferEngine(service), settings, host), host)
+            new TransferViewModel(new TransferEngine(service, loc), settings, host, loc), host, loc)
         {
-            Title = "下载文件",
+            Title = loc.Get("transfer_title_download"),
         };
         window._download = new DownloadSession(url);
         window.Loaded += window.OnDownloadLoaded;
@@ -366,12 +370,13 @@ public partial class TransferWindow : Window
         OssService service,
         Settings settings,
         ITransferHost host,
-        IReadOnlyList<UploadRequest> requests)
+        IReadOnlyList<UploadRequest> requests,
+        ILocalization loc)
     {
         var window = new TransferWindow(
-            new TransferViewModel(new TransferEngine(service), settings, host), host)
+            new TransferViewModel(new TransferEngine(service, loc), settings, host, loc), host, loc)
         {
-            Title = requests.Count == 1 ? "上传文件" : $"上传 {requests.Count} 个文件",
+            Title = requests.Count == 1 ? loc.Get("transfer_title_upload") : loc.Get("transfer_title_upload_many", requests.Count),
         };
         window._batch = requests;
         window.Loaded += window.OnBatchLoaded;
@@ -384,10 +389,10 @@ public partial class TransferWindow : Window
 
         var dialog = new OpenFileDialog
         {
-            Title = "选择要上传的文件",
+            Title = _loc.Get("transfer_select_file"),
             Multiselect = false,
             DefaultExt = session.TempUpload ? null : Path.GetExtension(session.Key),
-            Filter = session.TempUpload ? "所有文件|*.*" : GetFilter(session.Key),
+            Filter = session.TempUpload ? _loc.Get("transfer_filter_all") : GetFilter(session.Key),
         };
 
         if (dialog.ShowDialog(this) != true)
@@ -413,7 +418,7 @@ public partial class TransferWindow : Window
         var suggested = Path.GetFileName(new Uri(session.Url).AbsolutePath);
         var dialog = new SaveFileDialog
         {
-            Title = "选择保存位置",
+            Title = _loc.Get("transfer_select_save_location"),
             FileName = string.IsNullOrWhiteSpace(suggested) ? "download" : Uri.UnescapeDataString(suggested),
         };
 

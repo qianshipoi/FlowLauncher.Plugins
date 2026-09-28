@@ -18,6 +18,9 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
     private const string StatusDetail = "detail";
 
     private readonly ITransferHost _host = new FlowTransferHost(publicApi);
+    private readonly ILocalization _loc = new FlowLocalization(publicApi);
+
+    private string T(string key, params object[] args) => _loc.Get(key, args);
 
     public Task<List<Result>> ExecuteAsync(Query query, CancellationToken token)
     {
@@ -25,7 +28,7 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
         {
             return Task.FromResult(new List<Result>
             {
-                ResultBuilder.Create("请输入桶名").Subtitle("用法: ossd <桶名> <对象路径>").Build()
+                ResultBuilder.Create(T("ossd_input_bucket")).Subtitle(T("ossd_usage")).Build()
             });
         }
 
@@ -45,14 +48,16 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
             parts.RemoveAt(parts.Count - 1);
         }
 
+        var usage = T("ossd_usage");
+
         // 仅桶名（或对象名为空）→ 提示输入对象路径，避免 SearchTerms[1] 越界
         if (parts.Count == 0)
         {
             return Task.FromResult(new List<Result>
             {
                 ResultBuilder
-                    .Create("请输入对象名称")
-                    .Subtitle($"用法: ossd {bucketName} <对象路径>")
+                    .Create(T("ossd_input_object"))
+                    .Subtitle(usage)
                     .Build()
             });
         }
@@ -65,8 +70,8 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
             return Task.FromResult(new List<Result>
             {
                 ResultBuilder
-                    .Create("请输入对象名称")
-                    .Subtitle($"用法: ossd {bucketName} <对象路径>")
+                    .Create(T("ossd_input_object"))
+                    .Subtitle(usage)
                     .Build()
             });
         }
@@ -75,7 +80,7 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
         {
             return Task.FromResult(new List<Result>
             {
-                ResultBuilder.Create("无法下载").Subtitle("对象名称不能以斜杠结尾").Build()
+                ResultBuilder.Create(T("ossd_object_slash")).Build()
             });
         }
 
@@ -84,7 +89,7 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
         {
             return Task.FromResult(new List<Result>
             {
-                ResultBuilder.Create("文件不存在").Subtitle($"{bucketName}/{objectName}").Build()
+                ResultBuilder.Create(T("ossd_not_found")).Subtitle($"{bucketName}/{objectName}").Build()
             });
         }
 
@@ -94,7 +99,7 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
             return Task.FromResult(new List<Result>
             {
                 ResultBuilder
-                    .Create("下载")
+                    .Create(T("ossd_action_download"))
                     .Subtitle($"{bucketName}/{objectName}")
                     .Action(_ =>
                     {
@@ -105,18 +110,17 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
                                 var url = await service.PresignDownloadUrlAsync(bucketName, objectName);
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    TransferWindow.ForDownload(service, settings, _host, url).Show();
+                                    TransferWindow.ForDownload(service, settings, _host, url, _loc).Show();
                                 });
                             }
-                            catch (Exception ex) { publicApi.ShowMsgError("下载失败", ex.Message); }
+                            catch (Exception ex) { publicApi.ShowMsgError(T("ossd_download_failed"), ex.Message); }
                         }
                         DoDownload();
                         return false;
                     })
                     .Build(),
                 ResultBuilder
-                    .Create("复制链接")
-                    .Subtitle($"生成预签名链接并复制")
+                    .Create(T("ossd_action_copy_link"))
                     .Action(_ =>
                     {
                         async void DoCopy()
@@ -125,9 +129,9 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
                             {
                                 var url = await service.PresignDownloadUrlAsync(bucketName, objectName);
                                 publicApi.CopyToClipboard(url);
-                                publicApi.ShowMsg("已复制", "预签名链接已复制到剪贴板");
+                                publicApi.ShowMsg(T("ossd_copy_done"), T("ossd_copy_done_subtitle"));
                             }
-                            catch (Exception ex) { publicApi.ShowMsgError("操作失败", ex.Message); }
+                            catch (Exception ex) { publicApi.ShowMsgError(T("transfer_status_failed"), ex.Message); }
                         }
                         DoCopy();
                         return false;
@@ -140,8 +144,8 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
         return Task.FromResult(new List<Result>
         {
             ResultBuilder
-                .Create("查询")
-                .Subtitle($"{bucketName}/{objectName}，按 Enter 检查文件是否存在")
+                .Create(T("ossd_action_query"))
+                .Subtitle(T("ossd_query_hint", $"{bucketName}/{objectName}"))
                 .Action(_ =>
                 {
                     async void DoCheck()
@@ -156,7 +160,7 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings 
                             }
                             publicApi.ChangeQuery($"ossd {bucketName} {objectName} {StatusDetail}", true);
                         }
-                        catch (Exception ex) { publicApi.ShowMsgError("查询失败", ex.Message); }
+                        catch (Exception ex) { publicApi.ShowMsgError(T("ossd_query_failed"), ex.Message); }
                     }
                     DoCheck();
                     return false;

@@ -5,6 +5,7 @@ using Flow.Launcher.Plugin;
 
 using FlowLauncher.Plugin.AliyunOss.Queries;
 using DevToolkit.AliyunOss.Services;
+using DevToolkit.AliyunOss.Transfer;
 using DevToolkit.AliyunOss.ViewModel;
 using FlowLauncher.Plugin.AliyunOss.Views;
 using FlowLauncher.Plugin.AliyunOss.ViewModel;
@@ -23,6 +24,7 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
     private Settings _settings = default!;
     private DownloadQuery _downloadQuery = default!;
     private UploadQuery _uploadQuery = default!;
+    private ILocalization _loc = default!;
 
     static Main()
     {
@@ -86,6 +88,7 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
         _service = new OssService(_settings);
         _downloadQuery = new DownloadQuery(_context.API, _service, _settings);
         _uploadQuery = new UploadQuery(_context.API, _service, _settings);
+        _loc = new FlowLocalization(_context.API);
         return Task.CompletedTask;
     }
 
@@ -99,17 +102,17 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
                 [
                     ResultBuilder
                         .Create("ossd")
-                        .Subtitle("下载文件")
+                        .Subtitle(_loc.Get("oss_download_subtitle"))
                         .Action(() => _context.API.ChangeQuery("ossd ", true), false)
                         .Build(),
                     ResultBuilder
                         .Create("ossu")
-                        .Subtitle("上传文件")
+                        .Subtitle(_loc.Get("oss_upload_subtitle"))
                         .Action(() => _context.API.ChangeQuery("ossu ", true), false)
                         .Build(),
                     ResultBuilder
                         .Create("ossb")
-                        .Subtitle("打开文件浏览器（列出文件、拖拽上传）")
+                        .Subtitle(_loc.Get("oss_browser_subtitle"))
                         .Action(() => _context.API.ChangeQuery("ossb ", true), false)
                         .Build()
                 ];
@@ -185,7 +188,7 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
         {
             return 
             [
-                ResultBuilder.Create("请先配置阿里云 OSS 插件设置").Subtitle("按 Enter 打开设置面板").Action(_context.API.OpenSettingDialog).Build()
+                ResultBuilder.Create(_loc.Get("settings_not_configured")).Subtitle(_loc.Get("settings_open_panel")).Action(_context.API.OpenSettingDialog).Build()
             ];
         }
         catch (OperationException)

@@ -17,6 +17,9 @@ namespace FlowLauncher.Plugin.AliyunOss.ViewModel;
 
 public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService service, Settings settings) : ObservableObject
 {
+    /// <summary>本地化文案（Flow 宿主语言自动选择）。</summary>
+    private ILocalization Loc { get; } = new FlowLocalization(publicApi);
+
     [ObservableProperty]
     private string _bucketName = "";
 
@@ -29,7 +32,7 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
     private OssObjectInfo? _selectedFile;
 
     [ObservableProperty]
-    private string _statusText = "请设置桶名和前缀，然后点击加载";
+    private string _statusText = "";
 
     [ObservableProperty]
     private bool _isLoading;
@@ -66,7 +69,7 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
             }
             catch (Exception ex)
             {
-                return $"生成链接失败: {ex.Message}";
+                return $"{Loc.Get("browser_get_link_failed")}: {ex.Message}";
             }
         }
     }
@@ -85,12 +88,12 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
     {
         if (string.IsNullOrWhiteSpace(BucketName))
         {
-            StatusText = "请输入桶名";
+            StatusText = Loc.Get("browser_enter_bucket");
             return;
         }
 
         IsLoading = true;
-        StatusText = "加载中...";
+        StatusText = Loc.Get("browser_loading");
         Files.Clear();
 
         try
@@ -101,12 +104,12 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
                 Files.Add(obj);
             }
             StatusText = hasMore
-                ? $"已加载 {Files.Count} 个对象（已达上限，更多数据未显示）"
-                : $"已加载 {Files.Count} 个对象";
+                ? Loc.Get("browser_loaded_capped", Files.Count)
+                : Loc.Get("browser_loaded", Files.Count);
         }
         catch (Exception ex)
         {
-            StatusText = $"加载失败: {ex.Message}";
+            StatusText = Loc.Get("browser_load_failed", ex.Message);
         }
         finally
         {
@@ -128,7 +131,8 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
         }).ToList();
 
         // 进度、取消与链接复制都在传输窗口内完成，宿主隐藏与否都不影响
-        var window = TransferWindow.ForUploadBatch(service, settings, new FlowTransferHost(publicApi), requests);
+        var window = TransferWindow.ForUploadBatch(
+            service, settings, new FlowTransferHost(publicApi), requests, new FlowLocalization(publicApi));
 
         // 上传窗口结束后再刷新列表，避免传输中读到旧结果
         window.Closed += (_, _) => _ = LoadObjectsAsync();
@@ -141,7 +145,7 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
         if (SelectedFile is { IsDirectory: false })
         {
             publicApi.CopyToClipboard(SelectedFileAccessUrl);
-            StatusText = "链接已复制到剪贴板";
+            StatusText = Loc.Get("browser_copy_done");
         }
     }
 

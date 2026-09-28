@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 using DevToolkit.AliyunOss.Models;
@@ -22,6 +22,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private readonly TransferEngine _engine;
     private readonly Settings _settings;
     private readonly ITransferHost _host;
+    private readonly ILocalization _loc;
     private readonly TransferRateTracker _rate = new();
     private readonly IProgress<TransferProgress> _progress;
 
@@ -29,14 +30,18 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private TaskCompletionSource<UploadConflictChoice>? _conflict;
     private DateTimeOffset _lastUiUpdate = DateTimeOffset.MinValue;
 
-    public TransferViewModel(TransferEngine engine, Settings settings, ITransferHost host)
+    public TransferViewModel(TransferEngine engine, Settings settings, ITransferHost host, ILocalization loc)
     {
         _engine = engine;
         _settings = settings;
         _host = host;
+        _loc = loc;
         // 在 UI 线程构造，Progress 会把回调投递回 UI 线程
         _progress = new Progress<TransferProgress>(OnProgress);
     }
+
+    /// <summary>取本地化文案的快捷方式。</summary>
+    private string T(string key, params object[] args) => _loc.Get(key, args);
 
     /// <summary>窗口关闭请求（取消/关闭按钮触发）。</summary>
     public event Action? CloseRequested;
@@ -46,7 +51,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
 
     /// <summary>短状态文案，气泡中央显示（受圆形空间限制，务必简短）。</summary>
     [ObservableProperty]
-    private string _statusText = "准备中";
+    private string _statusText = "";
 
     /// <summary>中心大字：百分比，如「45%」。长度未知时为空。</summary>
     [ObservableProperty]
@@ -221,7 +226,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
                 var request = requests[i];
                 var label = $"{i + 1}/{total}";
                 SetTarget($"{request.Bucket}/{request.Key}");
-                StatusText = $"上传 {label}";
+                StatusText = T("transfer_status_uploading_item", label);
 
                 ResetProgress();
 
@@ -238,8 +243,8 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
                 catch (Exception ex)
                 {
                     // 单个文件失败不中断整批，记录后在结尾汇总
-                    failure = $"{Path.GetFileName(request.FilePath)}：{ex.Message}";
-                    StatusText = $"上传失败 {label}：{ex.Message}";
+                    failure = $"{Path.GetFileName(request.FilePath)}: {ex.Message}";
+                    StatusText = $"{T("transfer_status_failed")} {label}: {ex.Message}";
                 }
             }
 
@@ -258,8 +263,8 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
             }
 
             StatusText = failure is null
-                ? $"已传 {succeeded} 个"
-                : $"完成 {succeeded}/{total}";
+                ? T("transfer_status_uploaded", succeeded)
+                : string.Format(T("transfer_status_partial"), succeeded, total);
 
             if (failure is not null)
             {
@@ -309,7 +314,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
 
     public Task<UploadConflictChoice> AskConflictAsync(string objectName, CancellationToken cancellationToken)
     {
-        ConflictMessage = $"{objectName} 已存在，请选择处理方式：";
+        ConflictMessage = T("transfer_conflict_exists", objectName);
         _conflict = new TaskCompletionSource<UploadConflictChoice>(
             TaskCreationOptions.RunContinuationsAsynchronously);
         IsConflictVisible = true;
@@ -352,7 +357,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private void EnterCancelPending()
     {
         IsCancelPending = true;
-        StatusText = "再点确认取消";
+        StatusText = T("transfer_cancel_confirm");
 
         _cancelPendingTimer?.Stop();
         _cancelPendingTimer = new DispatcherTimer { Interval = CancelPendingTimeout };
@@ -371,7 +376,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         _cancelPendingTimer?.Stop();
         IsCancelPending = false;
         IsCancelConfirmed = false;
-        StatusText = "传输中";
+        StatusText = T("transfer_status_uploading");
     }
 
     /// <summary>若处于确认态则退出（点按钮外的分支调用）；不在确认态时无操作。</summary>
@@ -392,7 +397,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     /// <summary>中止进行中的传输并请求关闭窗口（仅确认取消与窗口关闭路径调用）。</summary>
     public void CancelAndClose()
     {
-        StatusText = "已取消";
+        StatusText = T("transfer_status_cancelled");
         try
         {
             _cts?.Cancel();
@@ -413,7 +418,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     {
         if (!HasLink) return;
         _host.CopyText(Link);
-        StatusText = "链接已复制到剪贴板";
+        StatusText = T("transfer_status_copied");
     }
 
     [RelayCommand]
@@ -469,7 +474,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         ShowSizeInsteadOfPercent = false;
         IsCancelPending = false;
         IsCancelConfirmed = false;
-        StatusText = "准备中";
+        StatusText = T("transfer_status_preparing");
         return _cts;
     }
 
@@ -526,11 +531,11 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         if (isUpload && HasLink && _settings.AutoCopyLink)
         {
             _host.CopyText(Link);
-            StatusText = "已复制";
+            StatusText = T("transfer_status_copied");
             return;
         }
 
-        StatusText = isUpload ? "上传完成" : "下载完成";
+        StatusText = T(isUpload ? "transfer_status_uploaded_done" : "transfer_status_downloaded_done");
     }
 
     private void FinishCancelled()
@@ -544,7 +549,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         PercentText = "";
         DetailText = "";
         SpeedText = "";
-        StatusText = "已取消";
+        StatusText = T("transfer_status_cancelled");
     }
 
     private void Fail(Exception ex)
@@ -561,7 +566,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
 
         // 停止不确定态旋转；百分比沿用失败那一刻的实际进度（画满会让人误以为已传完）
         IsIndeterminate = false;
-        StatusText = "失败";
+        StatusText = T("transfer_status_failed");
     }
 
     private void ResolveConflict(UploadConflictChoice choice)
