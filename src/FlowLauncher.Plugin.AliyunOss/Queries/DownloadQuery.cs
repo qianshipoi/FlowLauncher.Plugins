@@ -1,6 +1,10 @@
 using Flow.Launcher.Plugin;
 
+using DevToolkit.AliyunOss;
 using DevToolkit.AliyunOss.Services;
+using DevToolkit.AliyunOss.Transfer;
+using DevToolkit.AliyunOss.Utils;
+using DevToolkit.AliyunOss.Views;
 
 using FlowLauncher.Plugin.AliyunOss.Views;
 
@@ -8,10 +12,12 @@ using System.Windows;
 
 namespace FlowLauncher.Plugin.AliyunOss.Queries;
 
-internal class DownloadQuery(IPublicAPI publicApi, OssService service)
+internal class DownloadQuery(IPublicAPI publicApi, OssService service, Settings settings)
 {
     private const string StatusNotFound = "notfound";
     private const string StatusDetail = "detail";
+
+    private readonly ITransferHost _host = new FlowTransferHost(publicApi);
 
     public Task<List<Result>> ExecuteAsync(Query query, CancellationToken token)
     {
@@ -51,9 +57,21 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service)
             });
         }
 
-        var objectName = string.Join(' ', parts);
+        var objectName = OssKey.Normalize(string.Join(' ', parts));
 
-        if (objectName.EndsWith('/') || objectName.EndsWith('\\'))
+        // 用户可能只输入了斜杠（如 "ossd bucket /"），规范化后为空
+        if (objectName.Length == 0)
+        {
+            return Task.FromResult(new List<Result>
+            {
+                ResultBuilder
+                    .Create("请输入对象名称")
+                    .Subtitle($"用法: ossd {bucketName} <对象路径>")
+                    .Build()
+            });
+        }
+
+        if (objectName.EndsWith('/'))
         {
             return Task.FromResult(new List<Result>
             {
@@ -87,7 +105,7 @@ internal class DownloadQuery(IPublicAPI publicApi, OssService service)
                                 var url = await service.PresignDownloadUrlAsync(bucketName, objectName);
                                 Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    new DownloadHelperWindow(publicApi, service, url).Show();
+                                    TransferWindow.ForDownload(service, settings, _host, url).Show();
                                 });
                             }
                             catch (Exception ex) { publicApi.ShowMsgError("下载失败", ex.Message); }

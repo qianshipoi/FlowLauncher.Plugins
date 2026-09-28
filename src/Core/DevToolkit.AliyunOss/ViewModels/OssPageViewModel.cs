@@ -131,7 +131,8 @@ public partial class OssPageViewModel : ObservableObject
         try
         {
             var objectName = Prefix + Path.GetFileName(dialog.FileName);
-            await _service.UploadFileAsync(SelectedBucket, objectName, dialog.FileName, p => UploadProgress = p);
+            var progress = new Progress<Models.TransferProgress>(p => UploadProgress = p.Fraction);
+            await _service.UploadFileAsync(SelectedBucket, objectName, dialog.FileName, progress);
             StatusText = $"已上传：{objectName}";
             await LoadObjectsAsync();
         }

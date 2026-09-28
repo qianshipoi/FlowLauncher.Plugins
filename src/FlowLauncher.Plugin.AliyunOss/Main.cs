@@ -84,7 +84,7 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
             context.API.SaveSettingJsonStorage<Settings>();
         }
         _service = new OssService(_settings);
-        _downloadQuery = new DownloadQuery(_context.API, _service);
+        _downloadQuery = new DownloadQuery(_context.API, _service, _settings);
         _uploadQuery = new UploadQuery(_context.API, _service, _settings);
         return Task.CompletedTask;
     }

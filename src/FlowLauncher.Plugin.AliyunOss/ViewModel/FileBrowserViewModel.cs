@@ -4,8 +4,11 @@ using CommunityToolkit.Mvvm.Input;
 using DevToolkit.AliyunOss;
 using DevToolkit.AliyunOss.Models;
 using DevToolkit.AliyunOss.Services;
+using DevToolkit.AliyunOss.Transfer;
+using DevToolkit.AliyunOss.Views;
 
 using Flow.Launcher.Plugin;
+using FlowLauncher.Plugin.AliyunOss.Views;
 
 using System.Collections.ObjectModel;
 using System.IO;
@@ -115,77 +118,21 @@ public partial class FileBrowserViewModel(IPublicAPI publicApi, OssService servi
     {
         if (string.IsNullOrWhiteSpace(BucketName) || filePaths.Length == 0) return;
 
-        foreach (var filePath in filePaths)
+        var requests = filePaths.Select(filePath =>
         {
             var fileName = Path.GetFileName(filePath);
             var objectName = string.IsNullOrWhiteSpace(Prefix)
                 ? fileName
                 : Prefix.TrimEnd('/') + '/' + fileName;
+            return new UploadRequest(BucketName, objectName, filePath);
+        }).ToList();
 
-            using var cts = new CancellationTokenSource();
-            var cancelled = false;
+        // 进度、取消与链接复制都在传输窗口内完成，宿主隐藏与否都不影响
+        var window = TransferWindow.ForUploadBatch(service, settings, new FlowTransferHost(publicApi), requests);
 
-            try
-            {
-                await publicApi.ShowProgressBoxAsync(
-                    $"上传 {fileName}...",
-                    async reportProgress =>
-                    {
-                        // FlowLauncher 进度条要求 0-100；OssService 上报的是 0-1
-                        await service.UploadFileAsync(
-                            BucketName,
-                            objectName,
-                            filePath,
-                            p => reportProgress(p * 100),
-                            cts.Token);
-                    },
-                    cancelProgress: () =>
-                    {
-                        cancelled = true;
-                        try
-                        {
-                            cts.Cancel();
-                        }
-                        catch (ObjectDisposedException)
-                        {
-                        }
-                    });
-
-                if (cancelled || cts.IsCancellationRequested)
-                {
-                    StatusText = $"已取消上传: {fileName}";
-                    break;
-                }
-
-                if (AutoCopyLink)
-                {
-                    var url = await service.PresignDownloadUrlAsync(BucketName, objectName);
-                    publicApi.CopyToClipboard(url);
-                    StatusText = $"上传完成，链接已复制: {fileName}";
-                }
-                else
-                {
-                    StatusText = $"上传完成: {fileName}";
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                StatusText = $"已取消上传: {fileName}";
-                break;
-            }
-            catch (Exception ex)
-            {
-                if (cancelled || cts.IsCancellationRequested)
-                {
-                    StatusText = $"已取消上传: {fileName}";
-                    break;
-                }
-
-                StatusText = $"上传失败 {fileName}: {ex.Message}";
-            }
-        }
-
-        await LoadObjectsAsync();
+        // 上传窗口结束后再刷新列表，避免传输中读到旧结果
+        window.Closed += (_, _) => _ = LoadObjectsAsync();
+        window.Show();
     }
 
     [RelayCommand]

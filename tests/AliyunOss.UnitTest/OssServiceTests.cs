@@ -58,6 +58,6 @@ public class OssServiceTests
     {
         var ss = FileHasher.ComputeMD5("D:\\Desktop\\4.jpg");
         var service = CreateService();
-        await service.UploadFileAsync("web-temp-bucket", "111.jpg", "D:\\Desktop\\4.jpg", value => { }, CancellationToken.None);
+        await service.UploadFileAsync("web-temp-bucket", "111.jpg", "D:\\Desktop\\4.jpg", cancellationToken: CancellationToken.None);
     }
 }

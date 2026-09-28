@@ -77,6 +77,9 @@ public class OssService(Settings settings, Action<string>? log = null)
 
     public async Task<bool> ExistsAsync(string bucketName, string key, CancellationToken cancellationToken = default)
     {
+        // 前导斜杠会让签名路径变成 //bucket/key 而被服务端拒绝（403），所有键统一规范化
+        key = OssKey.Normalize(key);
+
         return await _cache.GetOrCreateAsync(ObjectExistCacheKey(bucketName, key), async entry => {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
             using var client = GetClient();
@@ -160,7 +163,7 @@ public class OssService(Settings settings, Action<string>? log = null)
         var result = client.Presign(new OSS.Models.GetObjectRequest
         {
             Bucket = bucketName,
-            Key = key
+            Key = OssKey.Normalize(key)
         }, DateTime.Now.AddHours(6));
         return result.Url!;
     }
@@ -172,7 +175,7 @@ public class OssService(Settings settings, Action<string>? log = null)
         var result = client.Presign(new OSS.Models.PutObjectRequest
         {
             Bucket = bucketName,
-            Key = key,
+            Key = OssKey.Normalize(key),
         }, DateTime.Now.AddHours(6));
         return result.Url!;
     }
@@ -185,20 +188,20 @@ public class OssService(Settings settings, Action<string>? log = null)
         }
     }
 
-    public async Task UploadFileAsync(string bucketName, string objectName, string filePath, Action<double> reportProcess, CancellationToken cancellationToken = default)
+    public async Task UploadFileAsync(string bucketName, string objectName, string filePath, IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default)
     {
+        objectName = OssKey.Normalize(objectName);
+
         using var client = GetClient();
-        using var body = File.OpenRead(filePath);
+        await using var body = File.OpenRead(filePath);
         var request = new OSS.Models.PutObjectRequest
         {
             Bucket = bucketName,
             Key = objectName,
             Body = body,
+            // 服务端按分片回报；进度含字节总量，交给界面换算速率与剩余时间
             ProgressFn = (long increment, long transferred, long total) =>
-            {
-                if (total <= 0) return;
-                reportProcess((double)transferred / total);
-            },
+                progress?.Report(new TransferProgress(transferred, total)),
             Metadata = new Dictionary<string, string>()
             {
                 { "file-md5", FileHasher.ComputeMD5(filePath)  }
@@ -207,7 +210,7 @@ public class OssService(Settings settings, Action<string>? log = null)
         request.Headers.Add("x-oss-meta-source", "flow-launcher-plugin-aliyun-oss");
         await client.PutObjectAsync(request, cancellationToken: cancellationToken);
         _cache.Remove(ObjectExistCacheKey(bucketName, objectName));
-        reportProcess(1);
+        progress?.Report(TransferProgress.Completed(body.Length));
     }
 
     public async Task CopyObjectAsync(string bucket1, string key, string bucket2, string backupKey, CancellationToken cancellationToken)
@@ -217,9 +220,9 @@ public class OssService(Settings settings, Action<string>? log = null)
         var request = new OSS.Models.CopyObjectRequest
         {
             SourceBucket = bucket1,
-            SourceKey = key,
+            SourceKey = OssKey.Normalize(key),
             Bucket = bucket2,
-            Key = backupKey
+            Key = OssKey.Normalize(backupKey)
         };
 
         await client.CopyObjectAsync(request, cancellationToken: cancellationToken);
