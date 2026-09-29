@@ -193,6 +193,15 @@ public class OssService(Settings settings, Action<string>? log = null)
         objectName = OssKey.Normalize(objectName);
 
         using var client = GetClient();
+
+        // 哈希只在开启该设置时才算：它要把整个文件多读一遍（实测 512MB ≈ 2.7 秒），
+        // 而 OSS SDK 本身就带 CRC64 校验，默认不值得为元数据付这份代价。
+        var metadata = new Dictionary<string, string>();
+        if (settings.ComputeFileMd5)
+        {
+            metadata["file-md5"] = await FileHasher.ComputeMD5Async(filePath, cancellationToken);
+        }
+
         await using var body = File.OpenRead(filePath);
         var request = new OSS.Models.PutObjectRequest
         {
@@ -202,10 +211,7 @@ public class OssService(Settings settings, Action<string>? log = null)
             // 服务端按分片回报；进度含字节总量，交给界面换算速率与剩余时间
             ProgressFn = (long increment, long transferred, long total) =>
                 progress?.Report(new TransferProgress(transferred, total)),
-            Metadata = new Dictionary<string, string>()
-            {
-                { "file-md5", FileHasher.ComputeMD5(filePath)  }
-            }
+            Metadata = metadata
         };
         request.Headers.Add("x-oss-meta-source", "flow-launcher-plugin-aliyun-oss");
         await client.PutObjectAsync(request, cancellationToken: cancellationToken);

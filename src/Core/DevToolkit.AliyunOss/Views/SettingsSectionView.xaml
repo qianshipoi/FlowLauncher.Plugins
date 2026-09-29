@@ -21,6 +21,9 @@
                            TextWrapping="Wrap" MaxWidth="320"/>
             </StackPanel>
         </uic:SettingsCard>
+        <uic:SettingsCard Header="文件 MD5 元数据" Description="开启后上传时计算 file-md5 并写入对象元数据；每个文件要多完整读一遍磁盘，大文件明显变慢">
+            <uic:ToggleSwitch IsOn="{Binding ComputeFileMd5}" />
+        </uic:SettingsCard>
         <uic:SettingsCard Header="保存" Description="Secret 留空则不修改已保存的密钥">
             <Button Content="保存" MinWidth="80" Click="Save_Click"/>
         </uic:SettingsCard>

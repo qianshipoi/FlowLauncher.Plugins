@@ -20,6 +20,7 @@ public partial class OssSettingsViewModel : ObservableObject
         _onChanged = onChanged;
         _accessKeyId = settings.GetPlainAccessKeyId();
         _endpoint = settings.Endpoint;
+        _computeFileMd5 = settings.ComputeFileMd5;
         RefreshSecretHint();
     }
 
@@ -33,6 +34,13 @@ public partial class OssSettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _endpoint;
+
+    /// <summary>
+    /// 上传时计算文件 MD5 并写入对象元数据。默认关闭：算哈希要把整个文件多读一遍，
+    /// 只有下游靠该指纹识别文件时才需要。
+    /// </summary>
+    [ObservableProperty]
+    private bool _computeFileMd5;
 
     [ObservableProperty]
     private string _accessKeySecretHint = "";
@@ -76,6 +84,7 @@ public partial class OssSettingsViewModel : ObservableObject
         var secret = string.IsNullOrWhiteSpace(AccessKeySecretInput) ? null : AccessKeySecretInput;
         _settings.SetSecrets(AccessKeyId ?? "", secret);
         _settings.Endpoint = NormalizeEndpoint(Endpoint);
+        _settings.ComputeFileMd5 = ComputeFileMd5;
         _onChanged();
 
         AccessKeySecretInput = "";

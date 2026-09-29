@@ -22,6 +22,7 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
 
         <TextBlock
@@ -76,6 +77,22 @@
 
         <TextBlock
             Grid.Row="4"
+            Grid.Column="0"
+            Margin="5"
+            VerticalAlignment="Center"
+            Text="文件 MD5 元数据:" />
+        <StackPanel Grid.Row="4" Grid.Column="1" Margin="0,8">
+            <CheckBox Content="上传时计算并写入 file-md5 元数据" IsChecked="{Binding ComputeFileMd5}" />
+            <TextBlock
+                Margin="2,2,0,0"
+                FontSize="11"
+                Foreground="Gray"
+                Text="默认关闭。开启后每个文件要多完整读一遍磁盘，大文件会明显变慢。"
+                TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TextBlock
+            Grid.Row="5"
             Grid.ColumnSpan="2"
             Margin="5,0"
             FontSize="11"
@@ -84,7 +101,7 @@
             TextWrapping="Wrap" />
 
         <StackPanel
-            Grid.Row="5"
+            Grid.Row="6"
             Grid.ColumnSpan="2"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"

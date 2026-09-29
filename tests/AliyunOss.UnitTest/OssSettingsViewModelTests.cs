@@ -89,4 +89,48 @@ public class OssSettingsViewModelTests
         Assert.Equal("LTAI-was-encrypted", settings.AccessKeyId);
         Assert.True(SecretProtector.IsProtected(settings.AccessKeySecret));
     }
+
+    // ---- 文件 MD5 元数据开关 ----
+
+    [Fact]
+    public void ComputeFileMd5_DefaultsToOff()
+    {
+        // 默认关闭：算哈希要多读一遍整个文件，而 SDK 本身已有 CRC64 校验
+        Assert.False(new Settings().ComputeFileMd5);
+    }
+
+    [Fact]
+    public void Constructor_LoadsStoredMd5Switch()
+    {
+        var settings = new Settings { ComputeFileMd5 = true };
+
+        var vm = new OssSettingsViewModel(settings, () => { });
+
+        // 设置面板要回显已存值，否则用户会以为配置丢了
+        Assert.True(vm.ComputeFileMd5);
+    }
+
+    [Fact]
+    public void Save_PersistsMd5Switch()
+    {
+        var settings = new Settings();
+        var vm = new OssSettingsViewModel(settings, () => { });
+
+        vm.ComputeFileMd5 = true;
+        vm.SaveCommand.Execute(null);
+
+        Assert.True(settings.ComputeFileMd5);
+    }
+
+    [Fact]
+    public void Save_TurningMd5SwitchOff_Persists()
+    {
+        var settings = new Settings { ComputeFileMd5 = true };
+        var vm = new OssSettingsViewModel(settings, () => { });
+
+        vm.ComputeFileMd5 = false;
+        vm.SaveCommand.Execute(null);
+
+        Assert.False(settings.ComputeFileMd5);
+    }
 }

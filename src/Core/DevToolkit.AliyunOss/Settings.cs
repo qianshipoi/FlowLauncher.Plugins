@@ -13,6 +13,14 @@ public class Settings
     public string Endpoint { get; set; } = "";
     public bool AutoCopyLink { get; set; } = true;
 
+    /// <summary>
+    /// 上传时是否计算文件 MD5 并写入对象元数据 <c>x-oss-meta-file-md5</c>。
+    /// 默认关闭：算哈希要把整个文件多读一遍（实测 512MB ≈ 2.7 秒），
+    /// 而 OSS SDK 本来就有 CRC64 完整性校验，只有需要靠该指纹识别文件的
+    /// 下游服务才值得付这个代价。
+    /// </summary>
+    public bool ComputeFileMd5 { get; set; }
+
     /// <summary>业务侧使用的明文 AccessKeyId（兼容历史误加密数据）。</summary>
     public string GetPlainAccessKeyId() => SecretProtector.Unprotect(AccessKeyId);
 

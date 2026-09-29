@@ -24,11 +24,10 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private readonly ITransferHost _host;
     private readonly ILocalization _loc;
     private readonly TransferRateTracker _rate = new();
-    private readonly IProgress<TransferProgress> _progress;
+    private readonly ThrottledTransferProgress _progress;
 
     private CancellationTokenSource? _cts;
     private TaskCompletionSource<UploadConflictChoice>? _conflict;
-    private DateTimeOffset _lastUiUpdate = DateTimeOffset.MinValue;
 
     public TransferViewModel(TransferEngine engine, Settings settings, ITransferHost host, ILocalization loc)
     {
@@ -36,8 +35,12 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         _settings = settings;
         _host = host;
         _loc = loc;
-        // 在 UI 线程构造，Progress 会把回调投递回 UI 线程
-        _progress = new Progress<TransferProgress>(OnProgress);
+        // 在 UI 线程构造，Progress 会把回调投递回 UI 线程。
+        // 投递前先按 UiUpdateInterval 过滤：SDK 按数据块回调（128MB 就有千余次），
+        // 全部 Post 到 UI 线程会挤满消息队列，大文件下气泡会明显卡顿。
+        _progress = new ThrottledTransferProgress(
+            new Progress<TransferProgress>(OnProgress),
+            UiUpdateInterval);
     }
 
     /// <summary>取本地化文案的快捷方式。</summary>
@@ -336,6 +339,12 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
                 {
                     throw;
                 }
+                catch (Exception ex) when (TransferCancellation.IsUserCancellation(ex, cts.IsCancellationRequested))
+                {
+                    // SDK 把取消包成 OperationException（内层 TaskCanceledException），
+                    // 不拦下就会落进下面的"单文件失败"分支：取消会被记成失败，还会继续传下一个文件
+                    throw new OperationCanceledException("Transfer cancelled by user.", ex, cts.Token);
+                }
                 catch (Exception ex)
                 {
                     // 单个文件失败不中断整批，记录后在结尾汇总
@@ -343,6 +352,10 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
                     StatusText = $"{T("transfer_status_failed")} {label}: {ex.Message}";
                 }
             }
+
+            // 收尾前确认仍是当前这次运行：取消后立刻再拖一个文件时，
+            // 旧任务的收尾不能盖掉新任务的进行中状态
+            if (!IsCurrentRun(cts)) return;
 
             IsBusy = false;
             IsCompleted = true;
@@ -370,11 +383,15 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         }
         catch (OperationCanceledException)
         {
-            FinishCancelled();
+            if (IsCurrentRun(cts)) FinishCancelled();
+        }
+        catch (Exception ex) when (TransferCancellation.IsUserCancellation(ex, cts.IsCancellationRequested))
+        {
+            if (IsCurrentRun(cts)) FinishCancelled();
         }
         catch (Exception ex)
         {
-            Fail(ex);
+            if (IsCurrentRun(cts)) Fail(ex);
         }
     }
 
@@ -390,15 +407,19 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
             SetTarget(filePath);
 
             var outcome = await _engine.DownloadAsync(url, filePath, this, _progress, cts.Token);
-            Complete(outcome);
+            if (IsCurrentRun(cts)) Complete(outcome);
         }
         catch (OperationCanceledException)
         {
-            FinishCancelled();
+            if (IsCurrentRun(cts)) FinishCancelled();
+        }
+        catch (Exception ex) when (TransferCancellation.IsUserCancellation(ex, cts.IsCancellationRequested))
+        {
+            if (IsCurrentRun(cts)) FinishCancelled();
         }
         catch (Exception ex)
         {
-            Fail(ex);
+            if (IsCurrentRun(cts)) Fail(ex);
         }
     }
 
@@ -563,7 +584,6 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         _cts = new CancellationTokenSource();
         _rate.Reset();
 
-        _lastUiUpdate = DateTimeOffset.MinValue;
         _localPath = null;
         IsBusy = true;
         IsCompleted = false;
@@ -587,11 +607,6 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private void OnProgress(TransferProgress progress)
     {
         _rate.Report(progress, DateTimeOffset.Now);
-
-        var now = DateTimeOffset.Now;
-        var isFinal = progress.Total > 0 && progress.Transferred >= progress.Total;
-        if (!isFinal && now - _lastUiUpdate < UiUpdateInterval) return;
-        _lastUiUpdate = now;
 
         var snapshot = _rate.Snapshot();
         Percentage = snapshot.Fraction * 100;
@@ -675,6 +690,12 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         StatusText = T("transfer_status_failed");
     }
 
+    /// <summary>
+    /// 本次运行是否仍是当前那一次。常驻气泡允许"取消后立刻再拖一个文件"，
+    /// 此时旧任务的收尾（取消/失败）若照常写状态，会覆盖掉新任务的进行中状态。
+    /// </summary>
+    private bool IsCurrentRun(CancellationTokenSource cts) => ReferenceEquals(cts, _cts);
+
     private void ResolveConflict(UploadConflictChoice choice)
     {
         IsConflictVisible = false;
@@ -686,7 +707,9 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private void ResetProgress()
     {
         _rate.Reset();
-        _lastUiUpdate = DateTimeOffset.MinValue;
+        // 同时清掉投递节流窗口：否则新文件的首个样本会被上一文件的时间戳压掉，
+        // 起步几百毫秒内界面停在 0%
+        _progress.Reset();
         Percentage = 0;
         IsIndeterminate = true;
         PercentText = "";
