@@ -31,7 +31,7 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
             ResultBuilder
                 .Create(T("ossu_temp_upload"))
                 .Subtitle(T("ossu_temp_upload_subtitle", bucketName))
-                .Action(_ => ShowUpload(bucketName, "", tempUpload: true))
+                .Action(_ => ShowUpload(bucketName, ""))
                 .Build()
         ];
     }
@@ -103,12 +103,19 @@ internal class UploadQuery(IPublicAPI publicApi, OssService service, Settings se
         });
     }
 
-    private bool ShowUpload(string bucketName, string objectName, bool checkExists = false, bool forceBackup = false, bool tempUpload = false)
+    /// <summary>
+    /// 打开常驻拖拽上传气泡：文件不再通过文件选择框挑选，而是直接拖进气泡。
+    /// 气泡传完（或取消）都留在原地可继续拖，由气泡上的关闭按钮结束。
+    /// </summary>
+    /// <param name="objectName">
+    /// 目标对象名；为空表示临时上传，每个文件现场生成随机路径以免互相覆盖。
+    /// </param>
+    private bool ShowUpload(string bucketName, string objectName, bool checkExists = false, bool forceBackup = false)
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
             TransferWindow
-                .ForUpload(service, settings, _host, _loc, bucketName, objectName, checkExists, forceBackup, tempUpload)
+                .ForDropUpload(service, settings, _host, _loc, bucketName, objectName, checkExists, forceBackup)
                 .Show();
         });
         return false;

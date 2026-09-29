@@ -17,9 +17,20 @@ public sealed class TransferEngine(OssService service, ILocalization loc)
 {
 
     private readonly ILocalization _loc = loc;
+
     /// <summary>临时上传使用的对象名（<c>tmp/{guid}{ext}</c>）。</summary>
     public static string BuildTempKey(string filePath) =>
         $"tmp/{Guid.NewGuid():N}{Path.GetExtension(filePath)}";
+
+    /// <summary>
+    /// 解析本次上传的目标对象名。常驻拖拽气泡会被反复拖入文件，两种语义要分清：
+    /// 用户指定了对象名则每次都传到该路径（同名即覆盖，符合"传到这个位置"的直觉）；
+    /// 未指定（临时上传）则为每个文件现场生成随机路径，避免多次拖拽互相覆盖。
+    /// </summary>
+    /// <param name="fixedKey">用户指定的对象名；空表示临时上传。</param>
+    /// <param name="filePath">本地文件路径，用于取扩展名。</param>
+    public static string ResolveKey(string? fixedKey, string filePath) =>
+        string.IsNullOrWhiteSpace(fixedKey) ? BuildTempKey(filePath) : fixedKey;
 
     /// <summary>上传前处理同名对象：返回用户选择，备份分支会先完成备份。</summary>
     public async Task<UploadConflictChoice> ResolveConflictAsync(

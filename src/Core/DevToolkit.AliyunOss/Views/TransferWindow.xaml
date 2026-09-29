@@ -232,26 +232,43 @@
 
             <!-- 下文：按状态显示一组按钮，不再是浮在文字上的浮层 -->
             <Grid Grid.Row="1" HorizontalAlignment="Center">
-                <!-- 传输中：取消按钮。同一颗按钮两级确认：
+                <!-- 传输中：取消按钮（+ 常驻气泡的关闭）。同一颗取消按钮两级确认：
                      平时是垃圾桶（点击变对勾），确认态是对勾（点击真正取消） -->
-                <Button
-                    x:Name="CancelButton"
+                <StackPanel
+                    x:Name="CancelPanel"
                     HorizontalAlignment="Center"
-                    Command="{Binding CancelCommand}"
                     Opacity="0"
-                    Style="{StaticResource CancelIconButton}"
-                    ToolTip="{Binding CancelTooltip}"
+                    Orientation="Horizontal"
                     Visibility="Collapsed">
-                    <Grid>
-                        <!-- 垃圾桶：默认态 -->
-                        <Path x:Name="TrashGlyphPath" Style="{StaticResource TrashGlyph}" />
-                        <!-- 对勾：确认态（再点一次才真正取消） -->
-                        <Path
-                            x:Name="ConfirmGlyphPath"
-                            Style="{StaticResource ConfirmGlyph}"
-                            Visibility="Collapsed" />
-                    </Grid>
-                </Button>
+                    <Button
+                        x:Name="CancelButton"
+                        HorizontalAlignment="Center"
+                        Command="{Binding CancelCommand}"
+                        Style="{StaticResource CancelIconButton}"
+                        ToolTip="{Binding CancelTooltip}">
+                        <Grid>
+                            <!-- 垃圾桶：默认态 -->
+                            <Path x:Name="TrashGlyphPath" Style="{StaticResource TrashGlyph}" />
+                            <!-- 对勾：确认态（再点一次才真正取消） -->
+                            <Path
+                                x:Name="ConfirmGlyphPath"
+                                Style="{StaticResource ConfirmGlyph}"
+                                Visibility="Collapsed" />
+                        </Grid>
+                    </Button>
+
+                    <!-- 常驻气泡的独立关闭按钮：取消只中止本轮传输、气泡留在原地，
+                         关不关由这颗按钮单独决定。非常驻窗口不显示 -->
+                    <Button
+                        x:Name="DropCloseButton"
+                        Margin="8,0,0,0"
+                        Command="{Binding CloseWindowCommand}"
+                        Style="{StaticResource IconButton}"
+                        ToolTip="{Binding CloseTooltip}"
+                        Visibility="{Binding IsDropZone, Converter={StaticResource BoolToVis}}">
+                        <Path Style="{StaticResource CloseGlyph}" />
+                    </Button>
+                </StackPanel>
 
                 <!-- 传输完毕：主操作 + 关闭 -->
                 <StackPanel
@@ -312,7 +329,7 @@
 
                     <Button
                         Margin="8,0,0,0"
-                        Command="{Binding CancelCommand}"
+                        Command="{Binding CloseWindowCommand}"
                         Style="{StaticResource IconButton}"
                         ToolTip="{Binding CloseTooltip}">
                         <Path Style="{StaticResource CloseGlyph}" />
@@ -366,7 +383,7 @@
                 <Button
                     x:Name="TerminalCloseButton"
                     HorizontalAlignment="Center"
-                    Command="{Binding CancelCommand}"
+                    Command="{Binding CloseWindowCommand}"
                     Style="{StaticResource IconButton}"
                     ToolTip="{Binding CloseTooltip}"
                     Visibility="Collapsed">

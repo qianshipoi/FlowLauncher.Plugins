@@ -91,10 +91,12 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRunning))]
     [NotifyPropertyChangedFor(nameof(IsFinished))]
+    [NotifyPropertyChangedFor(nameof(IsDropIdle))]
     private bool _isBusy;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFinished))]
+    [NotifyPropertyChangedFor(nameof(IsDropIdle))]
     private bool _isCompleted;
 
     [ObservableProperty]
@@ -130,14 +132,68 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private bool _isCancelPending;
 
     /// <summary>
-    /// 取消已被用户确认：此后窗口的 Close 请求（来自确认取消）直接放行，
-    /// 不再被 OnClosing 的确认流程拦下重新询问。
+    /// 关闭已被明确表达（关闭按钮，或确认态下再次 Alt+F4）：
+    /// <see cref="Views.TransferWindow"/> 的 OnClosing 据此放行，不再拦下询问。
+    /// 与取消分开：常驻气泡里「取消」只中止本轮、并不关窗。
     /// </summary>
     [ObservableProperty]
-    private bool _isCancelConfirmed;
+    private bool _isCloseConfirmed;
 
     /// <summary>本地文件路径（下载完成后用于定位文件）。</summary>
     private string? _localPath;
+
+    // ---- 常驻拖拽气泡（ossu 打开，拖入文件即上传）----
+
+    private string _dropBucket = "";
+    private string _dropKey = "";
+    private bool _dropCheckExists;
+    private bool _dropForceBackup;
+
+    /// <summary>
+    /// 是否常驻拖拽气泡：空闲时等待拖入而不自动关闭，
+    /// 取消传输也只回到等待态（关闭由独立的关闭按钮负责）。
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsDropIdle))]
+    private bool _isDropZone;
+
+    /// <summary>空闲等待拖入：常驻气泡既不忙、也未完成。</summary>
+    public bool IsDropIdle => IsDropZone && !IsBusy && !IsCompleted;
+
+    /// <summary>有文件正悬停在气泡上方（拖拽进入但未松手）。</summary>
+    [ObservableProperty]
+    private bool _isDragOver;
+
+    /// <summary>
+    /// 拖拽进出气泡时更新提示文案，告诉用户松手就能上传。
+    /// 仅在空闲态生效：传输中或已有结果时不覆盖当前状态。
+    /// </summary>
+    public void SetDragOver(bool value)
+    {
+        if (!IsDropZone) return;
+
+        IsDragOver = value;
+
+        if (IsBusy || IsCompleted) return;
+        StatusText = T(value ? "transfer_drop_release" : "transfer_drop_hint");
+    }
+
+    /// <summary>
+    /// 配置为常驻拖拽气泡。<paramref name="key"/> 为空表示临时上传，
+    /// 此时每个文件现场生成随机对象名，避免互相覆盖。
+    /// </summary>
+    public void ConfigureDropZone(string bucket, string key, bool checkExists, bool forceBackup)
+    {
+        _dropBucket = bucket;
+        _dropKey = key;
+        _dropCheckExists = checkExists;
+        _dropForceBackup = forceBackup;
+
+        // 等待拖入不是"传输中"：停掉不确定态旋转，呈静止圆环，免得看着像卡在 0%
+        IsIndeterminate = false;
+        IsDropZone = true;
+        StatusText = T("transfer_drop_hint");
+    }
 
     public bool HasLink => !string.IsNullOrEmpty(Link);
 
@@ -199,43 +255,47 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
 
     // ---- 流程入口 ----
 
-    /// <summary>上传：可选地先检查同名对象/备份，再上传并生成访问链接。</summary>
-    public async Task RunUploadAsync(UploadRequest request, bool checkExists, bool forceBackup)
+    /// <summary>批量上传：逐个上传，进度按当前文件显示，结束后汇总。</summary>
+    public Task RunUploadBatchAsync(IReadOnlyList<UploadRequest> requests)
     {
         var cts = Begin();
-        try
-        {
-            SetTarget($"{request.Bucket}/{request.Key}");
-
-            if (checkExists || forceBackup)
-            {
-                var choice = await _engine.ResolveConflictAsync(
-                    request.Bucket, request.Key, forceBackup, this, cts.Token);
-
-                if (choice == UploadConflictChoice.Cancel)
-                {
-                    FinishCancelled();
-                    return;
-                }
-            }
-
-            var outcome = await _engine.UploadAsync(request, this, _progress, cts.Token);
-            Complete(outcome);
-        }
-        catch (OperationCanceledException)
-        {
-            FinishCancelled();
-        }
-        catch (Exception ex)
-        {
-            Fail(ex);
-        }
+        return RunUploadsAsync(requests, cts, resolveConflict: false, forceBackup: false);
     }
 
-    /// <summary>批量上传（拖拽场景）：逐个上传，进度按当前文件显示，结束后汇总。</summary>
-    public async Task RunUploadBatchAsync(IReadOnlyList<UploadRequest> requests)
+    /// <summary>
+    /// 常驻气泡的拖拽上传：把拖入的文件逐个传上去，结束后气泡保留并展示结果（可复制链接）。
+    /// 传输中再次拖入会被忽略，避免并发写同一个气泡的进度。
+    /// </summary>
+    public Task RunDropUploadAsync(IReadOnlyList<string> files)
     {
+        // 只在传输中忽略拖入；空闲或上一次已完成时都可以继续拖，气泡是常驻的上传入口
+        if (!IsDropZone || files.Count == 0 || IsBusy) return Task.CompletedTask;
+
         var cts = Begin();
+        var requests = files
+            .Select(file => new UploadRequest(_dropBucket, ResolveDropKey(file), file))
+            .ToList();
+
+        return RunUploadsAsync(requests, cts, resolveConflict: _dropCheckExists || _dropForceBackup, _dropForceBackup);
+    }
+
+    /// <summary>
+    /// 常驻气泡的目标对象名：用户指定了就每次都传到该路径（再次上传即覆盖），
+    /// 没指定（临时上传）则每个文件现场生成随机路径，互不覆盖。
+    /// </summary>
+    private string ResolveDropKey(string filePath) => TransferEngine.ResolveKey(_dropKey, filePath);
+
+    /// <summary>
+    /// 逐个上传并在结尾汇总（单个文件失败不中断整批）。
+    /// <paramref name="resolveConflict"/> 为真时每个文件上传前先处理同名对象：
+    /// 常驻气泡可能被反复拖入同名文件，每次都要给出替换/备份的选择。
+    /// </summary>
+    private async Task RunUploadsAsync(
+        IReadOnlyList<UploadRequest> requests,
+        CancellationTokenSource cts,
+        bool resolveConflict,
+        bool forceBackup)
+    {
         var total = requests.Count;
         var succeeded = 0;
         string? lastLink = null;
@@ -256,6 +316,18 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
 
                 try
                 {
+                    if (resolveConflict)
+                    {
+                        var choice = await _engine.ResolveConflictAsync(
+                            request.Bucket, request.Key, forceBackup, this, cts.Token);
+
+                        if (choice == UploadConflictChoice.Cancel)
+                        {
+                            FinishCancelled();
+                            return;
+                        }
+                    }
+
                     var outcome = await _engine.UploadAsync(request, this, _progress, cts.Token);
                     lastLink = outcome.Link;
                     succeeded++;
@@ -399,8 +471,8 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     {
         _cancelPendingTimer?.Stop();
         IsCancelPending = false;
-        IsCancelConfirmed = false;
-        StatusText = T("transfer_status_uploading");
+
+        if (IsBusy) StatusText = T("transfer_status_uploading");
     }
 
     /// <summary>若处于确认态则退出（点按钮外的分支调用）；不在确认态时无操作。</summary>
@@ -409,33 +481,43 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         if (IsCancelPending) ExitCancelPending();
     }
 
-    /// <summary>用户确认取消：中止传输并请求关闭窗口。对勾点击与 Alt+F4 确认共用。</summary>
-    public void ConfirmCancel()
+    /// <summary>
+    /// 确认取消（取消按钮的对勾）：中止本轮传输并回到可继续操作的状态。
+    /// 常驻气泡只回到等待拖入（关闭交给独立按钮），普通窗口照旧关闭。
+    /// </summary>
+    public void ConfirmCancel() => ConfirmCancel(closeAfter: !IsDropZone);
+
+    /// <summary>
+    /// 确认取消并指定是否关闭窗口。
+    /// Alt+F4 是对「关闭」的明确表达，走这条路时要真的关掉。
+    /// </summary>
+    public void ConfirmCancel(bool closeAfter)
     {
         _cancelPendingTimer?.Stop();
         IsCancelPending = false;
-        IsCancelConfirmed = true;
-        CancelAndClose();
-    }
 
-    /// <summary>中止进行中的传输并请求关闭窗口（仅确认取消与窗口关闭路径调用）。</summary>
-    public void CancelAndClose()
-    {
-        StatusText = T("transfer_status_cancelled");
-        try
-        {
-            _cts?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
+        Abort();
+        FinishCancelled();
 
-        CloseRequested?.Invoke();
+        IsCloseConfirmed = closeAfter;
+        if (closeAfter) CloseRequested?.Invoke();
     }
 
     /// <summary>点击抬头在「百分比」与「已传/总字节」之间切换。</summary>
     [RelayCommand]
     private void ToggleHeadline() => ShowSizeInsteadOfPercent = !ShowSizeInsteadOfPercent;
+
+    /// <summary>
+    /// 关闭按钮：无条件关闭气泡（传输中先中止本轮，不留后台任务）。
+    /// 常驻气泡里它与「取消」是两颗独立按钮：取消只中止本轮、气泡留下继续接拖拽。
+    /// </summary>
+    [RelayCommand]
+    private void CloseWindow()
+    {
+        Abort();
+        IsCloseConfirmed = true;
+        CloseRequested?.Invoke();
+    }
 
     [RelayCommand]
     private void CopyLink()
@@ -497,7 +579,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         SpeedText = "";
         ShowSizeInsteadOfPercent = false;
         IsCancelPending = false;
-        IsCancelConfirmed = false;
+        IsCloseConfirmed = false;
         StatusText = T("transfer_status_preparing");
         return _cts;
     }
@@ -567,13 +649,14 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         IsBusy = false;
         IsConflictVisible = false;
         IsCancelPending = false;
-        IsCancelConfirmed = false;
         // 停掉不确定态的旋转，否则窗口在关闭前还会空转
         IsIndeterminate = false;
         PercentText = "";
         DetailText = "";
         SpeedText = "";
-        StatusText = T("transfer_status_cancelled");
+
+        // 常驻气泡取消后回到等待拖入，让用户可以直接再拖一个文件重来
+        StatusText = IsDropZone ? T("transfer_drop_hint") : T("transfer_status_cancelled");
     }
 
     private void Fail(Exception ex)
@@ -581,7 +664,6 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
         IsBusy = false;
         IsConflictVisible = false;
         IsCancelPending = false;
-        IsCancelConfirmed = false;
         HasError = true;
         ErrorText = ex.Message;
         PercentText = "";

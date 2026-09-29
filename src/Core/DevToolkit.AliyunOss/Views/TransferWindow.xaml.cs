@@ -1,7 +1,6 @@
 ﻿using DevToolkit.AliyunOss;
 using DevToolkit.AliyunOss.Services;
 using DevToolkit.AliyunOss.Transfer;
-using DevToolkit.AliyunOss.Utils;
 using DevToolkit.AliyunOss.ViewModels;
 
 using Microsoft.Win32;
@@ -32,7 +31,6 @@ public partial class TransferWindow : Window
     private readonly TransferViewModel _viewModel;
     private readonly ITransferHost _host;
     private readonly ILocalization _loc;
-    private UploadSession? _upload;
     private DownloadSession? _download;
     private IReadOnlyList<UploadRequest>? _batch;
     private bool _isHovering;
@@ -98,7 +96,11 @@ public partial class TransferWindow : Window
         Top = saved.Y;
     }
 
-    /// <summary>环的颜色随状态变化：进行中蓝、冲突琥珀、确认取消深红、成功绿、失败红。</summary>
+    /// <summary>
+    /// 环的颜色随状态变化：进行中蓝、冲突琥珀、确认取消深红、成功绿、失败红。
+    /// 常驻气泡空闲时环不是进度（恒为 0），用浅灰避免被误读成"传到 0% 卡住了"；
+    /// 有文件拖到上方时转回强调蓝，作为"可以松手"的反馈。
+    /// </summary>
     private void UpdateRingColor()
     {
         var color = _viewModel switch
@@ -107,6 +109,8 @@ public partial class TransferWindow : Window
             { IsCancelPending: true } => Color.FromRgb(0x8A, 0x0C, 0x1F),
             { IsConflictVisible: true } => Color.FromRgb(0xD4, 0xA7, 0x2C),
             { IsFinished: true } => Color.FromRgb(0x1A, 0x7F, 0x37),
+            { IsDragOver: true } => Color.FromRgb(0x09, 0x69, 0xDA),
+            { IsDropIdle: true } => Color.FromRgb(0xC6, 0xCF, 0xD8),
             _ => Color.FromRgb(0x09, 0x69, 0xDA),
         };
 
@@ -130,6 +134,10 @@ public partial class TransferWindow : Window
         // 取消确认期间保持展开（悬停与否不再影响）
         var showActions = running && _isHovering;
 
+        // 常驻气泡的关闭按钮要一直够得着（它是唯一的出口），因此传输中该按钮组常显；
+        // 组内的取消按钮仍按悬停出现，避免平时占着圆内空间
+        var cancelPanelVisible = showActions || cancelPending || (_viewModel.IsDropZone && running);
+
         // 传输中显示「抬头 + 状态 + 速率」，其余状态共用一行短文案
         Apply(ProgressPanel, running);
         Apply(StateText, !running);
@@ -137,8 +145,10 @@ public partial class TransferWindow : Window
             ? Color.FromRgb(0xCF, 0x22, 0x2E)
             : Color.FromRgb(0x57, 0x60, 0x6A));
 
-        // 确认态下取消按钮始终可见（不随悬停消失）：对勾正等用户点击，鼠标短暂滑出不应隐藏它
-        Apply(CancelButton, showActions || cancelPending);
+        Apply(CancelPanel, cancelPanelVisible);
+        // 确认态下取消按钮始终可见（不随悬停消失）：对勾正等用户点击，鼠标短暂滑出不应隐藏它。
+        // 常驻气泡里也常显：取消与关闭是两颗独立按钮，取消必须找得到
+        Apply(CancelButton, showActions || cancelPending || _viewModel.IsDropZone);
         Apply(DonePanel, finished);
         Apply(ConflictPanel, conflict);
         Apply(TerminalCloseButton, terminal);
@@ -149,7 +159,7 @@ public partial class TransferWindow : Window
         ShowGlyph(ConfirmGlyphPath, cancelPending);
 
         // 有按钮（或处于确认态）就用展开尺寸，纯进度态收紧
-        var needsRoom = !running || showActions;
+        var needsRoom = !running || showActions || _viewModel.IsDropZone;
         AnimateBubble(needsRoom ? BubbleExpanded : BubbleCompact);
     }
 
@@ -206,6 +216,8 @@ public partial class TransferWindow : Window
             case nameof(TransferViewModel.HasError):
             case nameof(TransferViewModel.IsConflictVisible):
             case nameof(TransferViewModel.IsCancelPending):
+            case nameof(TransferViewModel.IsDropZone):
+            case nameof(TransferViewModel.IsDragOver):
                 UpdateRingColor();
                 UpdateVisualState();
                 break;
@@ -325,28 +337,6 @@ public partial class TransferWindow : Window
 
     // ---- 窗口工厂 ----
 
-    /// <summary>上传窗口。对象名在文件选定后确定（临时上传时现场生成）。</summary>
-    public static TransferWindow ForUpload(
-        OssService service,
-        Settings settings,
-        ITransferHost host,
-        ILocalization loc,
-        string bucket,
-        string key,
-        bool checkExists = false,
-        bool forceBackup = false,
-        bool tempUpload = false)
-    {
-        var window = new TransferWindow(
-            new TransferViewModel(new TransferEngine(service, loc), settings, host, loc), host, loc)
-        {
-            Title = tempUpload ? loc.Get("transfer_title_upload_temp") : loc.Get("transfer_title_upload"),
-        };
-        window._upload = new UploadSession(bucket, key, checkExists, forceBackup, tempUpload);
-        window.Loaded += window.OnUploadLoaded;
-        return window;
-    }
-
     /// <summary>下载窗口。</summary>
     public static TransferWindow ForDownload(
         OssService service,
@@ -383,33 +373,73 @@ public partial class TransferWindow : Window
         return window;
     }
 
-    private async void OnUploadLoaded(object sender, RoutedEventArgs e)
+    /// <summary>
+    /// 常驻拖拽上传气泡：打开后停在屏幕等待拖入，可连续使用。
+    /// 传输完（或取消）都不自动关闭，由独立的关闭按钮结束。
+    /// </summary>
+    /// <param name="key">目标对象名；为空表示临时上传，每个文件现场生成随机路径。</param>
+    public static TransferWindow ForDropUpload(
+        OssService service,
+        Settings settings,
+        ITransferHost host,
+        ILocalization loc,
+        string bucket,
+        string key,
+        bool checkExists = false,
+        bool forceBackup = false)
     {
-        var session = _upload!;
-
-        var dialog = new OpenFileDialog
+        var window = new TransferWindow(
+            new TransferViewModel(new TransferEngine(service, loc), settings, host, loc), host, loc)
         {
-            Title = _loc.Get("transfer_select_file"),
-            Multiselect = false,
-            DefaultExt = session.TempUpload ? null : Path.GetExtension(session.Key),
-            Filter = session.TempUpload ? FileDialogFilter.AllFiles(_loc.Get("transfer_filter_all")) : GetFilter(session.Key),
+            Title = key.Length == 0 ? loc.Get("transfer_title_upload_temp") : loc.Get("transfer_title_upload"),
         };
 
-        if (dialog.ShowDialog(this) != true)
-        {
-            Close();
-            return;
-        }
-
-        var key = session.TempUpload
-            ? TransferEngine.BuildTempKey(dialog.FileName)
-            : session.Key;
-
-        await _viewModel.RunUploadAsync(
-            new UploadRequest(session.Bucket, key, dialog.FileName),
-            session.CheckExists,
-            session.ForceBackup);
+        window._viewModel.ConfigureDropZone(bucket, key, checkExists, forceBackup);
+        window.AllowDrop = true;
+        window.DragEnter += window.OnDropDragEnter;
+        window.DragOver += window.OnDropDragEnter;
+        window.DragLeave += window.OnDropDragLeave;
+        window.Drop += window.OnDropFiles;
+        return window;
     }
+
+    // ---- 常驻气泡的拖拽上传 ----
+
+    /// <summary>
+    /// 拖拽进入：仅接受文件拖放，其余（文本、图片等）光标显示禁止。
+    /// DragOver 与 DragEnter 共用：前者必须持续设置 Effects，否则光标会在窗口内变回禁止。
+    /// </summary>
+    private void OnDropDragEnter(object sender, DragEventArgs e)
+    {
+        var accepts = FilesFrom(e).Length > 0;
+        e.Effects = accepts ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+
+        if (accepts) _viewModel.SetDragOver(true);
+    }
+
+    private void OnDropDragLeave(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        _viewModel.SetDragOver(false);
+    }
+
+    private async void OnDropFiles(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+        _viewModel.SetDragOver(false);
+
+        var files = FilesFrom(e);
+        if (files.Length == 0) return;
+
+        await _viewModel.RunDropUploadAsync(files);
+    }
+
+    /// <summary>取出拖入的文件；非文件拖放（文本/图片等）返回空数组。</summary>
+    private static string[] FilesFrom(DragEventArgs e) =>
+        e.Data.GetDataPresent(DataFormats.FileDrop) && e.Data.GetData(DataFormats.FileDrop) is string[] { Length: > 0 } files
+            ? files
+            : [];
 
     private async void OnDownloadLoaded(object sender, RoutedEventArgs e)
     {
@@ -437,38 +467,34 @@ public partial class TransferWindow : Window
     }
 
     /// <summary>
-    /// 传输进行中关闭（含 Alt+F4）：与取消按钮同一条确认路径。
-    /// 第一次关闭请求只进入确认态；用户确认后再次关闭（或确认取消流程主动触发）才放行。
+    /// 关闭窗口（含 Alt+F4）时统一收口。
+    /// 传输中第一次关闭只拦下并进入取消确认态，已在确认态则视为确认关闭；
+    /// 关闭按钮与确认取消会先置 <see cref="TransferViewModel.IsCloseConfirmed"/> 直接放行。
+    /// 注意「取消」不在此列：常驻气泡里取消只中止本轮、气泡留在原地继续接拖拽。
     /// </summary>
     private void OnClosing(object? sender, CancelEventArgs e)
     {
-        if (!_viewModel.IsBusy) return;
+        if (_viewModel.IsCloseConfirmed) return;
 
-        // 取消已被确认（确认按钮/再次 Alt+F4）→ 放行；否则拦截并进入确认态
-        if (_viewModel.IsCancelConfirmed || _viewModel.IsCancelPending && _closingAfterConfirm) return;
+        if (_viewModel.IsBusy)
+        {
+            if (_viewModel.IsCancelPending)
+            {
+                // 确认态下再关一次 = 确认关闭
+                _viewModel.ConfirmCancel(closeAfter: true);
+            }
+            else
+            {
+                e.Cancel = true;
+                _viewModel.RequestCancel();
+            }
 
-        e.Cancel = true;
-        _closingAfterConfirm = true;
-        _viewModel.RequestCancel();
+            return;
+        }
+
+        // 非传输中：确保不留下还在跑的后台任务
+        _viewModel.Abort();
     }
-
-    /// <summary>窗口关闭请求已走过一次确认，放行下一次 Closing。</summary>
-    private bool _closingAfterConfirm;
-
-    /// <summary>
-    /// 文件选择框的过滤器。描述文案来自本地化文件，模式（<c>*.*</c>/<c>*.ext</c>）
-    /// 由 <see cref="FileDialogFilter"/> 拼接，翻译改文案不会破坏过滤器语法。
-    /// </summary>
-    private string GetFilter(string key) =>
-        FileDialogFilter.FromObjectKey(
-            key, _loc.Get("transfer_filter_all"), _loc.Get("transfer_filter_named"));
-
-    private sealed record UploadSession(
-        string Bucket,
-        string Key,
-        bool CheckExists,
-        bool ForceBackup,
-        bool TempUpload);
 
     private sealed record DownloadSession(string Url);
 }

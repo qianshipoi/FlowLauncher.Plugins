@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -25,10 +25,10 @@
     <system:String x:Key="ossu_input_bucket">Please enter a bucket name</system:String>
     <system:String x:Key="ossu_usage">Usage: ossu &lt;bucket&gt; &lt;object path&gt;</system:String>
     <system:String x:Key="ossu_temp_upload">Upload temp file</system:String>
-    <system:String x:Key="ossu_temp_upload_subtitle">Upload to {0}/tmp/ directory</system:String>
+    <system:String x:Key="ossu_temp_upload_subtitle">Drag files into the bubble; each gets a random path</system:String>
     <system:String x:Key="ossu_object_slash">Object name cannot end with a slash</system:String>
     <system:String x:Key="ossu_action_upload">Upload File</system:String>
-    <system:String x:Key="ossu_action_upload_subtitle">Choose a file to upload; prompt if a file with the same name exists</system:String>
+    <system:String x:Key="ossu_action_upload_subtitle">Open the drop bubble and drag files in; prompt if a file with the same name exists</system:String>
     <system:String x:Key="ossu_action_replace">Replace File</system:String>
     <system:String x:Key="ossu_action_replace_subtitle">{0} already exists, upload and replace</system:String>
     <system:String x:Key="ossu_action_backup_replace">Backup &amp; Replace</system:String>
@@ -37,11 +37,10 @@
     <system:String x:Key="transfer_title_upload_temp">Upload Temp File</system:String>
     <system:String x:Key="transfer_title_download">Download</system:String>
     <system:String x:Key="transfer_title_upload_many">Upload {0} files</system:String>
-    <system:String x:Key="transfer_select_file">Select file to upload</system:String>
-    <system:String x:Key="transfer_filter_all">All files</system:String>
-    <system:String x:Key="transfer_filter_named">{0} files</system:String>
     <system:String x:Key="transfer_select_save_location">Choose save location</system:String>
     <system:String x:Key="transfer_status_preparing">Preparing</system:String>
+    <system:String x:Key="transfer_drop_hint">Drop files here</system:String>
+    <system:String x:Key="transfer_drop_release">Release to upload</system:String>
     <system:String x:Key="transfer_status_uploading">Uploading</system:String>
     <system:String x:Key="transfer_status_uploading_item">Uploading {0}</system:String>
     <system:String x:Key="transfer_status_downloading">Downloading</system:String>

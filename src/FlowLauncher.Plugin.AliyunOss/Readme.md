@@ -15,7 +15,7 @@
 |--------|------|
 | `oss` | 显示子命令入口（ossd / ossu / ossb） |
 | `ossd` | 下载模式 — 选择 Bucket → 选择对象 → 下载 |
-| `ossu` | 上传模式 — 选择 Bucket → 选择本地文件 → 上传 |
+| `ossu` | 上传模式 — 选择 Bucket → 打开**常驻拖拽气泡** → 把文件拖进气泡上传 |
 | `ossb` | 文件浏览器 — 浏览对象、拖拽上传 |
 
 ### 操作流程
@@ -24,6 +24,20 @@
 2. 输入 Bucket 名称进行模糊搜索
 3. 选择目标 Bucket 后浏览文件/目录
 4. Enter 确认，弹出传输窗口
+
+### 上传：常驻拖拽气泡（`ossu`）
+
+上传不走文件选择框，而是打开一个**常驻气泡**，直接把文件拖进去：
+
+- 气泡打开后停在屏幕上等待拖入（不自动关闭），环为静止浅灰，提示「拖文件到这里上传」；文件悬停其上时环变蓝、提示改为「松手即上传」
+- 松开即开始上传；可以一次拖多个，逐个上传并在结尾汇总（单个失败不中断其余）
+- **目标路径取决于打开时是否指定了对象名**：
+  - 指定了（`ossu <bucket> <object>`）→ 每次都传到该路径，再次上传即覆盖
+  - 未指定（`ossu <bucket>`，即「上传临时文件」）→ 每个文件现场生成随机路径 `tmp/{guid}{ext}`，多次拖拽互不覆盖
+- **路径已存在的处理**：指定了对象名时，气泡会在上传前检查同名对象并就地询问「备份并替换 / 直接替换 / 取消」
+- **传输中**：底部同时有「取消」和「关闭」两颗图标按钮。**取消只中止本轮传输、气泡留在原地**（回到等待拖入，可以立刻换个文件重来）；关闭才结束气泡
+- **上传完毕**：底部显示「复制链接」与「关闭」，气泡**不会**自动关闭，可以继续拖下一个文件
+- 气泡只能同时处理一批：传输中再次拖入会被忽略
 
 ### 传输气泡
 
@@ -71,7 +85,7 @@ Core（`src/Core/DevToolkit.AliyunOss`，插件与独立 App 共用）：
 |------|------|
 | `Services/OssService.cs` | OSS SDK 封装，Bucket/文件操作（进度以 `IProgress<TransferProgress>` 上报） |
 | `DownloadService.cs` | 带进度的 HTTP 下载，失败/取消时清理半成品文件 |
-| `TransferEngine.cs` | 上传/下载业务编排：冲突处理、备份、生成访问链接 |
+| `TransferEngine.cs` | 上传/下载业务编排：冲突处理、备份、生成访问链接；`ResolveKey` 决定固定路径 / 临时随机路径 |
 | `Models/TransferProgress.cs` | 进度模型（已传字节 / 总字节），`Total=0` 表示长度未知 |
 | `Models/TransferSnapshot.cs` | 速率与剩余时间快照 |
 | `Utils/TransferRateTracker.cs` | 滑动窗口速率估算，抑制数字抖动 |
@@ -79,11 +93,10 @@ Core（`src/Core/DevToolkit.AliyunOss`，插件与独立 App 共用）：
 | `Utils/TextFit.cs` | 按可用宽度为文字挑选字号（圆形气泡内防溢出） |
 | `Utils/RingArc.cs` | 圆环进度弧的角度与坐标换算（含整圆退化处理） |
 | `Utils/OssKey.cs` | 对象名规范化（前导斜杠会导致 403） |
-| `Utils/FileDialogFilter.cs` | 文件选择框过滤器拼装（描述来自本地化，模式由代码保证合法） |
 | `Transfer/ITransferHost.cs` | 宿主能力：复制文本、定位文件 |
 | `Transfer/ITransferUi.cs` | 流程向界面反馈（状态文案、冲突询问） |
-| `ViewModels/TransferViewModel.cs` | 气泡 VM：进度节流、取消、链接、冲突选择 |
-| `Views/TransferWindow.xaml(.cs)` | 圆形气泡窗口：环形进度、两级取消确认、完成图标按钮、淡入淡出与尺寸缓动 |
+| `ViewModels/TransferViewModel.cs` | 气泡 VM：进度节流、取消、链接、冲突选择；常驻拖拽态（`IsDropZone` / `RunDropUploadAsync`） |
+| `Views/TransferWindow.xaml(.cs)` | 圆形气泡窗口：环形进度、两级取消确认、完成图标按钮、淡入淡出与尺寸缓动、拖拽上传 |
 | `Views/FadeTransition.cs` | 元素显隐的淡入淡出过渡（处理快速悬停竞态） |
 | `Views/Controls/RingProgress.cs` | 自绘圆环进度控件（不确定态旋转） |
 
