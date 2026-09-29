@@ -79,6 +79,7 @@ Core（`src/Core/DevToolkit.AliyunOss`，插件与独立 App 共用）：
 | `Utils/TextFit.cs` | 按可用宽度为文字挑选字号（圆形气泡内防溢出） |
 | `Utils/RingArc.cs` | 圆环进度弧的角度与坐标换算（含整圆退化处理） |
 | `Utils/OssKey.cs` | 对象名规范化（前导斜杠会导致 403） |
+| `Utils/FileDialogFilter.cs` | 文件选择框过滤器拼装（描述来自本地化，模式由代码保证合法） |
 | `Transfer/ITransferHost.cs` | 宿主能力：复制文本、定位文件 |
 | `Transfer/ITransferUi.cs` | 流程向界面反馈（状态文案、冲突询问） |
 | `ViewModels/TransferViewModel.cs` | 气泡 VM：进度节流、取消、链接、冲突选择 |
@@ -95,8 +96,24 @@ Core（`src/Core/DevToolkit.AliyunOss`，插件与独立 App 共用）：
 | `Queries/UploadQuery.cs` | 上传流程处理 |
 | `ViewModel/FileBrowserViewModel.cs` | 文件浏览器（拖拽上传走传输窗口） |
 | `Views/FlowTransferHost.cs` | `ITransferHost` 的 Flow Launcher 适配（剪贴板 / OpenDirectory） |
+| `Views/FlowLocalization.cs` | `ILocalization` 的 Flow Launcher 适配（经 `GetTranslation` 读语言文件） |
+| `Languages/en.xaml`、`Languages/zh-cn.xaml` | 中英文案（Flow 的插件语言文件格式，见下） |
 | `Views/FileBrowserWindow.xaml` | 文件浏览器窗口 |
 | `Views/OssSettings.xaml` | 设置面板 |
+
+## 多语言
+
+Flow Launcher 的插件语言文件是 **`Languages/<语言码>.xaml`**（WPF `ResourceDictionary`），
+由 `Flow.Launcher.Core` 的 `Internationalization` 按固定文件名加载，扩展名硬编码为 `.xaml`：
+
+- 文件名必须是语言码本身（`en.xaml`、`zh-cn.xaml`），Flow 会回退到 `en.xaml`
+- 每条为 `<system:String x:Key="...">文案</system:String>`，`{0}` 作占位符
+- 文件带有 UTF-8 BOM 与 XML 声明（中文必须，否则解码失败）
+- **`UseWPF` 的默认通配会把 `**/*.xaml` 当 Page 编译进 baml**，而 Flow 是从磁盘按路径读取，
+  因此 csproj 里必须把 `Languages\**\*.xaml` 从 `Page` 移除并按普通文件复制
+- 代码侧经 `IPublicAPI.GetTranslation(key)` 取值；未命中时 Flow 返回的是
+  `"No Translation for key <key>"` 而不是 key 本身，判断回退时要按此前缀匹配
+- 界面上受圆形空间限制的短提示走绑定（见 `TransferViewModel` 的 Tooltip 属性）
 
 ## 依赖
 

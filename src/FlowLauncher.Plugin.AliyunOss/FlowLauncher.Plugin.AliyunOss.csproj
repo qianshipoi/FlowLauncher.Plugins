@@ -24,7 +24,12 @@
 		<None Update="plugin.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="Languages\**\*.json">
+		<!-- Flow 的语言加载器只认 Languages\<语言码>.xaml（ResourceDictionary），
+		     json 不会被读取，放 json 等于没有翻译。
+		     UseWPF 的默认通配会把 **/*.xaml 当成 Page 编译进 baml，
+		     而 Flow 是从磁盘按路径读这些文件，因此必须移出 Page 并按普通文件复制 -->
+		<Page Remove="Languages\**\*.xaml" />
+		<None Include="Languages\**\*.xaml">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

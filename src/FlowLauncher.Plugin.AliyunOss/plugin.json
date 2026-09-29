@@ -8,6 +8,5 @@
     "Language": "csharp",
     "Website": "https://www.kuriyama.top",
     "IcoPath": "favicon.ico",
-    "ExecuteFileName": "FlowLauncher.Plugin.AliyunOss.dll",
-    "I18nPath": "Languages"
+    "ExecuteFileName": "FlowLauncher.Plugin.AliyunOss.dll"
 }

@@ -1,6 +1,7 @@
 ﻿using DevToolkit.AliyunOss;
 using DevToolkit.AliyunOss.Services;
 using DevToolkit.AliyunOss.Transfer;
+using DevToolkit.AliyunOss.Utils;
 using DevToolkit.AliyunOss.ViewModels;
 
 using Microsoft.Win32;
@@ -141,12 +142,11 @@ public partial class TransferWindow : Window
         Apply(DonePanel, finished);
         Apply(ConflictPanel, conflict);
         Apply(TerminalCloseButton, terminal);
-        TerminalCloseButton.ToolTip = string.IsNullOrEmpty(_viewModel.ErrorText) ? "关闭" : _viewModel.ErrorText;
 
-        // 取消按钮图标：确认态显示对勾，平时显示垃圾桶
+        // 取消按钮图标：确认态显示对勾，平时显示垃圾桶。
+        // ToolTip 由绑定提供（见 TransferViewModel 的 CancelTooltip / CloseTooltip），不再在此处直接赋值
         ShowGlyph(TrashGlyphPath, !cancelPending);
         ShowGlyph(ConfirmGlyphPath, cancelPending);
-        CancelButton.ToolTip = cancelPending ? "再点一次确认取消" : "取消传输";
 
         // 有按钮（或处于确认态）就用展开尺寸，纯进度态收紧
         var needsRoom = !running || showActions;
@@ -392,7 +392,7 @@ public partial class TransferWindow : Window
             Title = _loc.Get("transfer_select_file"),
             Multiselect = false,
             DefaultExt = session.TempUpload ? null : Path.GetExtension(session.Key),
-            Filter = session.TempUpload ? _loc.Get("transfer_filter_all") : GetFilter(session.Key),
+            Filter = session.TempUpload ? FileDialogFilter.AllFiles(_loc.Get("transfer_filter_all")) : GetFilter(session.Key),
         };
 
         if (dialog.ShowDialog(this) != true)
@@ -455,11 +455,13 @@ public partial class TransferWindow : Window
     /// <summary>窗口关闭请求已走过一次确认，放行下一次 Closing。</summary>
     private bool _closingAfterConfirm;
 
-    private static string GetFilter(string key)
-    {
-        var ext = Path.GetExtension(key);
-        return string.IsNullOrWhiteSpace(ext) ? "所有文件|*.*" : $"{ext} 文件|*{ext}|所有文件|*.*";
-    }
+    /// <summary>
+    /// 文件选择框的过滤器。描述文案来自本地化文件，模式（<c>*.*</c>/<c>*.ext</c>）
+    /// 由 <see cref="FileDialogFilter"/> 拼接，翻译改文案不会破坏过滤器语法。
+    /// </summary>
+    private string GetFilter(string key) =>
+        FileDialogFilter.FromObjectKey(
+            key, _loc.Get("transfer_filter_all"), _loc.Get("transfer_filter_named"));
 
     private sealed record UploadSession(
         string Bucket,

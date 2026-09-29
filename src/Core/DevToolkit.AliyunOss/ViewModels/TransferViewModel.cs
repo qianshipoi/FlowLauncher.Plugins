@@ -102,6 +102,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
 
     /// <summary>失败时的完整错误信息；圆形空间放不下，放到气泡的 ToolTip 上。</summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CloseTooltip))]
     private string _errorText = "";
 
     [ObservableProperty]
@@ -125,6 +126,7 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     /// 超时未确认则自动回到传输中，避免误触后传输被悄悄丢弃。
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CancelTooltip))]
     private bool _isCancelPending;
 
     /// <summary>
@@ -172,6 +174,28 @@ public partial class TransferViewModel : ObservableObject, ITransferUi
     private const double HeadlineAvailableWidth = 116;
 
     public bool HasProgressHeadline => !string.IsNullOrEmpty(ProgressHeadline);
+
+    // ---- 工具提示文案（随语言切换；窗口只负责绑定）----
+
+    /// <summary>取消按钮提示：确认态下换成"再点一次确认取消"。</summary>
+    public string CancelTooltip =>
+        IsCancelPending ? T("transfer_cancel_confirm") : T("transfer_cancel_button");
+
+    /// <summary>关闭按钮提示：失败时显示完整错误信息（圆内放不下）。</summary>
+    public string CloseTooltip =>
+        string.IsNullOrEmpty(ErrorText) ? T("transfer_close_tooltip") : ErrorText;
+
+    public string HeadlineTooltip => T("transfer_headline_toggle");
+
+    public string OpenFolderTooltip => T("transfer_open_folder_tooltip");
+
+    public string CopyLinkTooltip => T("transfer_copy_link_tooltip");
+
+    public string ConflictBackupTooltip => T("transfer_conflict_backup");
+
+    public string ConflictReplaceTooltip => T("transfer_conflict_replace");
+
+    public string ConflictCancelTooltip => T("transfer_conflict_cancel");
 
     // ---- 流程入口 ----
 

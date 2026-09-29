@@ -190,7 +190,7 @@
                         Command="{Binding ToggleHeadlineCommand}"
                         Cursor="Hand"
                         Focusable="False"
-                        ToolTip="点击切换百分比 / 已传字节"
+                        ToolTip="{Binding HeadlineTooltip}"
                         Visibility="{Binding HasProgressHeadline, Converter={StaticResource BoolToVis}}">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
@@ -240,7 +240,7 @@
                     Command="{Binding CancelCommand}"
                     Opacity="0"
                     Style="{StaticResource CancelIconButton}"
-                    ToolTip="取消传输"
+                    ToolTip="{Binding CancelTooltip}"
                     Visibility="Collapsed">
                     <Grid>
                         <!-- 垃圾桶：默认态 -->
@@ -264,7 +264,7 @@
                         x:Name="RevealButton"
                         Command="{Binding OpenFolderCommand}"
                         Style="{StaticResource IconButton}"
-                        ToolTip="打开文件所在位置"
+                        ToolTip="{Binding OpenFolderTooltip}"
                         Visibility="{Binding DoneShowsReveal, Converter={StaticResource BoolToVis}}">
                         <Grid Width="18" Height="16">
                             <Path
@@ -289,7 +289,7 @@
                         Margin="8,0,0,0"
                         Command="{Binding CopyLinkCommand}"
                         Style="{StaticResource IconButton}"
-                        ToolTip="复制访问链接"
+                        ToolTip="{Binding CopyLinkTooltip}"
                         Visibility="{Binding DoneShowsCopy, Converter={StaticResource BoolToVis}}">
                         <Grid Width="17" Height="15">
                             <Path
@@ -314,7 +314,7 @@
                         Margin="8,0,0,0"
                         Command="{Binding CancelCommand}"
                         Style="{StaticResource IconButton}"
-                        ToolTip="关闭">
+                        ToolTip="{Binding CloseTooltip}">
                         <Path Style="{StaticResource CloseGlyph}" />
                     </Button>
                 </StackPanel>
@@ -328,7 +328,7 @@
                     <Button
                         Command="{Binding ChooseBackupAndReplaceCommand}"
                         Style="{StaticResource IconButton}"
-                        ToolTip="备份并替换">
+                        ToolTip="{Binding ConflictBackupTooltip}">
                         <Path
                             Width="16"
                             Height="18"
@@ -342,7 +342,7 @@
                         Margin="8,0,0,0"
                         Command="{Binding ChooseReplaceCommand}"
                         Style="{StaticResource IconButton}"
-                        ToolTip="直接替换">
+                        ToolTip="{Binding ConflictReplaceTooltip}">
                         <Path
                             Width="15"
                             Height="17"
@@ -357,7 +357,7 @@
                         Margin="8,0,0,0"
                         Command="{Binding ChooseCancelReplaceCommand}"
                         Style="{StaticResource IconButton}"
-                        ToolTip="取消上传">
+                        ToolTip="{Binding ConflictCancelTooltip}">
                         <Path Style="{StaticResource CloseGlyph}" />
                     </Button>
                 </StackPanel>
@@ -368,6 +368,7 @@
                     HorizontalAlignment="Center"
                     Command="{Binding CancelCommand}"
                     Style="{StaticResource IconButton}"
+                    ToolTip="{Binding CloseTooltip}"
                     Visibility="Collapsed">
                     <Path Style="{StaticResource CloseGlyph}" />
                 </Button>
