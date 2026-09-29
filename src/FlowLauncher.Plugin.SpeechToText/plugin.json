@@ -3,7 +3,7 @@
     "ActionKeyword": "asr",
     "Name": "Speech To Text",
     "Description": "语音转文字，基于 ASR 模型实时识别",
-    "Author": "DevToolkit",
+    "Author": "qianshi",
     "Version": "1.0.0",
     "Language": "csharp",
     "IcoPath": "favicon.ico",

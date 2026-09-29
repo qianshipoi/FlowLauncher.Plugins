@@ -11,10 +11,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Core\DevToolkit.AliyunOss\DevToolkit.AliyunOss.csproj" />
+		<PackageReference Include="AlibabaCloud.OSS.V2" Version="0.1.2" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.11" />
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.11" />
 	</ItemGroup>
 
 	<ItemGroup>

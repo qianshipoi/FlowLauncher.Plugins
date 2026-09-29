@@ -77,7 +77,8 @@
        │
        ▼
 ┌──────────────────────┐
-│ DevToolkit.AliyunOss  │ ← TransferEngine / TransferWindow（宿主无关）
+│ TransferEngine /      │ ← 上传下载编排（宿主无关）
+│ TransferWindow        │
 └──────────┬───────────┘
            ▼
 ┌─────────────┐
@@ -87,10 +88,11 @@
 
 ### 文件结构
 
-Core（`src/Core/DevToolkit.AliyunOss`，插件与独立 App 共用）：
+全部位于 `src/FlowLauncher.Plugin.AliyunOss`：
 
 | 文件 | 职责 |
 |------|------|
+| `Main.cs` | 插件入口，路由 oss/ossd/ossu/ossb |
 | `Services/OssService.cs` | OSS SDK 封装，Bucket/文件操作（进度以 `IProgress<TransferProgress>` 上报） |
 | `DownloadService.cs` | 带进度的 HTTP 下载，失败/取消时清理半成品文件 |
 | `TransferEngine.cs` | 上传/下载业务编排：冲突处理、备份、生成访问链接；`ResolveKey` 决定固定路径 / 临时随机路径 |
@@ -107,12 +109,6 @@ Core（`src/Core/DevToolkit.AliyunOss`，插件与独立 App 共用）：
 | `Views/TransferWindow.xaml(.cs)` | 圆形气泡窗口：环形进度、两级取消确认、完成图标按钮、淡入淡出与尺寸缓动、拖拽上传 |
 | `Views/FadeTransition.cs` | 元素显隐的淡入淡出过渡（处理快速悬停竞态） |
 | `Views/Controls/RingProgress.cs` | 自绘圆环进度控件（不确定态旋转） |
-
-插件壳（`src/FlowLauncher.Plugin.AliyunOss`）：
-
-| 文件 | 职责 |
-|------|------|
-| `Main.cs` | 插件入口，路由 oss/ossd/ossu/ossb |
 | `Queries/DownloadQuery.cs` | 下载流程处理 |
 | `Queries/UploadQuery.cs` | 上传流程处理 |
 | `ViewModel/FileBrowserViewModel.cs` | 文件浏览器（拖拽上传走传输窗口） |

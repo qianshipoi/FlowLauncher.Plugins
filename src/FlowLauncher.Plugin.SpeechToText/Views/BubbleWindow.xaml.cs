@@ -6,11 +6,11 @@ namespace FlowLauncher.Plugin.SpeechToText.Views;
 
 public partial class BubbleWindow : Window
 {
-    private readonly DevToolkit.SpeechToText.Settings _settings;
+    private readonly FlowLauncher.Plugin.SpeechToText.Settings _settings;
     private readonly Action _saveSettings;
     private bool _ready;
 
-    public BubbleWindow(DevToolkit.SpeechToText.Settings settings, Action saveSettings)
+    public BubbleWindow(FlowLauncher.Plugin.SpeechToText.Settings settings, Action saveSettings)
     {
         InitializeComponent();
         _settings = settings;
@@ -21,7 +21,7 @@ public partial class BubbleWindow : Window
     }
 
     /// <summary>设置 ViewModel 并绑定事件。</summary>
-    public void BindViewModel(DevToolkit.SpeechToText.SpeechToTextViewModel vm)
+    public void BindViewModel(FlowLauncher.Plugin.SpeechToText.SpeechToTextViewModel vm)
     {
         DataContext = vm;
         vm.PropertyChanged += OnViewModelPropertyChanged;
@@ -31,7 +31,7 @@ public partial class BubbleWindow : Window
     /// <summary>实时识别时结果持续增长，自动滚到底部以显示最新内容。</summary>
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(DevToolkit.SpeechToText.SpeechToTextViewModel.ResultText)) return;
+        if (e.PropertyName != nameof(FlowLauncher.Plugin.SpeechToText.SpeechToTextViewModel.ResultText)) return;
 
         // ResultText 由后台线程（识别回调）更新，需切回 UI 线程操作控件
         ResultScroller.Dispatcher.InvokeAsync(() => ResultScroller.ScrollToEnd());
@@ -118,7 +118,7 @@ public partial class BubbleWindow : Window
 
     private void Copy_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is DevToolkit.SpeechToText.SpeechToTextViewModel vm
+        if (DataContext is FlowLauncher.Plugin.SpeechToText.SpeechToTextViewModel vm
             && !string.IsNullOrEmpty(vm.ResultText))
         {
             System.Windows.Clipboard.SetText(vm.ResultText);
@@ -128,7 +128,7 @@ public partial class BubbleWindow : Window
 
     private void Stop_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is DevToolkit.SpeechToText.SpeechToTextViewModel vm && vm.IsRecording)
+        if (DataContext is FlowLauncher.Plugin.SpeechToText.SpeechToTextViewModel vm && vm.IsRecording)
             vm.StopCommand.Execute(null);
         else
             Close();
@@ -137,7 +137,7 @@ public partial class BubbleWindow : Window
     protected override void OnClosed(EventArgs e)
     {
         base.OnClosed(e);
-        if (DataContext is DevToolkit.SpeechToText.SpeechToTextViewModel vm)
+        if (DataContext is FlowLauncher.Plugin.SpeechToText.SpeechToTextViewModel vm)
         {
             vm.PropertyChanged -= OnViewModelPropertyChanged;
             vm.RecordingStopped -= OnRecordingStopped;

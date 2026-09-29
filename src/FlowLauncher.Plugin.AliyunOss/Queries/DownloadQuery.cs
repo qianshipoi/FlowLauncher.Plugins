@@ -1,10 +1,10 @@
 using Flow.Launcher.Plugin;
 
-using DevToolkit.AliyunOss;
-using DevToolkit.AliyunOss.Services;
-using DevToolkit.AliyunOss.Transfer;
-using DevToolkit.AliyunOss.Utils;
-using DevToolkit.AliyunOss.Views;
+using FlowLauncher.Plugin.AliyunOss;
+using FlowLauncher.Plugin.AliyunOss.Services;
+using FlowLauncher.Plugin.AliyunOss.Transfer;
+using FlowLauncher.Plugin.AliyunOss.Utils;
+using FlowLauncher.Plugin.AliyunOss.Views;
 
 using FlowLauncher.Plugin.AliyunOss.Views;
 

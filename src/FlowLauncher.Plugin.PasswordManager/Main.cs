@@ -1,9 +1,9 @@
 using Flow.Launcher.Plugin;
 
-using DevToolkit.PasswordManager.Models;
-using DevToolkit.PasswordManager.Services;
-using DevToolkit.PasswordManager.ViewModels;
-using DevToolkit.PasswordManager.Views;
+using FlowLauncher.Plugin.PasswordManager.Models;
+using FlowLauncher.Plugin.PasswordManager.Services;
+using FlowLauncher.Plugin.PasswordManager.ViewModels;
+using FlowLauncher.Plugin.PasswordManager.Views;
 using FlowLauncher.Plugin.PasswordManager.Views;
 
 using SQLitePCL;

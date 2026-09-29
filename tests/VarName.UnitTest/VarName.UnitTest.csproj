@@ -21,7 +21,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Core\DevToolkit.VarName\DevToolkit.VarName.csproj" />
+		<ProjectReference Include="..\..\src\FlowLauncher.Plugin.VarName\FlowLauncher.Plugin.VarName.csproj" />
 	</ItemGroup>
 
 </Project>

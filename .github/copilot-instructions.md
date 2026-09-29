@@ -2,22 +2,22 @@
 
 ## 项目概述
 
-这是一个 Flow Launcher 插件集合 + 独立 WPF 应用（DevToolkit），使用 C# / .NET 9 / WPF 构建。
+这是一个 Flow Launcher 插件集合，使用 C# / .NET 9 / WPF 构建。
 
-## 架构：Core 与宿主
+## 架构：自包含插件
 
-**核心原则**：功能逻辑放在 `src/Core/DevToolkit.<功能>` 类库（无 Flow.Launcher 依赖，除密码管理等 Windows 专属能力外为 net9.0），Flow Launcher 插件是薄适配壳（查询分发 + FL API：剪贴板/通知/进度框），独立 App `src/DevToolkit/`（iNKORE.UI.WPF.Modern NavigationView 壳）直接复用同一批 Core 服务与 ViewModel。
+**核心原则**：每个插件工程自包含——查询分发（Flow 薄壳 + FL API：剪贴板/通知/进度框）与业务实现（服务 / ViewModel / WPF 窗口）同处 `src/FlowLauncher.Plugin.<功能>`，**没有**跨插件共享层。
 
-- 修改功能逻辑时改 Core 工程，插件与 App 同时受益；**不要**把逻辑写回插件 Main.cs
-- 跨宿主的 ViewModel 通过回调解耦持久化（`Action onChanged` 回调）；需要 UI 的视图放 `src/DevToolkit.Core.Wpf`（宿主无关 WPF 窗口：JsonEditorWindow、密码管理 ManagerWindow/对话框），宿主需在 App.xaml 合并 iNKORE `ThemeResources` + `XamlControlsResources`
-- App 数据目录 `%AppData%\DevToolkit\<功能>\`，与插件目录数据相互隔离；App 用 `RollForward=LatestMajor` 以运行在更高版本 .NET 桌面运行时上
-- wwwroot（jsoneditor）单源在 DevToolkit.Core.Wpf，插件与 App 用 Content Link 复制
+- 业务逻辑按职责放进该插件的 `Services/`、`ViewModels/`、`Views/`；`Main.cs` 只做查询分发，**不要**把大段业务写进 Main.cs
+- ViewModel 通过回调解耦持久化（`Action onChanged` 回调），由调用方决定存取位置
+- 插件配置由 Flow Launcher 的 `SaveSettingJsonStorage` 管理（`%AppData%\FlowLauncher\Settings\Plugins\<插件>\`）；插件自带数据放其 `_pluginDirectory` 下
+- Toolbox 的 `wwwroot`（jsoneditor）与 `JsonEditorWindow` 都在该插件工程内，随输出直接复制；PasswordManager 的 WPF 对话框用 iNKORE `ContentDialog`，需合并 iNKORE 主题资源
 
 ## 技术栈
 
 - **运行时**: .NET 9.0 (net9.0-windows7.0)
 - **UI 框架**: WPF
-- **UI 组件库**: iNKORE.UI.WPF / iNKORE.UI.WPF.Modern
+- **UI 组件库**: iNKORE.UI.WPF.Modern（仅 PasswordManager 使用）
 - **MVVM**: CommunityToolkit.Mvvm
 - **插件 SDK**: Flow.Launcher.Plugin (v5.1.0)
 - **解决方案格式**: .slnx (XML 格式)
@@ -28,26 +28,18 @@
 ```
 FlowLauncher.Plugins/
 ├── FlowLauncher.Plugins.slnx          # 解决方案文件
-├── Core/                              # 与宿主无关的功能核心库
-│   ├── DevToolkit.Toolbox/            # 工具合集服务 + 设置/VM
-│   ├── DevToolkit.PasswordManager/    # 密码管理（SQLCipher+DPAPI）模型/服务/VM
-│   ├── DevToolkit.VarName/            # 变量名服务/缓存/命名转换器/VM
-│   ├── DevToolkit.AliyunOss/          # OSS 服务/下载服务/设置/VM
-│   ├── DevToolkit.PortKiller/         # netstat 解析 + 端口历史
-│   ├── DevToolkit.OpenDirectory/      # 路径规范化/打开
-│   └── DevToolkit.Core.Wpf/           # 宿主无关 WPF 窗口 + wwwroot
-├── DevToolkit/                        # 独立 WPF App（NavigationView 壳，全部功能页面）
-├── FlowLauncher.Plugin.AliyunOss/      # 阿里云 OSS 插件（薄壳）
-├── FlowLauncher.Plugin.OpenDirectory/  # 打开目录插件（薄壳）
-├── FlowLauncher.Plugin.PasswordManager/# 密码管理器插件（薄壳）
-├── FlowLauncher.Plugin.PortKiller/     # 端口占用查询/终止插件（薄壳）
-├── FlowLauncher.Plugin.VarName/        # 变量命名插件（薄壳）
-├── FlowLauncher.Plugin.Toolbox/        # 工具合集插件（薄壳）
+├── src/
+│   └── FlowLauncher.Plugin.*/         # 7 个自包含插件工程
+│       ├── Main.cs                    # 查询分发 / FL API 适配
+│       ├── Services/ ViewModels/ Views/   # 业务实现
+│       ├── plugin.json                # 元数据（版本唯一来源）
+│       └── favicon.ico
 └── tests/
-    ├── AliyunOss.UnitTest/             # 测 DevToolkit.AliyunOss
-    ├── PasswordManager.UnitTest/       # 测 DevToolkit.PasswordManager
-    ├── VarName.UnitTest/               # 测 DevToolkit.VarName
-    └── Toolbox.UnitTest/               # 测 DevToolkit.Toolbox
+    ├── AliyunOss.UnitTest/             # 测 FlowLauncher.Plugin.AliyunOss
+    ├── PasswordManager.UnitTest/       # 测 FlowLauncher.Plugin.PasswordManager
+    ├── VarName.UnitTest/               # 测 FlowLauncher.Plugin.VarName
+    ├── SpeechToText.UnitTest/          # 测 FlowLauncher.Plugin.SpeechToText
+    └── Toolbox.UnitTest/               # 测 FlowLauncher.Plugin.Toolbox
 ```
 
 ## 插件架构模式

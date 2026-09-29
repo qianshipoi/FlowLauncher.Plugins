@@ -1,4 +1,4 @@
-using DevToolkit.PasswordManager.Services;
+using FlowLauncher.Plugin.PasswordManager.Services;
 
 using System.IO;
 using System.Security.Cryptography;

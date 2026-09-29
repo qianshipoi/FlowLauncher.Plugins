@@ -10,12 +10,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
+		<InternalsVisibleTo Include="Toolbox.UnitTest" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Core\DevToolkit.Core.Wpf\DevToolkit.Core.Wpf.csproj" />
-		<ProjectReference Include="..\Core\DevToolkit.Toolbox\DevToolkit.Toolbox.csproj" />
+		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Cronos" Version="0.13.0" />
+		<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -28,8 +30,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!-- wwwroot 单源在 DevToolkit.Core.Wpf，这里以 Link 复制进插件输出 -->
-		<Content Include="..\Core\DevToolkit.Core.Wpf\wwwroot\**\*" Link="wwwroot\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+		<Content Include="wwwroot\**\*" CopyToOutputDirectory="PreserveNewest" />
+		<Resource Include="Resources\app.ico" />
 	</ItemGroup>
 
 </Project>

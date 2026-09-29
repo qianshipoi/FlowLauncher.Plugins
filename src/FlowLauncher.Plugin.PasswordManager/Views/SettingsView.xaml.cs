@@ -1,4 +1,4 @@
-using DevToolkit.PasswordManager.ViewModels;
+using FlowLauncher.Plugin.PasswordManager.ViewModels;
 
 using System.Windows.Controls;
 

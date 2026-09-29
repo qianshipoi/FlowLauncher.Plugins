@@ -1,5 +1,5 @@
-using DevToolkit.PasswordManager.Models;
-using DevToolkit.PasswordManager.Services;
+using FlowLauncher.Plugin.PasswordManager.Models;
+using FlowLauncher.Plugin.PasswordManager.Services;
 
 using System.IO;
 

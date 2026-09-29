@@ -1,7 +1,7 @@
-using DevToolkit.AliyunOss;
-using DevToolkit.AliyunOss.Services;
-using DevToolkit.AliyunOss.Transfer;
-using DevToolkit.AliyunOss.ViewModels;
+using FlowLauncher.Plugin.AliyunOss;
+using FlowLauncher.Plugin.AliyunOss.Services;
+using FlowLauncher.Plugin.AliyunOss.Transfer;
+using FlowLauncher.Plugin.AliyunOss.ViewModels;
 
 namespace AliyunOss.UnitTest;
 

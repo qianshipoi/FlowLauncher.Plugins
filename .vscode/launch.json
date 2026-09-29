@@ -2,20 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "DevToolkit",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build-devtoolkit",
-            "program": "${workspaceFolder}/src/DevToolkit/bin/Debug/DevToolkit.exe",
-            "args": [],
-            "cwd": "${workspaceFolder}/src/DevToolkit/bin/Debug",
-            "console": "integratedTerminal",
-            "env": {
-                "DOTNET_ENVIRONMENT": "Development"
-            },
-            "stopAtEntry": false
-        },
-        {
             "name": "Attach to Flow Launcher",
             "type": "coreclr",
             "request": "attach",

@@ -3,30 +3,19 @@
     <Project Path="scripts/PlayAudio/PlayAudio.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/FlowLauncher.Plugin.AliyunOss/FlowLauncher.Plugin.AliyunOss.csproj" />
+    <Project Path="src/FlowLauncher.Plugin.OpenDirectory/FlowLauncher.Plugin.OpenDirectory.csproj" />
     <Project Path="src/FlowLauncher.Plugin.PasswordManager/FlowLauncher.Plugin.PasswordManager.csproj" />
+    <Project Path="src/FlowLauncher.Plugin.PortKiller/FlowLauncher.Plugin.PortKiller.csproj" />
     <Project Path="src/FlowLauncher.Plugin.SpeechToText/FlowLauncher.Plugin.SpeechToText.csproj" />
-  </Folder>
-  <Folder Name="/src/Core/">
-    <Project Path="src/Core/DevToolkit.Abstractions/DevToolkit.Abstractions.csproj" />
-    <Project Path="src/Core/DevToolkit.SpeechToText/DevToolkit.SpeechToText.csproj" />
+    <Project Path="src/FlowLauncher.Plugin.Toolbox/FlowLauncher.Plugin.Toolbox.csproj" />
+    <Project Path="src/FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AliyunOss.UnitTest/AliyunOss.UnitTest.csproj" />
     <Project Path="tests/PasswordManager.UnitTest/PasswordManager.UnitTest.csproj" />
-    <Project Path="tests/VarName.UnitTest/VarName.UnitTest.csproj" />
     <Project Path="tests/SpeechToText.UnitTest/SpeechToText.UnitTest.csproj" />
-  <Project Path="tests/Toolbox.UnitTest/Toolbox.UnitTest.csproj" />
+    <Project Path="tests/Toolbox.UnitTest/Toolbox.UnitTest.csproj" />
+    <Project Path="tests/VarName.UnitTest/VarName.UnitTest.csproj" />
   </Folder>
-  <Project Path="src/FlowLauncher.Plugin.AliyunOss/FlowLauncher.Plugin.AliyunOss.csproj" />
-  <Project Path="src/FlowLauncher.Plugin.OpenDirectory/FlowLauncher.Plugin.OpenDirectory.csproj" />
-  <Project Path="src/FlowLauncher.Plugin.PortKiller/FlowLauncher.Plugin.PortKiller.csproj" />
-  <Project Path="src/FlowLauncher.Plugin.Toolbox/FlowLauncher.Plugin.Toolbox.csproj" />
-  <Project Path="src/DevToolkit/DevToolkit.csproj" />
-  <Project Path="src/Core/DevToolkit.Core.Wpf/DevToolkit.Core.Wpf.csproj" />
-  <Project Path="src/Core/DevToolkit.Toolbox/DevToolkit.Toolbox.csproj" />
-  <Project Path="src/Core/DevToolkit.AliyunOss/DevToolkit.AliyunOss.csproj" />
-  <Project Path="src/Core/DevToolkit.OpenDirectory/DevToolkit.OpenDirectory.csproj" />
-  <Project Path="src/Core/DevToolkit.PortKiller/DevToolkit.PortKiller.csproj" />
-  <Project Path="src/Core/DevToolkit.VarName/DevToolkit.VarName.csproj" />
-  <Project Path="src/FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" />
 </Solution>

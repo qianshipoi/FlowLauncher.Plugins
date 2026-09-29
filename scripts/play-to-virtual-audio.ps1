@@ -1,4 +1,4 @@
-﻿# scripts/play-to-virtual-audio.ps1
+# scripts/play-to-virtual-audio.ps1
 # 将音频文件播放到 VB-Audio Virtual Cable 虚拟声卡（用于语音识别插件联调）。
 #
 # 用法:
@@ -95,7 +95,6 @@ function Resolve-NAudioDll {
 
     $searchRoots = @(
         (Join-Path $PSScriptRoot '..\tests\SpeechToText.UnitTest\bin'),
-        (Join-Path $PSScriptRoot '..\src\Core\DevToolkit.SpeechToText\bin'),
         (Join-Path $PSScriptRoot '..\src\FlowLauncher.Plugin.SpeechToText\bin')
     )
 

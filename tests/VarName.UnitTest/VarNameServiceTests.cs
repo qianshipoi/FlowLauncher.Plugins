@@ -1,4 +1,4 @@
-using DevToolkit.VarName;
+using FlowLauncher.Plugin.VarName;
 
 using Microsoft.Extensions.Configuration;
 

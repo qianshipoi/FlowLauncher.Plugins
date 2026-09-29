@@ -1,4 +1,4 @@
-using DevToolkit.OpenDirectory;
+using FlowLauncher.Plugin.OpenDirectory;
 
 using Flow.Launcher.Plugin;
 

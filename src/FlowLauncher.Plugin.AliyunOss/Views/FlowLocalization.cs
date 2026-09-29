@@ -1,4 +1,4 @@
-using DevToolkit.AliyunOss.Transfer;
+using FlowLauncher.Plugin.AliyunOss.Transfer;
 
 using Flow.Launcher.Plugin;
 

@@ -1,5 +1,5 @@
-using DevToolkit.AliyunOss.Models;
-using DevToolkit.AliyunOss.Utils;
+using FlowLauncher.Plugin.AliyunOss.Models;
+using FlowLauncher.Plugin.AliyunOss.Utils;
 
 namespace AliyunOss.UnitTest;
 

@@ -1,4 +1,4 @@
-using DevToolkit.SpeechToText;
+using FlowLauncher.Plugin.SpeechToText;
 
 using System.Windows.Controls;
 

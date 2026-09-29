@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using DevToolkit.AliyunOss;
-using DevToolkit.AliyunOss.Models;
-using DevToolkit.AliyunOss.Services;
-using DevToolkit.AliyunOss.Transfer;
-using DevToolkit.AliyunOss.Views;
+using FlowLauncher.Plugin.AliyunOss;
+using FlowLauncher.Plugin.AliyunOss.Models;
+using FlowLauncher.Plugin.AliyunOss.Services;
+using FlowLauncher.Plugin.AliyunOss.Transfer;
+using FlowLauncher.Plugin.AliyunOss.Views;
 
 using Flow.Launcher.Plugin;
 using FlowLauncher.Plugin.AliyunOss.Views;

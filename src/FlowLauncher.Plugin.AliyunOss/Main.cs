@@ -1,17 +1,14 @@
 using AlibabaCloud.OSS.V2;
-using DevToolkit.AliyunOss;
+using FlowLauncher.Plugin.AliyunOss;
 
 using Flow.Launcher.Plugin;
 
 using FlowLauncher.Plugin.AliyunOss.Queries;
-using DevToolkit.AliyunOss.Services;
-using DevToolkit.AliyunOss.Transfer;
-using DevToolkit.AliyunOss.ViewModel;
-using FlowLauncher.Plugin.AliyunOss.Views;
+using FlowLauncher.Plugin.AliyunOss.Services;
+using FlowLauncher.Plugin.AliyunOss.Transfer;
 using FlowLauncher.Plugin.AliyunOss.ViewModel;
+using FlowLauncher.Plugin.AliyunOss.Views;
 
-using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -25,30 +22,6 @@ public class Main : IAsyncPlugin, IReloadable, ISettingProvider
     private DownloadQuery _downloadQuery = default!;
     private UploadQuery _uploadQuery = default!;
     private ILocalization _loc = default!;
-
-    static Main()
-    {
-        RegisterLocalAssemblyResolve();
-    }
-
-    /// <summary>
-    /// 从插件目录解析 iNKORE 程序集。
-    /// Flow Launcher 的 Assembly.Load 上下文不搜索插件目录，
-    /// 导致 XAML 加载 iNKORE 组件时抛 FileNotFoundException。
-    /// </summary>
-    private static void RegisterLocalAssemblyResolve()
-    {
-        AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
-        {
-            var name = new AssemblyName(args.Name);
-            if (!name.Name!.StartsWith("iNKORE.", StringComparison.OrdinalIgnoreCase))
-                return null;
-
-            var pluginDir = Path.GetDirectoryName(typeof(Main).Assembly.Location);
-            var dllPath = Path.Combine(pluginDir!, name.Name + ".dll");
-            return File.Exists(dllPath) ? Assembly.LoadFrom(dllPath) : null;
-        };
-    }
 
     public Control CreateSettingPanel()
     {

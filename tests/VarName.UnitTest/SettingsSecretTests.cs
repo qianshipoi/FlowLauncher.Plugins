@@ -1,5 +1,5 @@
-using DevToolkit.VarName;
-using DevToolkit.VarName.Utils;
+using FlowLauncher.Plugin.VarName;
+using FlowLauncher.Plugin.VarName.Utils;
 
 namespace VarName.UnitTest;
 

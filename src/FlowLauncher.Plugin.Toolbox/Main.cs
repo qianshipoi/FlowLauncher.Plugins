@@ -1,10 +1,10 @@
-using DevToolkit.Core.Wpf;
+using FlowLauncher.Plugin.Toolbox;
 
-using DevToolkit.Toolbox;
+using FlowLauncher.Plugin.Toolbox;
 
-using DevToolkit.Toolbox.Services;
+using FlowLauncher.Plugin.Toolbox.Services;
 
-using DevToolkit.Toolbox.ViewModels;
+using FlowLauncher.Plugin.Toolbox.ViewModels;
 
 using Flow.Launcher.Plugin;
 

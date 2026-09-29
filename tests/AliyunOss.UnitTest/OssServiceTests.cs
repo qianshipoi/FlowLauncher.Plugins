@@ -1,7 +1,7 @@
 
-using DevToolkit.AliyunOss;
-using DevToolkit.AliyunOss.Services;
-using DevToolkit.AliyunOss.Utils;
+using FlowLauncher.Plugin.AliyunOss;
+using FlowLauncher.Plugin.AliyunOss.Services;
+using FlowLauncher.Plugin.AliyunOss.Utils;
 
 using Microsoft.Extensions.Configuration;
 

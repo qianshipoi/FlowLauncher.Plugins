@@ -19,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Core\DevToolkit.SpeechToText\DevToolkit.SpeechToText.csproj" />
+		<ProjectReference Include="..\..\src\FlowLauncher.Plugin.SpeechToText\FlowLauncher.Plugin.SpeechToText.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

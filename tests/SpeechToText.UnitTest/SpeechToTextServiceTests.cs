@@ -1,5 +1,5 @@
 using System.Text;
-using DevToolkit.SpeechToText;
+using FlowLauncher.Plugin.SpeechToText;
 
 namespace SpeechToText.UnitTest;
 

@@ -11,10 +11,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\Core\DevToolkit.PortKiller\DevToolkit.PortKiller.csproj" />
+		<PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.264">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
