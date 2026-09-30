@@ -34,6 +34,64 @@
 
             <Separator Margin="0,16"/>
 
+            <!-- 随机密码生成器 -->
+            <TextBlock Text="随机密码生成器" FontSize="16" FontWeight="Bold" Margin="0,8,0,10"/>
+            <TextBlock TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"
+                       Text="在 Flow Launcher 中输入 pwdgen 即可按下方配置生成随机密码；输入 pwdgen 20 可直接生成 20 位。"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,8" VerticalAlignment="Center"
+                           Text="默认长度列表:"/>
+                <TextBox Grid.Row="0" Grid.Column="1" Margin="0,6"
+                         Text="{Binding GeneratorLengths, UpdateSourceTrigger=PropertyChanged}"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,8" VerticalAlignment="Top"
+                           Text="字符类别:"/>
+                <WrapPanel Grid.Row="1" Grid.Column="1" Margin="0,6">
+                    <CheckBox Content="小写 a-z" Margin="0,0,16,0" IsChecked="{Binding GeneratorLowercase}"/>
+                    <CheckBox Content="大写 A-Z" Margin="0,0,16,0" IsChecked="{Binding GeneratorUppercase}"/>
+                    <CheckBox Content="数字 0-9" Margin="0,0,16,0" IsChecked="{Binding GeneratorDigits}"/>
+                    <CheckBox Content="符号" IsChecked="{Binding GeneratorSymbols}"/>
+                </WrapPanel>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Margin="0,8" VerticalAlignment="Center"
+                           Text="忽略字符:"/>
+                <Grid Grid.Row="2" Grid.Column="1" Margin="0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0"
+                             Text="{Binding GeneratorExcludeChars, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="这些字符不会出现在生成的密码中，例如 0O1lI"/>
+                    <Button Grid.Column="1" Margin="8,0,0,0" Padding="10,4"
+                            Content="忽略易混淆 0O1lI" Command="{Binding ToggleAmbiguousCommand}"/>
+                </Grid>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Margin="0,8" VerticalAlignment="Top"
+                           Text="预览:"/>
+                <StackPanel Grid.Row="3" Grid.Column="1" Margin="0,6">
+                    <TextBlock Text="{Binding PreviewText}" FontFamily="Consolas" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding AlphabetSummary}" Foreground="Gray" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    <TextBlock Text="{Binding LengthsError}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                    <Button Content="重新生成预览" Command="{Binding RefreshPreviewCommand}"
+                            HorizontalAlignment="Left" Padding="10,4" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <Separator Margin="0,16"/>
+
             <!-- 导出 -->
             <TextBlock Text="导出数据" FontSize="16" FontWeight="Bold" Margin="0,8,0,10"/>
             <TextBlock TextWrapping="Wrap" Foreground="Gray" Margin="0,0,0,10"

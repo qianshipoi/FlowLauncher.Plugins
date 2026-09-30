@@ -4,7 +4,6 @@ using FlowLauncher.Plugin.PasswordManager.Models;
 using FlowLauncher.Plugin.PasswordManager.Services;
 using FlowLauncher.Plugin.PasswordManager.ViewModels;
 using FlowLauncher.Plugin.PasswordManager.Views;
-using FlowLauncher.Plugin.PasswordManager.Views;
 
 using SQLitePCL;
 
@@ -16,6 +15,9 @@ namespace FlowLauncher.Plugin.PasswordManager;
 
 public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
 {
+    /// <summary>生成随机密码的触发词，独立于 pwd，避免占用搜索空间。</summary>
+    private const string GeneratorKeyword = "pwdgen";
+
     private PluginInitContext _context = default!;
     private PasswordStore _store = default!;
     private DBKeyManager _keyManager = default!;
@@ -53,6 +55,7 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
     public Task InitAsync(PluginInitContext context)
     {
         _context = context;
+        RegisterGeneratorKeyword(context);
         _settings = context.API.LoadSettingJsonStorage<Settings>();
         _pluginDirectory = context.CurrentPluginMetadata.PluginDirectory;
         _keyManager = new DBKeyManager(_pluginDirectory);
@@ -61,14 +64,32 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// 注册随机密码生成的触发词。
+    /// 必须先查 ActionKeywordAssigned / 已有 ActionKeywords，否则每次 InitAsync 都会重复注册。
+    /// </summary>
+    private static void RegisterGeneratorKeyword(PluginInitContext context)
+    {
+        var alreadyDeclared = context.CurrentPluginMetadata.ActionKeywords?
+            .Contains(GeneratorKeyword, StringComparer.OrdinalIgnoreCase) == true;
+
+        if (!alreadyDeclared && !context.API.ActionKeywordAssigned(GeneratorKeyword))
+        {
+            context.API.AddActionKeyword(context.CurrentPluginMetadata.ID, GeneratorKeyword);
+        }
+    }
+
     public System.Windows.Controls.Control CreateSettingPanel()
     {
-        var viewModel = new SettingsViewModel(_settings, _importExport);
+        var viewModel = new SettingsViewModel(_settings, _importExport, () => _context.API.SaveSettingJsonStorage<Settings>());
         return new SettingsView(viewModel);
     }
 
     public List<Result> LoadContextMenus(Result selectedResult)
     {
+        if (selectedResult?.ContextData is GeneratedPassword generated)
+            return BuildGeneratorContextMenu(generated);
+
         if (selectedResult?.ContextData is not PasswordEntry entry)
             return new List<Result>();
 
@@ -115,6 +136,15 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
     {
         var search = query.Search?.Trim() ?? string.Empty;
 
+        // 独立触发词：生成随机密码
+        if (string.Equals(query.ActionKeyword, GeneratorKeyword, StringComparison.OrdinalIgnoreCase))
+        {
+            if (_form.IsActive)
+                _form.Reset();
+
+            return Task.FromResult(GeneratePasswords(search));
+        }
+
         // 打开管理窗口
         if (search.StartsWith("gui", StringComparison.OrdinalIgnoreCase))
         {
@@ -156,6 +186,123 @@ public class Main : IAsyncPlugin, IContextMenu, ISettingProvider, IDisposable
             var window = new ManagerWindow(_store, _importExport);
             window.Show();
         });
+    }
+
+    /// <summary>
+    /// 处理生成随机密码的查询。
+    /// 默认列出设置中配置的各个长度；若额外输入了长度，则把它作为首项与默认列表一起展示。
+    /// </summary>
+    private List<Result> GeneratePasswords(string search)
+    {
+        var set = _settings.GetCharacterSet();
+
+        if (set.BuildPools().Count == 0)
+        {
+            return
+            [
+                new Result
+                {
+                    Title = "没有可用字符",
+                    SubTitle = "请在设置中至少勾选一类字符，或减少忽略字符",
+                    IcoPath = "favicon.ico",
+                    Action = _ =>
+                    {
+                        _context.API.OpenSettingDialog();
+                        return true;
+                    }
+                }
+            ];
+        }
+
+        int? requested = int.TryParse(search, out var parsed)
+            ? Math.Clamp(parsed, PasswordGeneratorService.MinLength, PasswordGeneratorService.MaxLength)
+            : null;
+
+        var lengths = new List<int>();
+        if (requested is { } custom)
+            lengths.Add(custom);
+        lengths.AddRange(_settings.GetGeneratorLengths().Where(l => l != requested));
+
+        var results = lengths
+            .Select(length => BuildPasswordResult(
+                PasswordGeneratorService.Generate(length, set), length, length == requested, set))
+            .ToList();
+
+        results.Add(BuildGeneratorHint(set, requested == null && !string.IsNullOrEmpty(search) ? search : null));
+        return results;
+    }
+
+    private Result BuildPasswordResult(string password, int length, bool userSpecified, PasswordCharacterSet set)
+    {
+        var entropy = PasswordStrengthEstimator.Describe(length, set.BuildAlphabet().Length);
+        var tag = userSpecified ? "指定长度" : "默认长度";
+
+        return new Result
+        {
+            Title = password,
+            SubTitle = $"{tag} {length} 位 · {entropy} · {set.Describe()}｜Enter 复制，右键可重新生成",
+            IcoPath = "favicon.ico",
+            CopyText = password,
+            ContextData = new GeneratedPassword(length, password, userSpecified),
+            Action = _ =>
+            {
+                _context.API.CopyToClipboard(password);
+                _context.API.ShowMsg("Password Manager", $"已复制 {length} 位随机密码到剪贴板");
+                return true;
+            }
+        };
+    }
+
+    private Result BuildGeneratorHint(PasswordCharacterSet set, string? invalidInput)
+    {
+        var title = invalidInput == null
+            ? "输入长度可直接生成，如 pwdgen 20"
+            : $"无法识别的长度 \"{invalidInput}\"，输入 1-{PasswordGeneratorService.MaxLength} 的数字";
+
+        return new Result
+        {
+            Title = title,
+            SubTitle = $"当前字符集：{set.Describe()}，可在设置中调整长度列表与忽略字符",
+            IcoPath = "favicon.ico",
+            Action = _ =>
+            {
+                _context.API.OpenSettingDialog();
+                return true;
+            }
+        };
+    }
+
+    private List<Result> BuildGeneratorContextMenu(GeneratedPassword generated)
+    {
+        return
+        [
+            new Result
+            {
+                Title = "复制密码",
+                SubTitle = generated.Value,
+                IcoPath = "favicon.ico",
+                Action = _ =>
+                {
+                    _context.API.CopyToClipboard(generated.Value);
+                    _context.API.ShowMsg("Password Manager", $"已复制 {generated.Length} 位随机密码到剪贴板");
+                    return true;
+                }
+            },
+            new Result
+            {
+                Title = "重新生成",
+                SubTitle = $"重新生成一个 {generated.Length} 位的随机密码",
+                IcoPath = "favicon.ico",
+                Action = _ =>
+                {
+                    // 触发词不同，需显式改回 pwdgen 查询并强制刷新
+                    _context.API.ChangeQuery(
+                        generated.UserSpecified ? $"{GeneratorKeyword} {generated.Length} " : $"{GeneratorKeyword} ",
+                        true);
+                    return false;
+                }
+            }
+        ];
     }
 
     private List<Result> HandleAddFlow(string input)

@@ -4,7 +4,7 @@
     "Name": "Password Manager",
     "Description": "本地加密存储和管理账号密码",
     "Author": "FlowLauncher Plugins",
-    "Version": "1.0.0",
+    "Version": "1.1.0",
     "Language": "csharp",
     "IcoPath": "favicon.ico",
     "ExecuteFileName": "FlowLauncher.Plugin.PasswordManager.dll"
