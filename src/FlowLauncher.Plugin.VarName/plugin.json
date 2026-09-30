@@ -4,7 +4,7 @@
     "Name": "Variable Name Translator",
     "Description": "将中文翻译为变量名，支持多种命名规范",
     "Author": "qianshi",
-    "Version": "1.0.0",
+    "Version": "1.0.1",
     "Language": "csharp",
     "Website": "https://www.kuriyama.top",
     "IcoPath": "favicon.ico",
