@@ -46,6 +46,11 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $false
 
+          trap {
+              Write-Host "::error title=Detect failure::$($_.Exception.Message)"
+              throw
+          }
+
           function Read-PluginVersion {
               param(
                   [Parameter(Mandatory = $true)]
