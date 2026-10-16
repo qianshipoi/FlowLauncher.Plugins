@@ -1,0 +1,256 @@
+name: Publish plugins
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/FlowLauncher.Plugin.*/**"
+      - "Directory.Build.targets"
+      - ".github/workflows/publish-plugins.yml"
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: "插件短名或完整目录名，例如 Toolbox；留空时比较最近一次提交"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-plugins-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: windows-latest
+    outputs:
+      has_plugins: ${{ steps.detect.outputs.has_plugins }}
+      matrix: ${{ steps.detect.outputs.matrix }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect plugin version changes
+        id: detect
+        shell: pwsh
+        env:
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          INPUT_PLUGIN: ${{ inputs.plugin }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $false
+
+          function Read-PluginVersion {
+              param(
+                  [Parameter(Mandatory = $true)]
+                  [string] $Path,
+
+                  [Parameter(Mandatory = $true)]
+                  [string] $Revision
+              )
+
+              $content = git show "${Revision}:$Path" 2>$null
+              if ($LASTEXITCODE -ne 0) {
+                  return $null
+              }
+
+              return [string]($content | ConvertFrom-Json).Version
+          }
+
+          if (-not [string]::IsNullOrWhiteSpace($env:INPUT_PLUGIN)) {
+              $pluginName = $env:INPUT_PLUGIN.Trim()
+              if ($pluginName -notlike 'FlowLauncher.Plugin.*') {
+                  $pluginName = "FlowLauncher.Plugin.$pluginName"
+              }
+
+              $pluginDirectory = "src/$pluginName"
+              $candidateFiles = @("$pluginDirectory/plugin.json")
+          }
+          elseif ($env:BASE_SHA -and $env:BASE_SHA -notmatch '^0+$') {
+              $candidateFiles = @(git diff --name-only $env:BASE_SHA $env:HEAD_SHA -- 'src/FlowLauncher.Plugin.*/plugin.json')
+          }
+          else {
+              git rev-parse HEAD^ *> $null
+              if ($LASTEXITCODE -eq 0) {
+                  $candidateFiles = @(git diff --name-only HEAD^ HEAD -- 'src/FlowLauncher.Plugin.*/plugin.json')
+              }
+              else {
+                  $candidateFiles = @()
+              }
+          }
+
+          $items = @()
+          foreach ($file in ($candidateFiles | Sort-Object -Unique)) {
+              if (-not (Test-Path -LiteralPath $file)) {
+                  continue
+              }
+
+              $headJson = Get-Content -LiteralPath $file -Raw | ConvertFrom-Json
+              $headVersion = [string]$headJson.Version
+              if ($headVersion -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') {
+                  throw "插件版本格式无效: $file -> $headVersion"
+              }
+
+              if ([string]::IsNullOrWhiteSpace($env:INPUT_PLUGIN) -and
+                  $env:BASE_SHA -and
+                  $env:BASE_SHA -notmatch '^0+$') {
+                  $baseVersion = Read-PluginVersion -Path $file -Revision $env:BASE_SHA
+                  if ($baseVersion -eq $headVersion) {
+                      continue
+                  }
+              }
+
+              $projectName = Split-Path (Split-Path $file -Parent) -Leaf
+              $shortName = $projectName.Substring('FlowLauncher.Plugin.'.Length)
+              $projectPath = "src/$projectName/$projectName.csproj"
+              if (-not (Test-Path -LiteralPath $projectPath)) {
+                  throw "找不到插件项目: $projectPath"
+              }
+
+              $items += [ordered]@{
+                  plugin = $shortName
+                  display_name = [string]$headJson.Name
+                  project = $projectPath
+                  version = $headVersion
+                  tag = "$($shortName.ToLowerInvariant())-v$headVersion"
+                  asset = "$shortName-$headVersion"
+                  package_id = "qianshipoi.FlowLauncher.Plugin.$shortName"
+              }
+          }
+
+          $matrix = @{ include = @($items) }
+          $hasPlugins = if ($items.Count -gt 0) { 'true' } else { 'false' }
+
+          "has_plugins=$hasPlugins" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "matrix=$($matrix | ConvertTo-Json -Depth 6 -Compress)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+          if ($items.Count -eq 0) {
+              Write-Host 'No plugin version changes detected.'
+          }
+          else {
+              $items | ConvertTo-Json -Depth 6 | Write-Host
+          }
+
+  publish:
+    needs: detect
+    if: needs.detect.outputs.has_plugins == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore "${{ matrix.project }}"
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build "${{ matrix.project }}" -c Release --no-restore
+
+      - name: Pack NuGet packages
+        shell: pwsh
+        run: |
+          dotnet pack "${{ matrix.project }}" `
+            -c Release `
+            --no-restore `
+            -p:PackageVersion=${{ matrix.version }} `
+            -o artifacts/packages
+
+      - name: Publish Flow Launcher plugin files
+        shell: pwsh
+        run: |
+          dotnet publish "${{ matrix.project }}" `
+            -c Release `
+            --no-restore `
+            -o artifacts/plugin
+
+          New-Item -ItemType Directory -Path artifacts/release -Force | Out-Null
+          Compress-Archive `
+            -Path artifacts/plugin/* `
+            -DestinationPath "artifacts/release/${{ matrix.asset }}.zip"
+
+      - name: NuGet login
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to NuGet.org
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+              throw 'Failed to acquire a temporary NuGet API key.'
+          }
+
+          $packages = Get-ChildItem -Path artifacts/packages -File |
+              Where-Object { $_.Extension -in '.nupkg', '.snupkg' } |
+              Sort-Object { if ($_.Extension -eq '.nupkg') { 0 } else { 1 } }
+
+          foreach ($package in $packages) {
+              dotnet nuget push $package.FullName `
+                --api-key $env:NUGET_API_KEY `
+                --source https://api.nuget.org/v3/index.json `
+                --skip-duplicate
+
+              if ($LASTEXITCODE -ne 0) {
+                  throw "NuGet push failed: $($package.Name)"
+              }
+          }
+
+      - name: Create or update GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $tag = "${{ matrix.tag }}"
+          $title = "${{ matrix.display_name }} v${{ matrix.version }}"
+          $zipPath = "artifacts/release/${{ matrix.asset }}.zip"
+          $packageFiles = @(
+              Get-ChildItem -Path artifacts/packages -File |
+                  Where-Object { $_.Extension -in '.nupkg', '.snupkg' } |
+                  Select-Object -ExpandProperty FullName
+          )
+          $assets = @($zipPath) + $packageFiles
+
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          $releaseExists = $LASTEXITCODE -eq 0
+
+          if ($releaseExists) {
+              gh release upload $tag @assets `
+                --clobber `
+                --repo $env:GITHUB_REPOSITORY
+          }
+          else {
+              $notes = "NuGet: https://www.nuget.org/packages/${{ matrix.package_id }}/${{ matrix.version }}"
+              gh release create $tag @assets `
+                --title $title `
+                --notes $notes `
+                --target $env:GITHUB_SHA `
+                --repo $env:GITHUB_REPOSITORY
+          }
+
+          if ($LASTEXITCODE -ne 0) {
+              throw "GitHub release failed: $tag"
+          }

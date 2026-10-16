@@ -7,6 +7,8 @@
 		<UseWPF>true</UseWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputType>Library</OutputType>
+		<PackageId>qianshipoi.FlowLauncher.Plugin.Toolbox</PackageId>
+		<Description>Flow Launcher 插件：GUID、JSON、哈希、时间戳、编码、密码、进制、JWT 与 Cron 工具合集。</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

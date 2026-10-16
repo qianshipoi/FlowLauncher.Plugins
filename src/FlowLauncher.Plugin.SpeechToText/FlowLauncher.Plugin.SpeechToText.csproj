@@ -7,6 +7,8 @@
 		<UseWPF>true</UseWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputType>Library</OutputType>
+		<PackageId>qianshipoi.FlowLauncher.Plugin.SpeechToText</PackageId>
+		<Description>Flow Launcher 插件：通过 ASR API 将语音实时转换为文本。</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

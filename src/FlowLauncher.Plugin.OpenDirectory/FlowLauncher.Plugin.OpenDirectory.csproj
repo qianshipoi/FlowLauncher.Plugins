@@ -7,6 +7,8 @@
 		<UseWPF>true</UseWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputType>Library</OutputType>
+		<PackageId>qianshipoi.FlowLauncher.Plugin.OpenDirectory</PackageId>
+		<Description>Flow Launcher 插件：解析文件或文件夹路径并打开所在目录。</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

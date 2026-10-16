@@ -7,6 +7,8 @@
 		<UseWPF>true</UseWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputType>Library</OutputType>
+		<PackageId>qianshipoi.FlowLauncher.Plugin.VarName</PackageId>
+		<Description>Flow Launcher 插件：将中文转换为多种命名规范的变量名。</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

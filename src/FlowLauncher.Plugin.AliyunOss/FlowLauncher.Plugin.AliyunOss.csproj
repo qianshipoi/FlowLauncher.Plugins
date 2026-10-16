@@ -7,6 +7,8 @@
 		<UseWPF>true</UseWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputType>Library</OutputType>
+		<PackageId>qianshipoi.FlowLauncher.Plugin.AliyunOss</PackageId>
+		<Description>Flow Launcher 插件：阿里云 OSS 文件上传、下载与浏览。</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -31,6 +33,10 @@
 		<Page Remove="Languages\**\*.xaml" />
 		<None Include="Languages\**\*.xaml">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>true</Pack>
+			<PackagePath>contentFiles\any\any\Languages\%(Filename)%(Extension)</PackagePath>
+			<PackageCopyToOutput>true</PackageCopyToOutput>
+			<BuildAction>Content</BuildAction>
 		</None>
 	</ItemGroup>
 

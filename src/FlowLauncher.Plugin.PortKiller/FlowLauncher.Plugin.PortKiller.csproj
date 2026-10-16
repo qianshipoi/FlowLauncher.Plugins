@@ -7,6 +7,8 @@
 		<UseWPF>true</UseWPF>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<OutputType>Library</OutputType>
+		<PackageId>qianshipoi.FlowLauncher.Plugin.PortKiller</PackageId>
+		<Description>Flow Launcher 插件：查询并终止占用指定端口的进程。</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
