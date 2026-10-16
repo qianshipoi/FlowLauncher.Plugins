@@ -19,6 +19,12 @@
 # CodeBuddy
 .codebuddy/
 
+# Local AI assistant instructions
+.github/copilot-instructions.md
+
+# Local editor settings
+.vscode/
+
 # Mono auto generated files
 mono_crash.*
 
