@@ -1,28 +1,30 @@
-using System.IO.Pipes;
+using Docker.DotNet;
 
 namespace S3.IntegrationTest;
 
 public sealed class DockerFactAttribute : FactAttribute
 {
+    private static readonly Lazy<bool> DockerAvailable = new(ProbeDocker, isThreadSafe: true);
+
     public DockerFactAttribute()
     {
         if (Environment.GetEnvironmentVariable("S3_RUN_DOCKER_TESTS") == "1")
             return;
 
-        if (!IsDockerAvailable())
+        if (!DockerAvailable.Value)
             Skip = "Docker Desktop is not running. Start it or set S3_RUN_DOCKER_TESTS=1.";
     }
 
-    private static bool IsDockerAvailable()
+    private static bool ProbeDocker()
     {
         try
         {
-            using var pipe = new NamedPipeClientStream(
-                ".",
-                "docker_engine",
-                PipeDirection.InOut,
-                PipeOptions.Asynchronous);
-            pipe.Connect(500);
+            using var client = new DockerClientBuilder().Build();
+            client.System
+                .PingAsync(CancellationToken.None)
+                .WaitAsync(TimeSpan.FromSeconds(2))
+                .GetAwaiter()
+                .GetResult();
             return true;
         }
         catch

@@ -106,9 +106,14 @@ jobs:
                   }
               }
 
-              $projectName = Split-Path (Split-Path $file -Parent) -Leaf
-              $shortName = $projectName.Substring('FlowLauncher.Plugin.'.Length)
-              $projectPath = "src/$projectName/$projectName.csproj"
+              $pluginDirectory = $file -replace '[\\/]plugin\.json$', ''
+              $projectName = ($pluginDirectory -split '[\\/]')[-1]
+              if ([string]::IsNullOrWhiteSpace($projectName)) {
+                  throw "无法从插件配置路径提取项目名: $file"
+              }
+
+              $shortName = $projectName -replace '^FlowLauncher\.Plugin\.', ''
+              $projectPath = "$pluginDirectory/$projectName.csproj"
               if (-not (Test-Path -LiteralPath $projectPath)) {
                   throw "找不到插件项目: $projectPath"
               }
