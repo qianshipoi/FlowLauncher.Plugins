@@ -106,14 +106,17 @@ jobs:
                   }
               }
 
-              $pluginDirectory = $file -replace '[\\/]plugin\.json$', ''
-              $projectName = ($pluginDirectory -split '[\\/]')[-1]
-              if ([string]::IsNullOrWhiteSpace($projectName)) {
-                  throw "无法从插件配置路径提取项目名: $file"
+              $pluginFile = Get-Item -LiteralPath $file
+              $pluginDirectory = $pluginFile.DirectoryName
+              $projectFiles = @(Get-ChildItem -LiteralPath $pluginDirectory -Filter '*.csproj' -File)
+              if ($projectFiles.Count -ne 1) {
+                  throw "插件目录必须恰好包含一个 csproj: $pluginDirectory"
               }
 
+              $projectFile = $projectFiles[0]
+              $projectName = $projectFile.BaseName
               $shortName = $projectName -replace '^FlowLauncher\.Plugin\.', ''
-              $projectPath = "$pluginDirectory/$projectName.csproj"
+              $projectPath = [IO.Path]::GetRelativePath((Get-Location).Path, $projectFile.FullName).Replace('\', '/')
               if (-not (Test-Path -LiteralPath $projectPath)) {
                   throw "找不到插件项目: $projectPath"
               }

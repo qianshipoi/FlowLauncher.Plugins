@@ -4,7 +4,7 @@
     "Name": "S3 Object Storage",
     "Description": "S3 兼容对象存储上传、下载、浏览与元数据管理",
     "Author": "qianshi",
-    "Version": "1.0.1",
+    "Version": "1.0.2",
     "Language": "csharp",
     "Website": "https://www.kuriyama.top",
     "IcoPath": "favicon.ico",
