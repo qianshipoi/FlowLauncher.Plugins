@@ -204,8 +204,7 @@ jobs:
           }
 
           $packages = Get-ChildItem -Path artifacts/packages -File |
-              Where-Object { $_.Extension -in '.nupkg', '.snupkg' } |
-              Sort-Object { if ($_.Extension -eq '.nupkg') { 0 } else { 1 } }
+              Where-Object { $_.Extension -eq '.nupkg' }
 
           foreach ($package in $packages) {
               dotnet nuget push $package.FullName `
