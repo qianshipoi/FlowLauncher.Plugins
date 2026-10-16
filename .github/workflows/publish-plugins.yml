@@ -65,7 +65,8 @@ jobs:
                   return $null
               }
 
-              return [string]($content | ConvertFrom-Json).Version
+              $jsonText = (($content -join "`n").TrimStart([char]0xFEFF))
+              return [string]($jsonText | ConvertFrom-Json).Version
           }
 
           if (-not [string]::IsNullOrWhiteSpace($env:INPUT_PLUGIN)) {

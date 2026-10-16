@@ -1,10 +1,10 @@
-﻿{
+{
     "ID": "A32F4921B8894E5A87FC4607F59F3C82",
     "ActionKeyword": "s3",
     "Name": "S3 Object Storage",
     "Description": "S3 兼容对象存储上传、下载、浏览与元数据管理",
     "Author": "qianshi",
-    "Version": "1.0.3",
+    "Version": "1.0.4",
     "Language": "csharp",
     "Website": "https://www.kuriyama.top",
     "IcoPath": "favicon.ico",
