@@ -7,6 +7,7 @@
     <Project Path="src/FlowLauncher.Plugin.OpenDirectory/FlowLauncher.Plugin.OpenDirectory.csproj" />
     <Project Path="src/FlowLauncher.Plugin.PasswordManager/FlowLauncher.Plugin.PasswordManager.csproj" />
     <Project Path="src/FlowLauncher.Plugin.PortKiller/FlowLauncher.Plugin.PortKiller.csproj" />
+    <Project Path="src/FlowLauncher.Plugin.S3/FlowLauncher.Plugin.S3.csproj" />
     <Project Path="src/FlowLauncher.Plugin.SpeechToText/FlowLauncher.Plugin.SpeechToText.csproj" />
     <Project Path="src/FlowLauncher.Plugin.Toolbox/FlowLauncher.Plugin.Toolbox.csproj" />
     <Project Path="src/FlowLauncher.Plugin.VarName/FlowLauncher.Plugin.VarName.csproj" />
@@ -14,6 +15,8 @@
   <Folder Name="/tests/">
     <Project Path="tests/AliyunOss.UnitTest/AliyunOss.UnitTest.csproj" />
     <Project Path="tests/PasswordManager.UnitTest/PasswordManager.UnitTest.csproj" />
+    <Project Path="tests/S3.IntegrationTest/S3.IntegrationTest.csproj" />
+    <Project Path="tests/S3.UnitTest/S3.UnitTest.csproj" />
     <Project Path="tests/SpeechToText.UnitTest/SpeechToText.UnitTest.csproj" />
     <Project Path="tests/Toolbox.UnitTest/Toolbox.UnitTest.csproj" />
     <Project Path="tests/VarName.UnitTest/VarName.UnitTest.csproj" />

@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0-windows7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputType>Library</OutputType>
+		<PackageId>qianshipoi.FlowLauncher.Plugin.S3</PackageId>
+		<Description>Flow Launcher 插件：S3 兼容对象存储文件上传、下载、浏览与元数据管理。</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Flow.Launcher.Plugin" Version="5.1.0" />
+		<PackageReference Include="AWSSDK.S3" Version="4.0.104.4" />
+		<PackageReference Include="AlibabaCloud.OSS.V2" Version="0.1.2" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.11" />
+		<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="9.0.11" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="favicon.ico">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="plugin.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<!-- Flow 的语言加载器只认 Languages\<语言码>.xaml（ResourceDictionary），
+		     json 不会被读取，放 json 等于没有翻译。
+		     UseWPF 的默认通配会把 **/*.xaml 当成 Page 编译进 baml，
+		     而 Flow 是从磁盘按路径读这些文件，因此必须移出 Page 并按普通文件复制 -->
+		<Page Remove="Languages\**\*.xaml" />
+		<None Include="Languages\**\*.xaml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>true</Pack>
+			<PackagePath>contentFiles\any\any\Languages\%(Filename)%(Extension)</PackagePath>
+			<PackageCopyToOutput>true</PackageCopyToOutput>
+			<BuildAction>Content</BuildAction>
+		</None>
+	</ItemGroup>
+
+</Project>

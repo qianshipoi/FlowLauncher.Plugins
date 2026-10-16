@@ -13,6 +13,7 @@
 | `vn` | [VarName](src/FlowLauncher.Plugin.VarName/Readme.md) | 中文翻译为变量名，生成 5 种命名规范，SQLite 缓存 |
 | `pwd` | [PasswordManager](src/FlowLauncher.Plugin.PasswordManager/Readme.md) | 本地密码管理：SQLCipher 整库加密 + DPAPI 字段级加密 |
 | `oss` | [AliyunOss](src/FlowLauncher.Plugin.AliyunOss/Readme.md) | 阿里云 OSS 文件上传 / 下载（`ossd` 下载、`ossu` 上传） |
+| `s3` | [S3](src/FlowLauncher.Plugin.S3/Readme.md) | S3 兼容对象存储多配置浏览 / 传输 / 元数据编辑（`s3d`、`s3u`、`s3b`、`s3p`） |
 | `dir` | [OpenDirectory](src/FlowLauncher.Plugin.OpenDirectory/Readme.md) | 解析文件 / 文件夹路径并打开所在目录 |
 | `asr` | SpeechToText | 语音转文字，基于 ASR 模型实时识别并粘贴结果 |
 
@@ -27,12 +28,12 @@
 ```
 FlowLauncher.Plugins/
 ├── src/
-│   └── FlowLauncher.Plugin.*/        # Flow Launcher 插件（7 个，各自自包含）
+│   └── FlowLauncher.Plugin.*/        # Flow Launcher 插件（8 个，各自自包含）
 │       ├── Main.cs                   # 查询分发 / FL API 适配
 │       ├── Services/ ViewModels/ Views/  # 业务实现（服务、VM、WPF 窗口与页面）
 │       ├── plugin.json               # 插件元数据（版本唯一来源）
 │       └── favicon.ico
-├── tests/                            # xUnit 单元测试（5 个项目）
+├── tests/                            # xUnit 单元测试与 Docker 集成测试
 ├── scripts/                          # 构建 / 发布 / 联调脚本（PowerShell）
 ├── Directory.Build.targets           # 发布目录版本后缀约定（对所有插件生效）
 └── FlowLauncher.Plugins.slnx         # 解决方案
@@ -52,6 +53,10 @@ dotnet test FlowLauncher.Plugins.slnx
 
 # 运行单个测试项目
 dotnet test tests/Toolbox.UnitTest/Toolbox.UnitTest.csproj
+
+# 运行 S3 的 RustFS Docker 集成测试（需要 Docker Desktop）
+$env:S3_RUN_DOCKER_TESTS = '1'
+dotnet test tests/S3.IntegrationTest/S3.IntegrationTest.csproj
 ```
 
 单元测试基于 xUnit（`Microsoft.NET.Test.Sdk` + `xunit`），每个测试项目直接引用对应插件工程：
@@ -63,6 +68,8 @@ dotnet test tests/Toolbox.UnitTest/Toolbox.UnitTest.csproj
 | `tests/PasswordManager.UnitTest` | 加密存储与查询 |
 | `tests/AliyunOss.UnitTest` | OSS 配置与结果构建 |
 | `tests/SpeechToText.UnitTest` | ASR 调用与文本处理 |
+| `tests/S3.UnitTest` | S3 多配置、预设、密钥与元数据 Key |
+| `tests/S3.IntegrationTest` | Testcontainers + RustFS 的 S3 传输与元数据集成验证 |
 
 ## 打包与发布
 
@@ -92,7 +99,7 @@ Flow Launcher 运行时会锁定插件 DLL 导致发布失败，可先重启宿�
 
 | 脚本 | 用途 |
 |------|------|
-| `publish-<plugin>.ps1` | 发布指定插件（`varname` / `toolbox` / `portkiller` / `passwordmanager` / `aliyunoss` / `speechtotext` / `opendirectory`） |
+| `publish-<plugin>.ps1` | 发布指定插件（`varname` / `toolbox` / `portkiller` / `passwordmanager` / `aliyunoss` / `s3` / `speechtotext` / `opendirectory`） |
 | `restart-flowlauncher.ps1` | 停止 / 启动 Flow Launcher，解除插件 DLL 文件锁 |
 | `generate-icons.ps1` | 基于文字（emoji）批量生成各插件的 `.ico` 图标 |
 | `play-to-virtual-audio.ps1` | 把音频播放到 VB-Audio Virtual Cable 虚拟声卡，用于 ASR 联调 |
@@ -107,6 +114,8 @@ Flow Launcher 运行时会锁定插件 DLL 导致发布失败，可先重启宿�
 | `iNKORE.UI.WPF.Modern` 0.10.2.1 | Fluent 风格 UI 组件 |
 | `Microsoft.Data.Sqlite` + `SQLitePCLRaw.bundle_e_sqlcipher` | VarName 缓存 / PasswordManager 加密库 |
 | `AlibabaCloud.OSS.V2` | 阿里云 OSS SDK |
+| `AWSSDK.S3` 4.0.104.4 | 通用 S3 兼容存储 SDK |
+| `Testcontainers` 4.16.0 | RustFS Docker 集成测试 |
 | `OpenAI` 2.8.0 | VarName 候选词生成 |
 | `Microsoft.Windows.CsWin32` | PortKiller 进程信息 P/Invoke |
 | `Cronos` | Cron 表达式解析 |
