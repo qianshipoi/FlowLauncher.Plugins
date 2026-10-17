@@ -1,0 +1,12 @@
+{
+    "ID": "F064260842644C84926642A6E5D5CB14",
+    "ActionKeyword": "todo",
+    "Name": "PaperTodo",
+    "Description": "本地 SQLite Todo 与 Markdown Note，多纸片窗口和 PaperTodo 数据导入",
+    "Author": "qianshi",
+    "Version": "1.0.0",
+    "Language": "csharp",
+    "Website": "https://www.kuriyama.top",
+    "IcoPath": "favicon.ico",
+    "ExecuteFileName": "FlowLauncher.Plugin.PaperTodo.dll"
+}

@@ -1,0 +1,72 @@
+<Window x:Class="FlowLauncher.Plugin.PaperTodo.Views.ReminderDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="设置提醒"
+        Width="400" Height="260"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#F7F5F0"
+        FontFamily="Microsoft YaHei UI">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="选择提醒时间" FontWeight="SemiBold" Margin="0,0,0,6" />
+        <ComboBox x:Name="PresetBox"
+                  Grid.Row="1"
+                  SelectedIndex="0"
+                  SelectionChanged="PresetBox_SelectionChanged">
+            <ComboBoxItem Content="15 分钟后" />
+            <ComboBoxItem Content="30 分钟后" />
+            <ComboBoxItem Content="1 小时后" />
+            <ComboBoxItem Content="今天 18:00" />
+            <ComboBoxItem Content="明天 09:00" />
+            <ComboBoxItem Content="自定义" />
+        </ComboBox>
+
+        <Grid x:Name="CustomPanel"
+              Grid.Row="2"
+              Margin="0,10,0,0"
+              Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="110" />
+            </Grid.ColumnDefinitions>
+            <DatePicker x:Name="ReminderDate" />
+            <TextBox x:Name="ReminderTime"
+                     Grid.Column="1"
+                     Text="09:00"
+                     Margin="8,0,0,0"
+                     Padding="5"
+                     VerticalContentAlignment="Center" />
+        </Grid>
+
+        <TextBlock Grid.Row="3"
+                   Text="提醒仅在 Flow Launcher 运行期间触发。"
+                   Foreground="#6E685E"
+                   FontSize="11"
+                   Margin="0,12,0,0" />
+
+        <Grid Grid.Row="4" Margin="0,12,0,0">
+            <Button Content="清除提醒"
+                    HorizontalAlignment="Left"
+                    Width="90"
+                    Click="Clear_Click" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="取消"
+                        Width="78"
+                        Margin="0,0,8,0"
+                        IsCancel="True" />
+                <Button Content="确定"
+                        Width="78"
+                        IsDefault="True"
+                        Click="Ok_Click" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,50 @@
+<Window x:Class="FlowLauncher.Plugin.PaperTodo.Views.NotePaperWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="{Binding Title}"
+        Width="780" Height="640"
+        MinWidth="520" MinHeight="380"
+        Background="#F7F5F0"
+        FontFamily="Microsoft YaHei UI"
+        WindowStartupLocation="Manual"
+        Closing="Window_Closing">
+    <DockPanel Margin="12">
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="TitleBox"
+                     Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                     FontSize="18"
+                     FontWeight="SemiBold"
+                     Padding="6,4"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     LostKeyboardFocus="TitleBox_LostKeyboardFocus" />
+            <Button x:Name="PinButton"
+                    Grid.Column="1"
+                    Content="置顶"
+                    Padding="10,5"
+                    Click="PinButton_Click" />
+        </Grid>
+
+        <Border DockPanel.Dock="Bottom"
+                Background="#EEE9DF"
+                CornerRadius="5"
+                Padding="8,5"
+                Margin="0,8,0,0">
+            <TextBlock Text="{Binding StatusText}"
+                       Foreground="#6E685E"
+                       FontSize="11" />
+        </Border>
+
+        <Border Background="#FFFDF8"
+                BorderBrush="#E1DBCF"
+                BorderThickness="1"
+                CornerRadius="6">
+            <wv2:WebView2 x:Name="WebView" />
+        </Border>
+    </DockPanel>
+</Window>

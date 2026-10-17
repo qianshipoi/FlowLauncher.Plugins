@@ -12,6 +12,7 @@
 | `kp` | [PortKiller](src/FlowLauncher.Plugin.PortKiller/Readme.md) | 查询端口占用进程并结束进程，带历史记录 |
 | `vn` | [VarName](src/FlowLauncher.Plugin.VarName/Readme.md) | 中文翻译为变量名，生成 5 种命名规范，SQLite 缓存 |
 | `pwd` | [PasswordManager](src/FlowLauncher.Plugin.PasswordManager/Readme.md) | 本地密码管理：SQLCipher 整库加密 + DPAPI 字段级加密 |
+| `todo` / `note` | [PaperTodo](src/FlowLauncher.Plugin.PaperTodo/Readme.md) | SQLite Todo 与 Markdown Note，多纸片窗口、WYSIWYG 编辑器及 PaperTodo 数据导入 |
 | `oss` | [AliyunOss](src/FlowLauncher.Plugin.AliyunOss/Readme.md) | 阿里云 OSS 文件上传 / 下载（`ossd` 下载、`ossu` 上传） |
 | `s3` | [S3](src/FlowLauncher.Plugin.S3/Readme.md) | S3 兼容对象存储多配置浏览 / 传输 / 元数据编辑（`s3d`、`s3u`、`s3b`、`s3p`） |
 | `dir` | [OpenDirectory](src/FlowLauncher.Plugin.OpenDirectory/Readme.md) | 解析文件 / 文件夹路径并打开所在目录 |
@@ -28,7 +29,7 @@
 ```
 FlowLauncher.Plugins/
 ├── src/
-│   └── FlowLauncher.Plugin.*/        # Flow Launcher 插件（8 个，各自自包含）
+│   └── FlowLauncher.Plugin.*/        # Flow Launcher 插件（9 个，各自自包含）
 │       ├── Main.cs                   # 查询分发 / FL API 适配
 │       ├── Services/ ViewModels/ Views/  # 业务实现（服务、VM、WPF 窗口与页面）
 │       ├── plugin.json               # 插件元数据（版本唯一来源）
@@ -70,6 +71,7 @@ dotnet test tests/S3.IntegrationTest/S3.IntegrationTest.csproj
 | `tests/SpeechToText.UnitTest` | ASR 调用与文本处理 |
 | `tests/S3.UnitTest` | S3 多配置、预设、密钥与元数据 Key |
 | `tests/S3.IntegrationTest` | Testcontainers + RustFS 的 S3 传输与元数据集成验证 |
+| `tests/PaperTodo.UnitTest` | SQLite CRUD、搜索、提醒、备份与 PaperTodo 数据导入 |
 
 ## 打包与发布
 
@@ -99,7 +101,7 @@ Flow Launcher 运行时会锁定插件 DLL 导致发布失败，可先重启宿�
 
 | 脚本 | 用途 |
 |------|------|
-| `publish-<plugin>.ps1` | 发布指定插件（`varname` / `toolbox` / `portkiller` / `passwordmanager` / `aliyunoss` / `s3` / `speechtotext` / `opendirectory`） |
+| `publish-<plugin>.ps1` | 发布指定插件（`varname` / `toolbox` / `portkiller` / `passwordmanager` / `papertodo` / `aliyunoss` / `s3` / `speechtotext` / `opendirectory`） |
 | `restart-flowlauncher.ps1` | 停止 / 启动 Flow Launcher，解除插件 DLL 文件锁 |
 | `generate-icons.ps1` | 基于文字（emoji）批量生成各插件的 `.ico` 图标 |
 | `play-to-virtual-audio.ps1` | 把音频播放到 VB-Audio Virtual Cable 虚拟声卡，用于 ASR 联调 |
@@ -119,6 +121,8 @@ Flow Launcher 运行时会锁定插件 DLL 导致发布失败，可先重启宿�
 | `OpenAI` 2.8.0 | VarName 候选词生成 |
 | `Microsoft.Windows.CsWin32` | PortKiller 进程信息 P/Invoke |
 | `Cronos` | Cron 表达式解析 |
+| `Microsoft.Web.WebView2` | PaperTodo Note 的离线 WYSIWYG 编辑器宿主 |
+| `LightningDB` | PaperTodo 图片库的一次性只读导入 |
 
 ## 许可证
 

@@ -1,0 +1,41 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: #fffdf8;
+    color: #27231f;
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+}
+
+#editor {
+    height: 100%;
+}
+
+.toastui-editor-defaultUI {
+    border: 0;
+    border-radius: 0;
+    height: 100%;
+}
+
+.toastui-editor-defaultUI-toolbar {
+    border-radius: 0;
+    background: #f2eee6;
+    border-bottom: 1px solid #e1dbcf;
+}
+
+.toastui-editor-main,
+.toastui-editor-md-container,
+.toastui-editor-ww-container {
+    background: #fffdf8;
+}
+
+.toastui-editor-contents {
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+}
+
+.toastui-editor-contents img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
