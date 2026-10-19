@@ -9,7 +9,7 @@
 | 关键字 | 插件 | 说明 |
 |--------|------|------|
 | `tool` | [Toolbox](src/FlowLauncher.Plugin.Toolbox/Readme.md) | 工具合集：GUID、JSON 编辑器、文件哈希、时间戳、编码转换、密码生成、进制转换、JWT、Cron |
-| `kp` | [PortKiller](src/FlowLauncher.Plugin.PortKiller/Readme.md) | 查询端口占用进程并结束进程，带历史记录 |
+| `kp` | [PortKiller](src/FlowLauncher.Plugin.PortKiller/Readme.md) | 查询端口占用进程并结束，带历史记录 |
 | `vn` | [VarName](src/FlowLauncher.Plugin.VarName/Readme.md) | 中文翻译为变量名，生成 5 种命名规范，SQLite 缓存 |
 | `pwd` | [PasswordManager](src/FlowLauncher.Plugin.PasswordManager/Readme.md) | 本地密码管理：SQLCipher 整库加密 + DPAPI 字段级加密 |
 | `oss` | [AliyunOss](src/FlowLauncher.Plugin.AliyunOss/Readme.md) | 阿里云 OSS 文件上传 / 下载（`ossd` 下载、`ossu` 上传） |
